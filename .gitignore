@@ -1,0 +1,5 @@
+Debug/*
+TTF Parser/Debug
+*.sdf
+ipch
+*.suo
