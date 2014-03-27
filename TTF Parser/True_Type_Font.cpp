@@ -73,11 +73,29 @@ void True_Type_Font::load_glyph_data_array(ifstream &fin){
 	int j = 0;
 }
 
+// FIXME: maybe the following #defines should be moved to name table.
+#define Unicode				0
+#define Macintosh			1
+#define ISO					2
+#define Windows				3
+#define Custom				4
+
+#define Symbol				0
+#define Unicode_BMP			1
+#define ShiftJIS			2
+#define PRC					3
+#define Big5				4
+#define Wansung				5
+#define Johab				6
+#define Unicode_UCS_4		10
+
 void True_Type_Font::get_glyph_outline(USHORT ch){
-	USHORT glyph_index = this->cmap.get_glyph_index(ch);
-	printf("%d\n", glyph_index);
-	ULONG location = this->loca.find_location(glyph_index);
-	freopen("D:/out.txt","w",stdout);  
-	this->glyph_data_array.at(1989)->dump_svg_outline();
+	USHORT glyph_index = this->cmap.get_glyph_index(Windows, Unicode_BMP, ch);
+	//ULONG location = this->loca.find_location(glyph_index);
+	wstring name = L"D:/xingkai/";
+	name += ch;
+	name += L".svg";
+	_wfreopen(name.c_str(), L"w", stdout);  
+	this->glyph_data_array.at(glyph_index)->dump_svg_outline();
 	fclose(stdout);
 }

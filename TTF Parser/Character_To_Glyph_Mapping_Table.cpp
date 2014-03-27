@@ -110,13 +110,28 @@ void Character_To_Glyph_Index_Mapping_Table::load_encoding_tables(ifstream &fin,
 				break;
 											  }
 			}
+			this->encoding_table_entries[i].encoding_table = this->encoding_tables[i];
 	}
 }
 
-USHORT Character_To_Glyph_Index_Mapping_Table::get_glyph_index(USHORT ch){
+// FIXME: This Function uses sequential search. Maybe it can be more efficient.
+// FIXME: It's wrong to presume the ith encoding table corresponds to the ith entry.
+Encoding_Table* Character_To_Glyph_Index_Mapping_Table::get_encoding_table(USHORT platform_id, USHORT encoding_id){
+	Encoding_Table* t = NULL;
+	for(int i = 0; i < this->number_of_encoding_tables; ++i){
+		if(this->encoding_table_entries[i].platform_id == platform_id &&
+			this->encoding_table_entries[i].platform_specific_encoding_id == encoding_id){
+				t = this->encoding_table_entries[i].encoding_table;
+		}
+	}
+	return t;
+}
+
+USHORT Character_To_Glyph_Index_Mapping_Table::get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch){
 	USHORT index = 0;
-	for(int i = 0; i < this->number_of_encoding_tables; i++){
-		index = this->encoding_tables[i]->get_glyph_index(ch);
+	Encoding_Table* encoding_table = get_encoding_table(platform_id, encoding_id);
+	if(encoding_id){
+		index = encoding_table->get_glyph_index(ch);
 	}
 	return index;
 }

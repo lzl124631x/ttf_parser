@@ -35,42 +35,53 @@ void Simple_Glyph_Description::dump_coordinates(){
 	printf("\n");
 }
 
+/*
+If the last point is off-curve, the first point is regarded as the end point.
+If two off-curve point appear in a row, the midpoint of them is regarded as the implicit on-curve point.
+<prev_flag, flag>
+<0, 0>: 1. append implicit on-curve point; 2. append 'Q' and current point.
+<0, 1>: append current point
+<1, 0>: append 'Q' and current point
+<1, 1>: append 'L' and current point
+*/
 void Simple_Glyph_Description::dump_svg_outline(){
-	printf("Simple_Glyph_Description::dump_coordinates\n");
-	BYTE last_flag = 1, this_flag = 1;
+	printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+	printf("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n");
+	printf("<path d=\"");
+	BYTE prev_flag = 1, flag = 1;
 	bool new_contour = true;
 	for(int i = 0, j = 0; i < this->pt_num; ++i){
-		this_flag = this->flags[i] & ON_CURVE;
-		if(last_flag == 0 && this_flag == 0){
+		flag = this->flags[i] & ON_CURVE;
+		if(prev_flag == 0 && flag == 0){ // append implicit on-curve point
 			printf("%d, %d ", (this->x_coordinates[i - 1] + this->x_coordinates[i]) >> 1,
-				(this->y_coordinates[i - 1] + this->y_coordinates[i]) >> 1);
-			printf("Q%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
-		}else if(last_flag == 0 && this_flag == 1){
-			printf("%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
-			if(i == this->end_pts_of_contours[j]){
-				printf("Z");
-				++j;
-				new_contour = true;
-			}
-		}else if(last_flag == 1 && this_flag == 0){
-			printf("Q%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
-		}else{
-			if(new_contour){
-				printf("M");		
-				new_contour = false;
-			}else{
-				printf("L");
-			}
-			printf("%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
-			if(i == this->end_pts_of_contours[j]){
-				printf("Z");
-				++j;
-				new_contour = true;
-			}
+				(this->y_coordinates[i - 1] + y_coordinates[i]) >> 1);	
 		}
-		last_flag = this_flag;
+		if(new_contour){
+			printf("M");
+			new_contour = false;
+		}else if(flag == 0){
+			printf("Q");
+		}else if(prev_flag == 1){
+			printf("L");
+		}
+		printf("%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
+		if(i == this->end_pts_of_contours[j]){
+			if(flag == 0){
+				if(j == 0){
+					printf("%d, %d", this->x_coordinates[0], this->y_coordinates[0]);
+				}else{
+					printf("%d, %d", this->x_coordinates[this->end_pts_of_contours[j - 1] + 1],
+						this->y_coordinates[this->end_pts_of_contours[j - 1] + 1]);
+				}
+			}
+			printf(" Z ");
+			new_contour = true;
+			++j;
+		}
+		prev_flag = flag;
 	}
-	printf("\n");
+	printf("\" transform=\"scale(0.1),matrix(1,0,0,-1,0,0),translate(100,-5000)\" />\n");
+	printf("</svg>");
 }
 
 void Simple_Glyph_Description::read_flags(ifstream &fin){

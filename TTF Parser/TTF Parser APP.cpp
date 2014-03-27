@@ -2,15 +2,18 @@
 //
 
 #include "stdafx.h"
+#include "Type.h"
 #include "True_Type_Font.h"
-
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	True_Type_Font ttf;
-	ttf.load_path("D:/TTF/msyh.ttf");
-	ttf.get_glyph_outline('我');
-	system("pause");
+	ttf.load_path("D:/TTF/STXINGKA.TTF");
+	//我 25105 一 19968 乃 20035 儿 20799
+	USHORT ch = 0;
+	for(int i = 0, ch = L'我'; i < 100; ++i){
+		ttf.get_glyph_outline(ch++);
+	}
+	//system("pause");
 	return 0;
 }
-
