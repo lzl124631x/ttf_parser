@@ -92,7 +92,7 @@ void True_Type_Font::load_glyph_data_array(ifstream &fin){
 void True_Type_Font::get_glyph_outline(USHORT ch){
 	USHORT glyph_index = this->cmap.get_glyph_index(Windows, Unicode_BMP, ch);
 	//ULONG location = this->loca.find_location(glyph_index);
-	wstring name = L"D:/xingkai/";
+	wstring name = L"D:/msyh/";
 	name += ch;
 	name += L".svg";
 	_wfreopen(name.c_str(), L"w", stdout);  

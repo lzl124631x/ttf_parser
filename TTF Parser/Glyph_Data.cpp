@@ -45,8 +45,15 @@ If two off-curve point appear in a row, the midpoint of them is regarded as the 
 <1, 1>: append 'L' and current point
 */
 void Simple_Glyph_Description::dump_svg_outline(){
+	FWORD width = x_max - x_min;
+	FWORD height = y_max - y_min;
+	double x_ratio = 300.0 / width;
+	double y_ratio = 300.0 / height;
+
 	printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 	printf("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n");
+	printf("<g transform=\"scale(%.2lf, %.2lf) translate(%d, %d) matrix(1,0,0,-1,0,0)\">", x_ratio, y_ratio, -x_min, y_max);
+	printf("<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"none\" stroke=\"blue\" stroke-width=\"10\"/>\n", x_min, y_min, width, height);
 	printf("<path d=\"");
 	BYTE prev_flag = 1, flag = 1;
 	bool new_contour = true;
@@ -80,7 +87,8 @@ void Simple_Glyph_Description::dump_svg_outline(){
 		}
 		prev_flag = flag;
 	}
-	printf("\" transform=\"scale(0.1),matrix(1,0,0,-1,0,0),translate(100,-5000)\" />\n");
+	printf("\"/>\n");
+	printf("</g>");
 	printf("</svg>");
 }
 

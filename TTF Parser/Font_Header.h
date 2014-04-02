@@ -24,6 +24,7 @@ private:
 	SHORT	glygh_data_format;
 public:
 	void load_table(Table_Directory_Entry *entry, ifstream &fin);
+	void dump_info();
 };
 
 #endif
