@@ -72,7 +72,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
+    <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Character_To_Glyph_Mapping_Table.h" />

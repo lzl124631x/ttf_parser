@@ -190,7 +190,7 @@ Glyph_Data* Glyph_Data::load_table(ifstream &fin, ULONG offset){
 	if(glyph_data.is_composite_glyph()){
 		return new Composite_Glyph_Description(glyph_data, fin);
 	}
-	// FIXME: 0, no glyph data; -2, -3, ... furture use. Maybe they shoule not be treated as errors.  
+	// FIXME: 0, no glyph data; -2, -3, ... furture use. Maybe they should not be treated as errors.  
 	printf("Error in Glyph_Data::load_table: number_of_contours = %d, offset=%ul\n",
 		glyph_data.number_of_contours, offset);
 	return NULL;
