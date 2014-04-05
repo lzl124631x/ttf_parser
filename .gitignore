@@ -1,5 +1,7 @@
-Debug/*
-TTF Parser/Debug
+*Debug/*
+*/Debug/*
+*.user
 *.sdf
 ipch
 *.suo
+.DS_store
