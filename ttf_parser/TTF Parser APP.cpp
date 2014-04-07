@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Type.h"
 #include "True_Type_Font.h"
+using namespace ttf_dll;
 
 int _tmain(int argc, _TCHAR* argv[])
 {

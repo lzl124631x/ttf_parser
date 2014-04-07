@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ttf_parser", "ttf_parser\ttf_parser.vcxproj", "{1FFA4E85-0AE4-4D26-946A-27F491679AE5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ttf_parser_app", "ttf_parser_app\ttf_parser_app.vcxproj", "{2FF75C98-CD95-4699-AA46-C33E48B5DADC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ttf_parser", "ttf_parser\ttf_parser.vcxproj", "{B99D67E6-F225-4C11-B285-8170DAF4E4B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +11,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1FFA4E85-0AE4-4D26-946A-27F491679AE5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1FFA4E85-0AE4-4D26-946A-27F491679AE5}.Debug|Win32.Build.0 = Debug|Win32
-		{1FFA4E85-0AE4-4D26-946A-27F491679AE5}.Release|Win32.ActiveCfg = Release|Win32
-		{1FFA4E85-0AE4-4D26-946A-27F491679AE5}.Release|Win32.Build.0 = Release|Win32
+		{2FF75C98-CD95-4699-AA46-C33E48B5DADC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2FF75C98-CD95-4699-AA46-C33E48B5DADC}.Debug|Win32.Build.0 = Debug|Win32
+		{2FF75C98-CD95-4699-AA46-C33E48B5DADC}.Release|Win32.ActiveCfg = Release|Win32
+		{2FF75C98-CD95-4699-AA46-C33E48B5DADC}.Release|Win32.Build.0 = Release|Win32
+		{B99D67E6-F225-4C11-B285-8170DAF4E4B7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B99D67E6-F225-4C11-B285-8170DAF4E4B7}.Debug|Win32.Build.0 = Debug|Win32
+		{B99D67E6-F225-4C11-B285-8170DAF4E4B7}.Release|Win32.ActiveCfg = Release|Win32
+		{B99D67E6-F225-4C11-B285-8170DAF4E4B7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
