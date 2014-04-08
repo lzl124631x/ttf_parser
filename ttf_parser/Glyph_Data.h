@@ -25,7 +25,7 @@ namespace ttf_dll{
 			return this->number_of_contours == -1;
 		}
 		virtual void dump_coordinates(){}
-		virtual void dump_svg_outline(){}
+		virtual void dump_svg_outline(FILE *fp){}
 	};
 
 	class DLL_API Simple_Glyph_Description: public Glyph_Data{
@@ -34,7 +34,7 @@ namespace ttf_dll{
 		void read_coordinates(ifstream& fin, SHORT *ptr, bool read_x);
 		void dump_flags();
 		void dump_coordinates();
-		void dump_svg_outline();
+		void dump_svg_outline(FILE *fp);
 	public:
 		USHORT	*end_pts_of_contours;
 		USHORT	instruction_length;

@@ -54,6 +54,7 @@ void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_FILE_NAME, m_fileNameText);
+	DDX_Control(pDX, IDC_CHAR, m_char);
 }
 
 BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
@@ -98,6 +99,8 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	m_fileNameText.SetWindowTextW(_T("File Name:"));
+	m_ttf.load_path(std::string("C:\\calibri.ttf"));
+	m_char.SetWindowText(_T("A"));
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -141,7 +144,11 @@ void Cttf_parser_appDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
-		render_glyph();
+		CString char_string;
+		m_char.GetWindowText(char_string);
+		if(!char_string.IsEmpty()){
+			render_glyph(char_string[0]); // FIXME: test if ttf is loaded before render.
+		}
 	}
 }
 
@@ -173,9 +180,14 @@ void Cttf_parser_appDlg::OnFileExit()
 
 /*
 <flag, next_flag>
-<0, 0>: AddQuadraticBezier(last_point, control_point, cur_point)
-<0, 1>: AddQuadraticBezier(last_point, control_point, cur_point) and skip next point.
+<0, 0>: AddQuadraticBezier(last_point, cur_point, implicit_next_point)
+<0, 1>: AddQuadraticBezier(last_point, cur_point, next_point) and skip next point.
 <1, *>: AddLine(last_point, cur_point)
+If current point is the last point of contour,
+assume the first point of contour must be on-curve,
+<last_flag, first_flag>
+<0, 1>: AddQuadraticBezier(last_point, cur_point, first_point)
+<1, 1>: AddLine(last_point, cur_point)
 */
 void AddQuadraticBezier(GraphicsPath &path, const Point &q0, const Point &q1, const Point &q2){
 	Point c1, c2;
@@ -189,15 +201,37 @@ void AddQuadraticBezier(GraphicsPath &path, const Point &q0, const Point &q1, co
 
 	path.AddBezier(q0, c1, c2, q2);
 }
+// FIXME: the following definition should not be defined here.
 #define ON_CURVE			0x1 // FIXME: the following code is in test mode.
-void Cttf_parser_appDlg::render_glyph(){
-	Graphics g(GetSafeHwnd());
-	GraphicsPath path;
-	Simple_Glyph_Description *glyph_data = (Simple_Glyph_Description*)m_ttf.glyph_data_array[10];
+#define Unicode				0
+#define Macintosh			1
+#define ISO					2
+#define Windows				3
+#define Custom				4
+
+#define Symbol				0
+#define Unicode_BMP			1
+#define ShiftJIS			2
+#define PRC					3
+#define Big5				4
+#define Wansung				5
+#define Johab				6
+#define Unicode_UCS_4		10
+void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
+	ttf_dll::USHORT glyph_index = m_ttf.cmap.get_glyph_index(Windows, Unicode_BMP, ch);
+	Simple_Glyph_Description *glyph_data = (Simple_Glyph_Description*)m_ttf.glyph_data_array[glyph_index];
 	FWORD width = glyph_data->x_max - glyph_data->x_min;
 	FWORD height = glyph_data->y_max - glyph_data->y_min;
 	double x_ratio = 300.0 / width;
 	double y_ratio = 300.0 / height;
+	Graphics g(GetSafeHwnd());
+	g.SetSmoothingMode(SmoothingModeHighQuality);
+	//Matrix matrix(1, 0, 0, -1, 0, 0);
+	//g.MultiplyTransform(&matrix);
+	//g.TranslateTransform(-glyph_data->x_min, glyph_data->y_min);
+	g.ScaleTransform(x_ratio, y_ratio);
+	GraphicsPath path;
+
 	Point start_point, last_point, cur_point;
 
 	ttf_dll::BYTE flag = 0, next_flag = 0;
@@ -208,33 +242,29 @@ void Cttf_parser_appDlg::render_glyph(){
 		if(new_contour){
 			path.StartFigure();
 			new_contour = false;
+			start_point = last_point = cur_point;
 		}else if(flag == 1){
 			path.AddLine(last_point, cur_point);
+			last_point = cur_point;
 		}else{
 			Point next_point;
 			if(i == glyph_data->end_pts_of_contours[j]){// This is the last point of this jth contour.
-				next_flag = 0;
+				next_flag = 1; // FIXME: this line has no use. The start point is assumed to be on-curve.
+				next_point = start_point;
 			}else{
 				next_flag = glyph_data->flags[i + 1];
 				if(next_flag == 1){
 					next_point = Point(glyph_data->x_coordinates[i + 1], glyph_data->y_coordinates[i + 1]);
-					++i;// skip the next on-curve point
+					//++i;// skip the next on-curve point
 				}else{
 					next_point = Point((cur_point.X + glyph_data->x_coordinates[i + 1]) >> 1,
 						(cur_point.Y + glyph_data->y_coordinates[i + 1]) >> 1);
 				}
 			}
 			AddQuadraticBezier(path, last_point, cur_point, next_point);
+			last_point = next_point;
 		}
 		if(i == glyph_data->end_pts_of_contours[j]){
-			if(flag == 0){
-				if(j == 0){
-					printf("%d, %d", glyph_data->x_coordinates[0], glyph_data->y_coordinates[0]);
-				}else{
-					printf("%d, %d", glyph_data->x_coordinates[glyph_data->end_pts_of_contours[j - 1] + 1],
-						glyph_data->y_coordinates[glyph_data->end_pts_of_contours[j - 1] + 1]);
-				}
-			}
 			path.CloseFigure();
 			new_contour = true;
 			++j;

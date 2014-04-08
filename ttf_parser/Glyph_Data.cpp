@@ -45,53 +45,53 @@ namespace ttf_dll{
 	<1, 0>: append 'Q' and current point
 	<1, 1>: append 'L' and current point
 	*/
-	void Simple_Glyph_Description::dump_svg_outline(){
+	void Simple_Glyph_Description::dump_svg_outline(FILE *fp){
 		FWORD width = x_max - x_min;
 		FWORD height = y_max - y_min;
 		double x_ratio = 300.0 / width;
 		double y_ratio = 300.0 / height;
 
-		printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-		printf("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n");
-		printf("<g transform=\"scale(%.2lf, %.2lf) translate(%d, %d) matrix(1,0,0,-1,0,0)\">", x_ratio, y_ratio, -x_min, y_max);
-		printf("<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"none\" stroke=\"blue\" stroke-width=\"10\"/>\n", x_min, y_min, width, height);
-		printf("<path d=\"");
+		fprintf(fp, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+		fprintf(fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n");
+		fprintf(fp, "<g transform=\"scale(%.2lf, %.2lf) translate(%d, %d) matrix(1,0,0,-1,0,0)\">", x_ratio, y_ratio, -x_min, y_max);
+		fprintf(fp, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"none\" stroke=\"blue\" stroke-width=\"10\"/>\n", x_min, y_min, width, height);
+		fprintf(fp, "<path d=\"");
 		BYTE prev_flag = 1, flag = 1;
 		bool new_contour = true;
 		// FIXME: assume the first point of each contour must be on-curve.
 		for(int i = 0, j = 0; i < this->pt_num; ++i){
 			flag = this->flags[i] & ON_CURVE;
 			if(prev_flag == 0 && flag == 0){ // append implicit on-curve point
-				printf("%d, %d ", (this->x_coordinates[i - 1] + this->x_coordinates[i]) >> 1,
+				fprintf(fp, "%d, %d ", (this->x_coordinates[i - 1] + this->x_coordinates[i]) >> 1,
 					(this->y_coordinates[i - 1] + this->y_coordinates[i]) >> 1);	
 			}
 			if(new_contour){
-				printf("M");
+				fprintf(fp, "M");
 				new_contour = false;
 			}else if(flag == 0){
-				printf("Q");
+				fprintf(fp, "Q");
 			}else if(prev_flag == 1){
-				printf("L");
+				fprintf(fp, "L");
 			}
-			printf("%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
+			fprintf(fp, "%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
 			if(i == this->end_pts_of_contours[j]){// This point is the last point of this contour.
 				if(flag == 0){// If this is the last point of contour and is off-curve, use the first point of contour as end point.
 					if(j == 0){
-						printf("%d, %d", this->x_coordinates[0], this->y_coordinates[0]);
+						fprintf(fp, "%d, %d", this->x_coordinates[0], this->y_coordinates[0]);
 					}else{
-						printf("%d, %d", this->x_coordinates[this->end_pts_of_contours[j - 1] + 1],
+						fprintf(fp, "%d, %d", this->x_coordinates[this->end_pts_of_contours[j - 1] + 1],
 							this->y_coordinates[this->end_pts_of_contours[j - 1] + 1]);
 					}
 				}
-				printf(" Z ");
+				fprintf(fp, " Z ");
 				new_contour = true;
 				++j;
 			}
 			prev_flag = flag;
 		}
-		printf("\"/>\n");
-		printf("</g>");
-		printf("</svg>");
+		fprintf(fp, "\"/>\n");
+		fprintf(fp, "</g>");
+		fprintf(fp, "</svg>");
 	}
 
 	void Simple_Glyph_Description::read_flags(ifstream &fin){

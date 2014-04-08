@@ -93,13 +93,14 @@ namespace ttf_dll{
 	void True_Type_Font::get_glyph_outline(USHORT ch){
 		USHORT glyph_index = this->cmap.get_glyph_index(Windows, Unicode_BMP, ch);
 		//ULONG location = this->loca.find_location(glyph_index);
-		wstring name = L"D:/msyh/";
+		wstring name = L"C:/msyh/";
 		name += ch;
 		name += L".svg";
 		// FIXME: the following codes should be more generic, i.e. use _t instead of _w.
-		//_wfreopen(name.c_str(), L"w", stdout);
-		_wfreopen_s(NULL, name.c_str(), L"w", stdout); // FIXME: I don't know if this line is correct.
-		this->glyph_data_array[glyph_index]->dump_svg_outline();
-		fclose(stdout);
+		FILE *fp = NULL;
+		if(_tfopen_s(&fp, name.c_str(), _T("w")) == 0){ // Return 0 if successful.
+			this->glyph_data_array[glyph_index]->dump_svg_outline(fp);
+			fclose(fp);
+		}
 	}
 }
