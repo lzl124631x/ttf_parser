@@ -67,6 +67,9 @@ BOOL Cttf_parser_appApp::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
+	// GDI+
+	GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);
+
 	Cttf_parser_appDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
@@ -87,6 +90,8 @@ BOOL Cttf_parser_appApp::InitInstance()
 		delete pShellManager;
 	}
 
+	// Since there is no ExitInstance function in dialog-based MFC, GdiplusShutdown is placed here.
+	GdiplusShutdown(m_gdiplusToken);
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;

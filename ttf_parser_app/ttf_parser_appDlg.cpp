@@ -44,10 +44,6 @@ END_MESSAGE_MAP()
 
 
 // Cttf_parser_appDlg dialog
-
-
-
-
 Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cttf_parser_appDlg::IDD, pParent)
 {
@@ -57,7 +53,7 @@ Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
 void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDL_FILE_NAME, m_fileNameText);
+	DDX_Control(pDX, IDC_FILE_NAME, m_fileNameText);
 }
 
 BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
@@ -125,7 +121,7 @@ void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void Cttf_parser_appDlg::OnPaint()
 {
-	if (IsIconic())
+	if (IsIconic()) // Return TRUE if the dialog is minimized.
 	{
 		CPaintDC dc(this); // device context for painting
 
@@ -145,6 +141,7 @@ void Cttf_parser_appDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
+		render_glyph();
 	}
 }
 
@@ -157,11 +154,14 @@ HCURSOR Cttf_parser_appDlg::OnQueryDragIcon()
 
 void Cttf_parser_appDlg::OnFileOpen()
 {
-	CString pathName;
+	CString path_name;
 	CFileDialog dlg(TRUE); // TRUE for "open" dialog; FALSE for "save as" dialog.
 	if(dlg.DoModal() == IDOK){
-		pathName = dlg.GetFileName();
-		m_fileNameText.SetWindowTextW(_T("File Name: ") + pathName);
+		path_name = dlg.GetPathName();
+		m_fileNameText.SetWindowTextW(_T("File Name: ") + path_name);
+		CStringA path_nameS(path_name.GetBuffer(0));
+		std::string str = path_nameS.GetBuffer(0);
+		m_ttf.load_path(str);
 	}
 }
 
@@ -169,4 +169,77 @@ void Cttf_parser_appDlg::OnFileOpen()
 void Cttf_parser_appDlg::OnFileExit()
 {
 	EndDialog(0);
+}
+
+/*
+<flag, next_flag>
+<0, 0>: AddQuadraticBezier(last_point, control_point, cur_point)
+<0, 1>: AddQuadraticBezier(last_point, control_point, cur_point) and skip next point.
+<1, *>: AddLine(last_point, cur_point)
+*/
+void AddQuadraticBezier(GraphicsPath &path, const Point &q0, const Point &q1, const Point &q2){
+	Point c1, c2;
+	//三次贝塞尔的控制点c1 = (q0 + 2 * q1)/3 = q0 + 2 * (q1 - q0)/3
+	c1.X = (q0.X + 2 * q1.X) / 3.0f;
+	c1.Y = (q0.Y + 2 * q1.Y) / 3.0f;
+
+	//三次贝塞尔的控制点c2 = (2 * q1 + q2)/3 = c1 + (q2 - q0)/3
+	c2.X = (2 * q1.X + q2.X)/3.0f;
+	c2.Y = (2 * q1.Y + q2.Y)/3.0f;
+
+	path.AddBezier(q0, c1, c2, q2);
+}
+#define ON_CURVE			0x1 // FIXME: the following code is in test mode.
+void Cttf_parser_appDlg::render_glyph(){
+	Graphics g(GetSafeHwnd());
+	GraphicsPath path;
+	Simple_Glyph_Description *glyph_data = (Simple_Glyph_Description*)m_ttf.glyph_data_array[10];
+	FWORD width = glyph_data->x_max - glyph_data->x_min;
+	FWORD height = glyph_data->y_max - glyph_data->y_min;
+	double x_ratio = 300.0 / width;
+	double y_ratio = 300.0 / height;
+	Point start_point, last_point, cur_point;
+
+	ttf_dll::BYTE flag = 0, next_flag = 0;
+	bool new_contour = true;
+	for(int i = 0, j = 0; i < glyph_data->pt_num; ++i){
+		flag = glyph_data->flags[i] & ON_CURVE;
+		cur_point = Point(glyph_data->x_coordinates[i], glyph_data->y_coordinates[i]);
+		if(new_contour){
+			path.StartFigure();
+			new_contour = false;
+		}else if(flag == 1){
+			path.AddLine(last_point, cur_point);
+		}else{
+			Point next_point;
+			if(i == glyph_data->end_pts_of_contours[j]){// This is the last point of this jth contour.
+				next_flag = 0;
+			}else{
+				next_flag = glyph_data->flags[i + 1];
+				if(next_flag == 1){
+					next_point = Point(glyph_data->x_coordinates[i + 1], glyph_data->y_coordinates[i + 1]);
+					++i;// skip the next on-curve point
+				}else{
+					next_point = Point((cur_point.X + glyph_data->x_coordinates[i + 1]) >> 1,
+						(cur_point.Y + glyph_data->y_coordinates[i + 1]) >> 1);
+				}
+			}
+			AddQuadraticBezier(path, last_point, cur_point, next_point);
+		}
+		if(i == glyph_data->end_pts_of_contours[j]){
+			if(flag == 0){
+				if(j == 0){
+					printf("%d, %d", glyph_data->x_coordinates[0], glyph_data->y_coordinates[0]);
+				}else{
+					printf("%d, %d", glyph_data->x_coordinates[glyph_data->end_pts_of_contours[j - 1] + 1],
+						glyph_data->y_coordinates[glyph_data->end_pts_of_contours[j - 1] + 1]);
+				}
+			}
+			path.CloseFigure();
+			new_contour = true;
+			++j;
+		}
+		next_flag = flag;
+	}
+	g.DrawPath(&Pen(Color::Black, 1), &path);
 }

@@ -98,7 +98,7 @@ namespace ttf_dll{
 		name += L".svg";
 		// FIXME: the following codes should be more generic, i.e. use _t instead of _w.
 		//_wfreopen(name.c_str(), L"w", stdout);
-		_wfreopen_s(NULL, name.c_str(), L"w", stdout);
+		_wfreopen_s(NULL, name.c_str(), L"w", stdout); // FIXME: I don't know if this line is correct.
 		this->glyph_data_array[glyph_index]->dump_svg_outline();
 		fclose(stdout);
 	}

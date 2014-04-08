@@ -58,11 +58,12 @@ namespace ttf_dll{
 		printf("<path d=\"");
 		BYTE prev_flag = 1, flag = 1;
 		bool new_contour = true;
+		// FIXME: assume the first point of each contour must be on-curve.
 		for(int i = 0, j = 0; i < this->pt_num; ++i){
 			flag = this->flags[i] & ON_CURVE;
 			if(prev_flag == 0 && flag == 0){ // append implicit on-curve point
 				printf("%d, %d ", (this->x_coordinates[i - 1] + this->x_coordinates[i]) >> 1,
-					(this->y_coordinates[i - 1] + y_coordinates[i]) >> 1);	
+					(this->y_coordinates[i - 1] + this->y_coordinates[i]) >> 1);	
 			}
 			if(new_contour){
 				printf("M");
@@ -73,8 +74,8 @@ namespace ttf_dll{
 				printf("L");
 			}
 			printf("%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
-			if(i == this->end_pts_of_contours[j]){
-				if(flag == 0){
+			if(i == this->end_pts_of_contours[j]){// This point is the last point of this contour.
+				if(flag == 0){// If this is the last point of contour and is off-curve, use the first point of contour as end point.
 					if(j == 0){
 						printf("%d, %d", this->x_coordinates[0], this->y_coordinates[0]);
 					}else{

@@ -4,7 +4,7 @@
 #include "TTF_Table.h"
 /******************************* glyf ***********************************/
 namespace ttf_dll{
-	class Glyph_Data{
+	class DLL_API Glyph_Data{
 	private:
 		Glyph_Data(ifstream &fin, ULONG offset);
 	public:
@@ -28,7 +28,7 @@ namespace ttf_dll{
 		virtual void dump_svg_outline(){}
 	};
 
-	class Simple_Glyph_Description: public Glyph_Data{
+	class DLL_API Simple_Glyph_Description: public Glyph_Data{
 	private:
 		void read_flags(ifstream &fin);
 		void read_coordinates(ifstream& fin, SHORT *ptr, bool read_x);

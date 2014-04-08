@@ -36,4 +36,5 @@ public:
 	afx_msg void OnFileExit();
 	CStatic m_fileNameText;
 	True_Type_Font m_ttf;
+	void render_glyph();
 };

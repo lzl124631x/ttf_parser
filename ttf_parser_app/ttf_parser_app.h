@@ -23,7 +23,9 @@ public:
 // Overrides
 public:
 	virtual BOOL InitInstance();
-
+	// GDI+
+	ULONG_PTR m_gdiplusToken;
+	GdiplusStartupInput m_gdiplusStartupInput;
 // Implementation
 
 	DECLARE_MESSAGE_MAP()
