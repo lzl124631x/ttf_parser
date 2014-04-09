@@ -124,6 +124,7 @@ void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void Cttf_parser_appDlg::OnPaint()
 {
+	Invalidate(1);
 	if (IsIconic()) // Return TRUE if the dialog is minimized.
 	{
 		CPaintDC dc(this); // device context for painting
@@ -226,10 +227,6 @@ void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
 	double y_ratio = 300.0 / height;
 	Graphics g(GetSafeHwnd());
 	g.SetSmoothingMode(SmoothingModeHighQuality);
-	//Matrix matrix(1, 0, 0, -1, 0, 0);
-	//g.MultiplyTransform(&matrix);
-	//g.TranslateTransform(-glyph_data->x_min, glyph_data->y_min);
-	g.ScaleTransform(x_ratio, y_ratio);
 	GraphicsPath path;
 
 	Point start_point, last_point, cur_point;
@@ -271,5 +268,12 @@ void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
 		}
 		next_flag = flag;
 	}
+	// 
+	Matrix matrix(1, 0, 0, -1, 0, 0); // flip (x, y) to (x, -y)
+	matrix.Translate(-glyph_data->x_min, glyph_data->y_max, MatrixOrderAppend); // translate with (-xMin, yMax)
+	matrix.Scale(x_ratio, y_ratio, MatrixOrderAppend); // scale with (xRatio, yRatio)
+	path.Transform(&matrix);
+
+	g.FillPath(&SolidBrush(Color::Black), &path);
 	g.DrawPath(&Pen(Color::Black, 1), &path);
 }
