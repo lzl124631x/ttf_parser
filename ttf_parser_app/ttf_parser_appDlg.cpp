@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_COMMAND(IDM_FILE_OPEN, &Cttf_parser_appDlg::OnFileOpen)
 	ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
+	ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
 END_MESSAGE_MAP()
 
 
@@ -101,7 +102,9 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 	m_fileNameText.SetWindowTextW(_T("File Name:"));
 	m_ttf.load_path(std::string("C:\\calibri.ttf"));
 	m_char.SetWindowText(_T("A"));
-
+	HDC hdc = ::GetDC(m_hWnd);
+	m_memdc = CreateCompatibleDC(hdc);
+	::ReleaseDC(m_hWnd, hdc);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -145,11 +148,9 @@ void Cttf_parser_appDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
-		CString char_string;
-		m_char.GetWindowText(char_string);
-		if(!char_string.IsEmpty()){
-			render_glyph(char_string[0]); // FIXME: test if ttf is loaded before render.
-		}
+		HDC hdc = ::GetDC(m_hWnd);
+		BitBlt(hdc, 100, 100, 300, 300, m_memdc, 0, 0, SRCCOPY);
+		::ReleaseDC(m_hWnd, hdc);
 	}
 }
 
@@ -218,19 +219,22 @@ void AddQuadraticBezier(GraphicsPath &path, const Point &q0, const Point &q1, co
 #define Wansung				5
 #define Johab				6
 #define Unicode_UCS_4		10
-void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
+void Cttf_parser_appDlg::render_glyph(HDC hdc, ttf_dll::USHORT ch){
+	//HBITMAP old_bmp, bmp = CreateCompatibleBitmap(hdc, 300, 300);
+	//old_bmp = (HBITMAP)SelectObject(m_memdc, bmp);
+
 	ttf_dll::USHORT glyph_index = m_ttf.cmap.get_glyph_index(Windows, Unicode_BMP, ch);
 	Simple_Glyph_Description *glyph_data = (Simple_Glyph_Description*)m_ttf.glyph_data_array[glyph_index];
 	FWORD width = glyph_data->x_max - glyph_data->x_min;
 	FWORD height = glyph_data->y_max - glyph_data->y_min;
 	double x_ratio = 300.0 / width;
 	double y_ratio = 300.0 / height;
-	Graphics g(GetSafeHwnd());
+	Graphics g(hdc);
+	g.Clear(Color::White);
 	g.SetSmoothingMode(SmoothingModeHighQuality);
 	GraphicsPath path;
 
 	Point start_point, last_point, cur_point;
-
 	ttf_dll::BYTE flag = 0, next_flag = 0;
 	bool new_contour = true;
 	for(int i = 0, j = 0; i < glyph_data->pt_num; ++i){
@@ -251,8 +255,8 @@ void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
 			}else{
 				next_flag = glyph_data->flags[i + 1];
 				if(next_flag == 1){
-					next_point = Point(glyph_data->x_coordinates[i + 1], glyph_data->y_coordinates[i + 1]);
-					//++i;// skip the next on-curve point
+					next_point = Point(glyph_data->x_coordinates[i + 1],
+						glyph_data->y_coordinates[i + 1]);
 				}else{
 					next_point = Point((cur_point.X + glyph_data->x_coordinates[i + 1]) >> 1,
 						(cur_point.Y + glyph_data->y_coordinates[i + 1]) >> 1);
@@ -268,7 +272,6 @@ void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
 		}
 		next_flag = flag;
 	}
-	// 
 	Matrix matrix(1, 0, 0, -1, 0, 0); // flip (x, y) to (x, -y)
 	matrix.Translate(-glyph_data->x_min, glyph_data->y_max, MatrixOrderAppend); // translate with (-xMin, yMax)
 	matrix.Scale(x_ratio, y_ratio, MatrixOrderAppend); // scale with (xRatio, yRatio)
@@ -276,4 +279,14 @@ void Cttf_parser_appDlg::render_glyph(ttf_dll::USHORT ch){
 
 	g.FillPath(&SolidBrush(Color::Black), &path);
 	g.DrawPath(&Pen(Color::Black, 1), &path);
+}
+
+void Cttf_parser_appDlg::OnBnClickedView()
+{
+	CString char_string;
+	m_char.GetWindowText(char_string);
+	if(!char_string.IsEmpty() && m_memdc){
+		render_glyph(m_memdc, char_string[0]); // FIXME: test if ttf is loaded before render.
+		Invalidate(1);
+	}
 }

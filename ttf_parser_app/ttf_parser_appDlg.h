@@ -35,7 +35,9 @@ public:
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileExit();
 	CStatic m_fileNameText;
+	HDC m_memdc;
 	True_Type_Font m_ttf;
-	void render_glyph(ttf_dll::USHORT ch);
+	void render_glyph(HDC hdc, ttf_dll::USHORT ch);
 	CEdit m_char;
+	afx_msg void OnBnClickedView();
 };
