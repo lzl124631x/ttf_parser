@@ -40,4 +40,5 @@ public:
 	void render_glyph(HBITMAP bmp, ttf_dll::USHORT ch);
 	CEdit m_char;
 	afx_msg void OnBnClickedView();
+	afx_msg void OnToolDumpinfo();
 };

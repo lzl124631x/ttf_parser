@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 	ON_COMMAND(IDM_FILE_OPEN, &Cttf_parser_appDlg::OnFileOpen)
 	ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
 	ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
+	ON_COMMAND(ID_TOOL_DUMPINFO, &Cttf_parser_appDlg::OnToolDumpinfo)
 END_MESSAGE_MAP()
 
 
@@ -100,7 +101,7 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	m_fileNameText.SetWindowTextW(_T("File Name:"));
-	m_ttf.load_path(std::string("C:\\calibri.ttf"));
+	m_ttf.load_path(std::string("C:\\Fonts\\Mathematica6.ttf"));
 	m_char.SetWindowText(_T("A"));
 	HDC hdc = ::GetDC(m_hWnd);
 	m_charBmp = CreateCompatibleBitmap(hdc, 300, 300); // FIXME: need to DeleteObject(m_charBmp)
@@ -298,4 +299,12 @@ void Cttf_parser_appDlg::OnBnClickedView()
 		render_glyph(m_charBmp, char_string[0]); // FIXME: test if ttf is loaded before render.
 		Invalidate(1);
 	}
+}
+
+
+void Cttf_parser_appDlg::OnToolDumpinfo()
+{
+	FILE *fp = fopen("info.xml", "w");
+	m_ttf.dump_ttf(fp);
+	fclose(fp);
 }

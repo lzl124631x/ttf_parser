@@ -34,8 +34,9 @@ namespace ttf_dll{
 		bool load_path(string path);
 		bool valid_checksum(char* tag);
 		void get_glyph_outline(USHORT ch);
+		void dump_ttf(FILE *fp);
 		inline ULONG* get_table(Table_Directory_Entry *entry){
-			return (ULONG*)&this->file_binary[entry->offset];
+			return (ULONG*)&file_binary[entry->offset];
 		}
 	};
 }

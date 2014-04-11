@@ -26,8 +26,9 @@ namespace ttf_dll{
 		USHORT	range_shift;
 		hash_map<ULONG, Table_Directory_Entry*> table_directory_entries;
 		inline Table_Directory_Entry* Offset_Table::get_table_entry(char* tag){
-			return this->table_directory_entries[Table_Directory_Entry::tag_string_to_ULONG(tag)];
+			return table_directory_entries[Table_Directory_Entry::tag_string_to_ULONG(tag)];
 		}
+		void dump_info(FILE *fp);
 	};
 
 	/************************************************************************/

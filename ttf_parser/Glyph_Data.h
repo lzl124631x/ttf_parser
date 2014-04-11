@@ -8,7 +8,7 @@ namespace ttf_dll{
 	private:
 		Glyph_Data(ifstream &fin, ULONG offset);
 	public:
-		SHORT	number_of_contours;
+		SHORT	number_of_contours; // If the 'number_of_contours' is greater than or equal to zero, this is a single glyph; if negative, this is a composite glyph.
 		FWORD	x_min;
 		FWORD	y_min;
 		FWORD	x_max;
@@ -17,12 +17,9 @@ namespace ttf_dll{
 			:number_of_contours(gd.number_of_contours),
 			x_min(gd.x_min), y_min(gd.y_min),
 			x_max(gd.x_max), y_max(gd.y_max){}
-		static Glyph_Data* load_table(ifstream &fin, ULONG offset);
+		static Glyph_Data* load_table(ifstream &fin, ULONG offset, USHORT max_contours);
 		inline bool Glyph_Data::is_simply_glyph(){
-			return this->number_of_contours > 0;	
-		}
-		inline bool Glyph_Data::is_composite_glyph(){
-			return this->number_of_contours == -1;
+			return number_of_contours >= 0; // Otherwise this is a composite glyph.	
 		}
 		virtual void dump_coordinates(){}
 		virtual void dump_svg_outline(FILE *fp){}

@@ -16,10 +16,12 @@ namespace ttf_dll{
 		FWORD	x_max_extent;
 		SHORT	caret_slope_rise;
 		SHORT	caret_slope_run;
-		// 5 reserved SHORTs
+		SHORT	caret_offset;
+		// 4 reserved SHORTs
 		SHORT	metric_data_format;
 		USHORT	number_of_hmetrics;
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
+		void dump_info(FILE *fp);
 	};
 }
 

@@ -17,4 +17,17 @@ namespace ttf_dll{
 			ul >>= 8;
 		}
 	}
+
+	void Offset_Table::dump_info(FILE *fp){
+		fprintf(fp, "<offsetTable sfntVersion=\"%08x\" numTables=\"%d\" searchRange=\"%d\" entrySelector=\"%d\" rangeShift=\"%d\">\n",
+			sfnt_version, num_tables, search_range, entry_selector, range_shift);
+		for(hash_map<ULONG, Table_Directory_Entry*>::iterator i = table_directory_entries.begin(); i != table_directory_entries.end(); ++i){
+			Table_Directory_Entry *entry = i->second;
+			char tag_str[5] = {0};
+			Table_Directory_Entry::tag_ULONG_to_string(entry->tag, tag_str);
+			fprintf(fp, "<entry tag=\"%s\" checksum=\"%08x\" offset=\"%d\" length=\"%d\"/>\n",
+				tag_str, entry->checksum, entry->offset, entry->length);
+		}
+		fprintf(fp, "</offsetTable>\n");
+	}
 }

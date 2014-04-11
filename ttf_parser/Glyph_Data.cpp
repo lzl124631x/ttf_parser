@@ -12,9 +12,9 @@ namespace ttf_dll{
 
 	void Simple_Glyph_Description::dump_flags(){
 		printf("Simple_Glyph_Description::dump_flags\n");
-		for(int i = 0; i < this->pt_num; ++i){
-			if(this->flags[i] < 0x10) printf("0");
-			printf("%X ", this->flags[i]);
+		for(int i = 0; i < pt_num; ++i){
+			if(flags[i] < 0x10) printf("0");
+			printf("%X ", flags[i]);
 			if((i + 1) % 5 == 0) printf("\n");
 		}
 		printf("\n");
@@ -23,10 +23,10 @@ namespace ttf_dll{
 	void Simple_Glyph_Description::dump_coordinates(){
 		printf("Simple_Glyph_Description::dump_coordinates\n");
 		printf("<contour>\n");
-		for(int i = 0, j = 0; i < this->pt_num; ++i){
-			printf("    <pt x=\"%d\" y=\"%d\" on=\"%d\"/>\n", this->x_coordinates[i], this->y_coordinates[i],
-				(this->flags[i] & ON_CURVE));
-			if(i == this->end_pts_of_contours[j]){
+		for(int i = 0, j = 0; i < pt_num; ++i){
+			printf("    <pt x=\"%d\" y=\"%d\" on=\"%d\"/>\n", x_coordinates[i], y_coordinates[i],
+				(flags[i] & ON_CURVE));
+			if(i == end_pts_of_contours[j]){
 				printf("</contour>\n");
 				++j;
 				if(j != number_of_contours)
@@ -59,11 +59,11 @@ namespace ttf_dll{
 		BYTE prev_flag = 1, flag = 1;
 		bool new_contour = true;
 		// FIXME: assume the first point of each contour must be on-curve.
-		for(int i = 0, j = 0; i < this->pt_num; ++i){
-			flag = this->flags[i] & ON_CURVE;
+		for(int i = 0, j = 0; i < pt_num; ++i){
+			flag = flags[i] & ON_CURVE;
 			if(prev_flag == 0 && flag == 0){ // append implicit on-curve point
-				fprintf(fp, "%d, %d ", (this->x_coordinates[i - 1] + this->x_coordinates[i]) >> 1,
-					(this->y_coordinates[i - 1] + this->y_coordinates[i]) >> 1);	
+				fprintf(fp, "%d, %d ", (x_coordinates[i - 1] + x_coordinates[i]) >> 1,
+					(y_coordinates[i - 1] + y_coordinates[i]) >> 1);	
 			}
 			if(new_contour){
 				fprintf(fp, "M");
@@ -73,14 +73,14 @@ namespace ttf_dll{
 			}else if(prev_flag == 1){
 				fprintf(fp, "L");
 			}
-			fprintf(fp, "%d, %d ", this->x_coordinates[i], this->y_coordinates[i]);
-			if(i == this->end_pts_of_contours[j]){// This point is the last point of this contour.
+			fprintf(fp, "%d, %d ", x_coordinates[i], y_coordinates[i]);
+			if(i == end_pts_of_contours[j]){// This point is the last point of this contour.
 				if(flag == 0){// If this is the last point of contour and is off-curve, use the first point of contour as end point.
 					if(j == 0){
-						fprintf(fp, "%d, %d", this->x_coordinates[0], this->y_coordinates[0]);
+						fprintf(fp, "%d, %d", x_coordinates[0], y_coordinates[0]);
 					}else{
-						fprintf(fp, "%d, %d", this->x_coordinates[this->end_pts_of_contours[j - 1] + 1],
-							this->y_coordinates[this->end_pts_of_contours[j - 1] + 1]);
+						fprintf(fp, "%d, %d", x_coordinates[end_pts_of_contours[j - 1] + 1],
+							y_coordinates[end_pts_of_contours[j - 1] + 1]);
 					}
 				}
 				fprintf(fp, " Z ");
@@ -96,15 +96,15 @@ namespace ttf_dll{
 
 	void Simple_Glyph_Description::read_flags(ifstream &fin){
 		BYTE flag = 0;	
-		this->flags = new BYTE[pt_num];
-		for(int i = 0; i < this->pt_num;){
+		flags = new BYTE[pt_num];
+		for(int i = 0; i < pt_num;){
 			ifstream_read_big_endian(fin, &flag, sizeof(BYTE));
-			this->flags[i++] = flag;
+			flags[i++] = flag;
 			if(flag & REPEAT){
 				BYTE repeat_num = 0;
 				ifstream_read_big_endian(fin, &repeat_num, sizeof(BYTE));
 				while(repeat_num-- > 0){
-					this->flags[i++] = flag;
+					flags[i++] = flag;
 				}
 			}
 		}
@@ -115,8 +115,8 @@ namespace ttf_dll{
 		BYTE flag = 0;
 		BYTE SHORT_VECTOR = X_SHORT_VECTOR << (read_x? 0: 1);
 		BYTE IS_SAME = THIS_X_IS_SAME << (read_x? 0: 1);
-		for(int i = 0; i < this->pt_num; ++i, ++ptr){
-			flag = this->flags[i];
+		for(int i = 0; i < pt_num; ++i, ++ptr){
+			flag = flags[i];
 			*ptr = 0;
 			if(flag & SHORT_VECTOR){
 				ifstream_read_big_endian(fin, ptr, sizeof(BYTE));
@@ -134,23 +134,23 @@ namespace ttf_dll{
 	}
 
 	Simple_Glyph_Description::Simple_Glyph_Description(Glyph_Data &gd, ifstream &fin):Glyph_Data(gd){
-		this->end_pts_of_contours = new USHORT[this->number_of_contours];
-		ifstream_read_big_endian(fin, this->end_pts_of_contours,
-			sizeof(USHORT), this->number_of_contours);
+		end_pts_of_contours = new USHORT[number_of_contours];
+		ifstream_read_big_endian(fin, end_pts_of_contours,
+			sizeof(USHORT), number_of_contours);
 
-		ifstream_read_big_endian(fin, &this->instruction_length, sizeof(USHORT));
-		this->instructions = new BYTE[this->instruction_length];
-		ifstream_read_big_endian(fin, this->instructions,
-			sizeof(BYTE), this->instruction_length);
+		ifstream_read_big_endian(fin, &instruction_length, sizeof(USHORT));
+		instructions = new BYTE[instruction_length];
+		ifstream_read_big_endian(fin, instructions,
+			sizeof(BYTE), instruction_length);
 
-		this->pt_num = this->end_pts_of_contours[this->number_of_contours - 1] + 1;
-		this->read_flags(fin);
-		this->x_coordinates = new SHORT[pt_num];
-		this->read_coordinates(fin, this->x_coordinates, true);
-		this->y_coordinates = new SHORT[pt_num];
-		this->read_coordinates(fin, this->y_coordinates, false);
-		//this->dump_flags(); // TEST
-		//this->dump_coordinates(); // TEST
+		pt_num = end_pts_of_contours[number_of_contours - 1] + 1;
+		read_flags(fin);
+		x_coordinates = new SHORT[pt_num];
+		read_coordinates(fin, x_coordinates, true);
+		y_coordinates = new SHORT[pt_num];
+		read_coordinates(fin, y_coordinates, false);
+		//dump_flags(); // TEST
+		//dump_coordinates(); // TEST
 	}
 
 	// Bit Order of Composite Glyph Description Flag
@@ -164,32 +164,34 @@ namespace ttf_dll{
 #define WE_HAVE_INSTRUCTIONS		(WE_HAVE_A_TWO_BY_TWO << 1)
 #define USE_MY_METRICS				(WE_HAVE_INSTRUCTIONS << 1)
 	Composite_Glyph_Description::Composite_Glyph_Description(Glyph_Data &gd, ifstream &fin):Glyph_Data(gd){
-		ifstream_read_big_endian(fin, &this->flags, sizeof(USHORT));
-		ifstream_read_big_endian(fin, &this->glyph_index, sizeof(USHORT));
-		if(this->flags & ARG_1_AND_2_ARE_WORDS){
-			ifstream_read_big_endian(fin, &this->argument1, sizeof(SHORT));
-			ifstream_read_big_endian(fin, &this->argument1, sizeof(SHORT));
+		ifstream_read_big_endian(fin, &flags, sizeof(USHORT));
+		ifstream_read_big_endian(fin, &glyph_index, sizeof(USHORT));
+		if(flags & ARG_1_AND_2_ARE_WORDS){
+			ifstream_read_big_endian(fin, &argument1, sizeof(SHORT));
+			ifstream_read_big_endian(fin, &argument1, sizeof(SHORT));
 		}else{
-			ifstream_read_big_endian(fin, &this->argument1, sizeof(BYTE));
-			ifstream_read_big_endian(fin, &this->argument1, sizeof(BYTE));
+			ifstream_read_big_endian(fin, &argument1, sizeof(BYTE));
+			ifstream_read_big_endian(fin, &argument1, sizeof(BYTE));
 		}
 	}
 
 	Glyph_Data::Glyph_Data(ifstream &fin, ULONG offset){
 		fin.seekg(offset, ios::beg);
-		ifstream_read_big_endian(fin, &this->number_of_contours, sizeof(SHORT));
-		ifstream_read_big_endian(fin, &this->x_min, sizeof(FWORD));
-		ifstream_read_big_endian(fin, &this->y_min, sizeof(FWORD));
-		ifstream_read_big_endian(fin, &this->x_max, sizeof(FWORD));
-		ifstream_read_big_endian(fin, &this->y_max, sizeof(FWORD));
+		ifstream_read_big_endian(fin, &number_of_contours, sizeof(SHORT));
+		ifstream_read_big_endian(fin, &x_min, sizeof(FWORD));
+		ifstream_read_big_endian(fin, &y_min, sizeof(FWORD));
+		ifstream_read_big_endian(fin, &x_max, sizeof(FWORD));
+		ifstream_read_big_endian(fin, &y_max, sizeof(FWORD));
 	}
 
-	Glyph_Data* Glyph_Data::load_table(ifstream &fin, ULONG offset){
+	Glyph_Data* Glyph_Data::load_table(ifstream &fin, ULONG offset, USHORT max_contours){
 		Glyph_Data glyph_data(fin, offset);
+		if(glyph_data.number_of_contours > max_contours){ // FIXME: Mathematica6.ttf has some glyph with number_of_contours greater than max_contours.
+			return NULL;
+		}
 		if(glyph_data.is_simply_glyph()){
 			return new Simple_Glyph_Description(glyph_data, fin);
-		}
-		if(glyph_data.is_composite_glyph()){
+		}else{
 			return new Composite_Glyph_Description(glyph_data, fin);
 		}
 		// FIXME: 0, no glyph data; -2, -3, ... furture use. Maybe they should not be treated as errors.  
