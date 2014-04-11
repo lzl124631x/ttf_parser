@@ -103,7 +103,7 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 	m_ttf.load_path(std::string("C:\\calibri.ttf"));
 	m_char.SetWindowText(_T("A"));
 	HDC hdc = ::GetDC(m_hWnd);
-	m_memdc = CreateCompatibleDC(hdc);
+	m_charBmp = CreateCompatibleBitmap(hdc, 300, 300); // FIXME: need to DeleteObject(m_charBmp)
 	::ReleaseDC(m_hWnd, hdc);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -149,7 +149,11 @@ void Cttf_parser_appDlg::OnPaint()
 	{
 		CDialogEx::OnPaint();
 		HDC hdc = ::GetDC(m_hWnd);
-		BitBlt(hdc, 100, 100, 300, 300, m_memdc, 0, 0, SRCCOPY);
+		HDC memdc = CreateCompatibleDC(hdc);
+		HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, m_charBmp);
+		BitBlt(hdc, 100, 100, 300, 300, memdc, 0, 0, SRCCOPY);
+		SelectObject(memdc, old_bmp);
+		DeleteObject(memdc);
 		::ReleaseDC(m_hWnd, hdc);
 	}
 }
@@ -219,9 +223,10 @@ void AddQuadraticBezier(GraphicsPath &path, const Point &q0, const Point &q1, co
 #define Wansung				5
 #define Johab				6
 #define Unicode_UCS_4		10
-void Cttf_parser_appDlg::render_glyph(HDC hdc, ttf_dll::USHORT ch){
-	//HBITMAP old_bmp, bmp = CreateCompatibleBitmap(hdc, 300, 300);
-	//old_bmp = (HBITMAP)SelectObject(m_memdc, bmp);
+void Cttf_parser_appDlg::render_glyph(HBITMAP bmp, ttf_dll::USHORT ch){
+	HDC hdc = ::GetDC(m_hWnd);
+	HDC memdc = CreateCompatibleDC(hdc);
+	HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, bmp);
 
 	ttf_dll::USHORT glyph_index = m_ttf.cmap.get_glyph_index(Windows, Unicode_BMP, ch);
 	Simple_Glyph_Description *glyph_data = (Simple_Glyph_Description*)m_ttf.glyph_data_array[glyph_index];
@@ -229,7 +234,7 @@ void Cttf_parser_appDlg::render_glyph(HDC hdc, ttf_dll::USHORT ch){
 	FWORD height = glyph_data->y_max - glyph_data->y_min;
 	double x_ratio = 300.0 / width;
 	double y_ratio = 300.0 / height;
-	Graphics g(hdc);
+	Graphics g(memdc);
 	g.Clear(Color::White);
 	g.SetSmoothingMode(SmoothingModeHighQuality);
 	GraphicsPath path;
@@ -277,16 +282,20 @@ void Cttf_parser_appDlg::render_glyph(HDC hdc, ttf_dll::USHORT ch){
 	matrix.Scale(x_ratio, y_ratio, MatrixOrderAppend); // scale with (xRatio, yRatio)
 	path.Transform(&matrix);
 
-	g.FillPath(&SolidBrush(Color::Black), &path);
-	g.DrawPath(&Pen(Color::Black, 1), &path);
+	g.FillPath(&SolidBrush(Color::Red), &path);
+	g.DrawPath(&Pen(Color::Red, 1), &path);
+	BitBlt(hdc, 0, 0, 300, 300, memdc, 0, 0, SRCCOPY);
+	SelectObject(memdc, old_bmp);
+	DeleteDC(memdc);
+	::ReleaseDC(m_hWnd, hdc);
 }
 
 void Cttf_parser_appDlg::OnBnClickedView()
 {
 	CString char_string;
 	m_char.GetWindowText(char_string);
-	if(!char_string.IsEmpty() && m_memdc){
-		render_glyph(m_memdc, char_string[0]); // FIXME: test if ttf is loaded before render.
+	if(!char_string.IsEmpty() && m_charBmp){
+		render_glyph(m_charBmp, char_string[0]); // FIXME: test if ttf is loaded before render.
 		Invalidate(1);
 	}
 }
