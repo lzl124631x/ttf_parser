@@ -5,7 +5,7 @@ namespace ttf_dll{
 	Encoding_Table::Encoding_Table(ifstream &fin){
 		ifstream_read_big_endian(fin, &format, sizeof(USHORT));
 		ifstream_read_big_endian(fin, &length, sizeof(USHORT));
-		ifstream_read_big_endian(fin, &version, sizeof(USHORT));
+		ifstream_read_big_endian(fin, &language, sizeof(USHORT));
 	}
 
 	Byte_Encoding_Table::Byte_Encoding_Table(Encoding_Table &et, ifstream &fin)
@@ -16,16 +16,6 @@ namespace ttf_dll{
 	High_Byte_Mapping_Through_Table::High_Byte_Mapping_Through_Table(Encoding_Table &et, ifstream &fin)
 		:Encoding_Table(et){
 			ifstream_read_big_endian(fin, &subheader_keys, sizeof(BYTE), 256);
-	}
-
-	void Segment_Mapping_To_Delta_Values::dump_info(){
-		USHORT seg_count = seg_countx2 >> 1;
-		printf("Segment_Mapping_To_Delta_Values::dump_info\n");
-		printf("Start\tEnd\tDelta\tOffset\n");
-		for(int i =0; i < seg_count; ++i){
-			printf("(%u,\t%u,\t%u,\t%u)\n",start_count[i], end_count[i],
-				id_delta[i], id_range_offset[i]);
-		}
 	}
 
 	Segment_Mapping_To_Delta_Values::Segment_Mapping_To_Delta_Values(Encoding_Table &et, ifstream &fin)
@@ -41,14 +31,13 @@ namespace ttf_dll{
 			ifstream_read_big_endian(fin, &reserved_pad, sizeof(USHORT));
 			start_count = new USHORT[seg_count];
 			ifstream_read_big_endian(fin, start_count, sizeof(USHORT), seg_count);
-			id_delta = new USHORT[seg_count];
-			ifstream_read_big_endian(fin, id_delta, sizeof(USHORT), seg_count);
+			id_delta = new SHORT[seg_count];
+			ifstream_read_big_endian(fin, id_delta, sizeof(SHORT), seg_count);
 			id_range_offset = new USHORT[seg_count];
 			ifstream_read_big_endian(fin, id_range_offset, sizeof(USHORT), seg_count);
 			USHORT var_len = length - sizeof(USHORT) * (8 + (seg_countx2 << 1));
 			glyph_id_array = new USHORT[var_len];
 			ifstream_read_big_endian(fin, glyph_id_array, sizeof(USHORT), var_len);
-			//dump_info();
 	}
 
 	USHORT Segment_Mapping_To_Delta_Values::get_glyph_index(USHORT ch){
@@ -59,7 +48,7 @@ namespace ttf_dll{
 		USHORT glyph_index = 0;
 		if(start_count[i] <= ch){
 			if(id_range_offset[i]){
-				glyph_index = *(glyph_id_array + id_range_offset[i] / 2 + (ch - start_count[i])
+				glyph_index = *(glyph_id_array + (id_range_offset[i] >> 1) + (ch - start_count[i])
 					- (&id_range_offset[seg_countx2 >> 1] - &id_range_offset[i]));
 			}else{
 				glyph_index = id_delta[i] + ch;
@@ -135,5 +124,80 @@ namespace ttf_dll{
 			index = encoding_table->get_glyph_index(ch);
 		}
 		return index;
+	}
+
+	void Character_To_Glyph_Index_Mapping_Table::dump_info(FILE *fp, size_t indent){
+		INDENT(fp, indent); fprintf(fp, "<cmap tableVersion=\"0x%08x\" numberOfEncodingTables=\"%d\">\n",
+			table_version_number, number_of_encoding_tables);
+		++indent;
+		for(int i = 0; i < number_of_encoding_tables; ++i){
+			Encoding_Table_Entry entry = encoding_table_entries[i];
+			INDENT(fp, indent); fprintf(fp, "<encodingTable>\n");
+			++indent;
+			INDENT(fp, indent); fprintf(fp, "<platformID value=\"%u\"/>\n", entry.platform_id);
+			INDENT(fp, indent); fprintf(fp, "<encodingID value=\"%u\"/>\n", entry.platform_specific_encoding_id);
+			INDENT(fp, indent); fprintf(fp, "<offset value=\"%lu\"/>\n", entry.byte_offset);
+			--indent;
+			INDENT(fp, indent); fprintf(fp, "</encodingTable>\n");
+		}
+		for(int i = 0; i < number_of_encoding_tables; ++i){
+			encoding_tables[i]->dump_info(fp, indent);
+		}
+		--indent;
+		INDENT(fp, indent); fprintf(fp, "</cmap>\n");
+	}
+
+	template<typename T>
+	void dump_array(FILE *fp, size_t indent, T *array, size_t len, char *format){
+		INDENT(fp, indent);
+		for(size_t i = 0; i < len; ++i){
+			fprintf(fp, format, array[i]);
+			if((i + 1) % 10){
+				fprintf(fp, "\t");
+			}else if(i != len - 1){
+				fprintf(fp, "\n");
+				INDENT(fp, indent);
+			}
+		}
+		fprintf(fp, "\n");
+	}
+
+	void Segment_Mapping_To_Delta_Values::dump_info(FILE *fp, size_t indent){
+		INDENT(fp, indent); fprintf(fp, "<cmap_format_4>\n");
+		++indent;
+		INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format);
+		INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
+		INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
+		INDENT(fp, indent); fprintf(fp, "<segCountX2 value=\"%u\"/>\n", seg_countx2);
+		INDENT(fp, indent); fprintf(fp, "<searchRange value=\"%u\"/>\n", search_range);
+		INDENT(fp, indent); fprintf(fp, "<entrySelector value=\"%u\"/>\n", entry_selector);
+		INDENT(fp, indent); fprintf(fp, "<rangeShift value=\"%u\"/>\n", range_shift);
+
+		INDENT(fp, indent); fprintf(fp, "<endCount>\n");
+		dump_array<USHORT>(fp, indent + 1, end_count, (seg_countx2 >> 1), "%+5u");
+		INDENT(fp, indent); fprintf(fp, "</endCount>\n");
+
+		INDENT(fp, indent); fprintf(fp, "<reservedPad value=\"%u\"/>\n", reserved_pad);
+
+		INDENT(fp, indent); fprintf(fp, "<startCount>\n");
+		dump_array<USHORT>(fp, indent + 1, start_count, (seg_countx2 >> 1), "%+5u");
+		INDENT(fp, indent); fprintf(fp, "</startCount>\n");
+
+		INDENT(fp, indent); fprintf(fp, "<idDelta>\n");
+		dump_array<SHORT>(fp, indent + 1, id_delta, (seg_countx2 >> 1), "%+5d");
+		INDENT(fp, indent); fprintf(fp, "</idDelta>\n");
+
+		INDENT(fp, indent); fprintf(fp, "<idRangeOffset>\n");
+		dump_array<USHORT>(fp, indent + 1, id_range_offset, (seg_countx2 >> 1), "%+5u");
+		INDENT(fp, indent); fprintf(fp, "</idRangeOffset>\n");
+
+		INDENT(fp, indent); fprintf(fp, "<glyphIdArray>\n");
+		dump_array<USHORT>(fp, indent + 1, glyph_id_array, (seg_countx2 >> 1), "%+5u");
+		INDENT(fp, indent); fprintf(fp, "</glyphIdArray>\n");
+
+		//FIXME: the glyph_id_array is not dumped out.
+
+		--indent;
+		INDENT(fp, indent); fprintf(fp, "</cmap_format_4>\n");
 	}
 }

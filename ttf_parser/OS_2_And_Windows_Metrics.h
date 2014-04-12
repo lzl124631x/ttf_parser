@@ -62,7 +62,7 @@ namespace ttf_dll{
 		USHORT	us_break_char;
 		USHORT	us_max_coutext;
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
-		void dump_info(FILE *fp);
+		void dump_info(FILE *fp, size_t indent);
 	};
 }
 #endif

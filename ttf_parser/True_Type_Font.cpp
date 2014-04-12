@@ -110,10 +110,12 @@ namespace ttf_dll{
 
 	void True_Type_Font::dump_ttf(FILE *fp){
 		fprintf(fp, "<ttFont>\n");
-		offset_table->dump_info(fp);
-		head.dump_info(fp);
-		maxp.dump_info(fp);
-		os_2.dump_info(fp);
+		offset_table->dump_info(fp, 1);
+		head.dump_info(fp, 1);
+		hhea.dump_info(fp, 1);
+		maxp.dump_info(fp, 1);
+		os_2.dump_info(fp, 1);
+		cmap.dump_info(fp, 1);
 		fprintf(fp, "</ttFont>\n");
 	}
 }

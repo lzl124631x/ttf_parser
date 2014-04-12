@@ -21,7 +21,7 @@ namespace ttf_dll{
 		SHORT	metric_data_format;
 		USHORT	number_of_hmetrics;
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
-		void dump_info(FILE *fp);
+		void dump_info(FILE *fp, size_t indent);
 	};
 }
 

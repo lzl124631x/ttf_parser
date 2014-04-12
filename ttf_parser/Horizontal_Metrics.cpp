@@ -4,6 +4,7 @@
 
 namespace ttf_dll{
 	void Horizontal_Metrics::load_table(Table_Directory_Entry *entry, ifstream &fin, True_Type_Font *ttf){
+		// FIXME: Is it proper to use TTF as a parameter?
 		fin.seekg(entry->offset, ios::beg);
 		USHORT number_of_hmetrics = ttf->hhea.number_of_hmetrics;
 		hmetrics = new Long_Hor_Metric[number_of_hmetrics];

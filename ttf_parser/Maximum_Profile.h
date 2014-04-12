@@ -22,7 +22,7 @@ namespace ttf_dll{
 		USHORT	max_component_elements;
 		USHORT	max_component_depth;
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
-		void dump_info(FILE *fp);
+		void dump_info(FILE *fp, size_t indent);
 	};
 }
 

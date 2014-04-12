@@ -195,7 +195,7 @@ namespace ttf_dll{
 			return new Composite_Glyph_Description(glyph_data, fin);
 		}
 		// FIXME: 0, no glyph data; -2, -3, ... furture use. Maybe they should not be treated as errors.  
-		printf("Error in Glyph_Data::load_table: number_of_contours = %d, offset=%ul\n",
+		printf("Error in Glyph_Data::load_table: number_of_contours = %d, offset=%lu\n",
 			glyph_data.number_of_contours, offset);
 		return NULL;
 	}

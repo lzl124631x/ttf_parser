@@ -28,7 +28,7 @@ namespace ttf_dll{
 		inline Table_Directory_Entry* Offset_Table::get_table_entry(char* tag){
 			return table_directory_entries[Table_Directory_Entry::tag_string_to_ULONG(tag)];
 		}
-		void dump_info(FILE *fp);
+		void dump_info(FILE *fp, size_t indent);
 	};
 
 	/************************************************************************/

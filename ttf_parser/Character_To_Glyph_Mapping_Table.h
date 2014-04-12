@@ -8,10 +8,19 @@ namespace ttf_dll{
 	public:
 		USHORT	format;
 		USHORT	length;
-		USHORT	version;
+		USHORT	language;
+		/*
+		Note on the language field in 'cmap' subtables:
+		The language field must be set to zero for all cmap subtables whose platform IDs are other than Macintosh (platform ID 1).
+		For cmap subtables whose platform IDs are Macintosh, set this field to the Macintosh language ID of the cmap subtable plus one,
+		or to zero if the cmap subtable is not language-specific.
+		For example, a Mac OS Turkish cmap subtable must set this field to 18, since the Macintosh language ID for Turkish is 17.
+		A Mac OS Roman cmap subtable must set this field to 0, since Mac OS Roman is not a language-specific encoding.
+		*/
 		Encoding_Table(ifstream &fin);
-		Encoding_Table(Encoding_Table &et): format(et.format), length(et.length), version(et.version){}
+		Encoding_Table(Encoding_Table &et): format(et.format), length(et.length), language(et.language){}
 		virtual USHORT get_glyph_index(USHORT ch) { return 0; } // FIXME: shouldn't this function be pure virtual?
+		virtual void dump_info(FILE *fp, size_t indent){}; // FIXME: pure virtual?
 	};
 
 	class Encoding_Table_Entry{
@@ -33,6 +42,7 @@ namespace ttf_dll{
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
 		void load_encoding_tables(ifstream &fin, ULONG base);
 		USHORT get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch);
+		void dump_info(FILE *fp, size_t indent);
 	};
 
 #define FORMAT_BYTE_ENCODING_TABLE 0
@@ -57,8 +67,6 @@ namespace ttf_dll{
 
 #define FORMAT_SEGMENT_MAPPING_TO_DELTA_VALUES 4
 	class Segment_Mapping_To_Delta_Values: public Encoding_Table{
-	private:
-		void dump_info();
 	public:
 		USHORT	seg_countx2;
 		USHORT	search_range;
@@ -67,11 +75,12 @@ namespace ttf_dll{
 		USHORT	*end_count;/*[seg_count]*/
 		USHORT	reserved_pad;
 		USHORT	*start_count;/*[seg_count]*/
-		USHORT	*id_delta;/*[seg_count]*/
+		SHORT	*id_delta;/*[seg_count]*/
 		USHORT	*id_range_offset;/*[seg_count]*/
-		USHORT	*glyph_id_array;/*[]*/
+		USHORT	*glyph_id_array;/*[var_len]*/
 		Segment_Mapping_To_Delta_Values(Encoding_Table &et, ifstream &fin);
 		USHORT get_glyph_index(USHORT ch);
+		void dump_info(FILE *fp, size_t indent);
 	};
 
 #define FORMAT_TRIMMED_TABLE_MAPPING 6

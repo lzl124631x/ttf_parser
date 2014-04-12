@@ -20,25 +20,27 @@ namespace ttf_dll{
 		ifstream_read_big_endian(fin, &number_of_hmetrics, sizeof(USHORT));
 	}
 
-	void Horizontal_Header::dump_info(FILE *fp){
-		fprintf(fp, "<hhea>\n");
-		fprintf(fp, "<tableVersion value=\"0x%08x\"/>\n", table_version_number);
-		fprintf(fp, "<ascender value=\"%d\"/>\n", ascender);
-		fprintf(fp, "<descender value=\"%d\"/>\n", descender);
-		fprintf(fp, "<lineGap value=\"%d\"/>\n", line_gap);
-		fprintf(fp, "<advanceWidthMax value=\"%u\"/>\n", advance_width_max);
-		fprintf(fp, "<minLeftSideBearing value=\"%d\"/>\n", min_left_side_bearing);
-		fprintf(fp, "<minRightSideBearing value=\"%d\"/>\n", min_right_side_bearing);
-		fprintf(fp, "<xMaxExtent value=\"%d\"/>\n", x_max_extent);
-		fprintf(fp, "<caretSlopeRise value=\"%d\"/>\n", caret_slope_rise);
-		fprintf(fp, "<caretSlopeRun value=\"%d\"/>\n", caret_slope_run);
-		fprintf(fp, "<caretOffset value=\"%d\"/>\n", caret_offset);
-		fprintf(fp, "<reserved0 value=\"0\"/>\n");
-		fprintf(fp, "<reserved1 value=\"0\"/>\n");
-		fprintf(fp, "<reserved2 value=\"0\"/>\n");
-		fprintf(fp, "<reserved3 value=\"0\"/>\n");
-		fprintf(fp, "<metricDataFormat value=\"%d\"/>\n", metric_data_format);
-		fprintf(fp, "<numberOfHMetrics value=\"%u\"/>\n", number_of_hmetrics);
-		fprintf(fp, "</hhea>\n");
+	void Horizontal_Header::dump_info(FILE *fp, size_t indent){
+		INDENT(fp, indent); fprintf(fp, "<hhea>\n");
+		++indent;
+		INDENT(fp, indent); fprintf(fp, "<tableVersion value=\"0x%08x\"/>\n", table_version_number);
+		INDENT(fp, indent); fprintf(fp, "<ascender value=\"%d\"/>\n", ascender);
+		INDENT(fp, indent); fprintf(fp, "<descender value=\"%d\"/>\n", descender);
+		INDENT(fp, indent); fprintf(fp, "<lineGap value=\"%d\"/>\n", line_gap);
+		INDENT(fp, indent); fprintf(fp, "<advanceWidthMax value=\"%u\"/>\n", advance_width_max);
+		INDENT(fp, indent); fprintf(fp, "<minLeftSideBearing value=\"%d\"/>\n", min_left_side_bearing);
+		INDENT(fp, indent); fprintf(fp, "<minRightSideBearing value=\"%d\"/>\n", min_right_side_bearing);
+		INDENT(fp, indent); fprintf(fp, "<xMaxExtent value=\"%d\"/>\n", x_max_extent);
+		INDENT(fp, indent); fprintf(fp, "<caretSlopeRise value=\"%d\"/>\n", caret_slope_rise);
+		INDENT(fp, indent); fprintf(fp, "<caretSlopeRun value=\"%d\"/>\n", caret_slope_run);
+		INDENT(fp, indent); fprintf(fp, "<caretOffset value=\"%d\"/>\n", caret_offset);
+		INDENT(fp, indent); fprintf(fp, "<reserved0 value=\"0\"/>\n");
+		INDENT(fp, indent); fprintf(fp, "<reserved1 value=\"0\"/>\n");
+		INDENT(fp, indent); fprintf(fp, "<reserved2 value=\"0\"/>\n");
+		INDENT(fp, indent); fprintf(fp, "<reserved3 value=\"0\"/>\n");
+		INDENT(fp, indent); fprintf(fp, "<metricDataFormat value=\"%d\"/>\n", metric_data_format);
+		INDENT(fp, indent); fprintf(fp, "<numberOfHMetrics value=\"%u\"/>\n", number_of_hmetrics);
+		--indent;
+		INDENT(fp, indent); fprintf(fp, "</hhea>\n");
 	}
 }
