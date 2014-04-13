@@ -13,9 +13,15 @@ namespace ttf_dll{
 			ifstream_read_big_endian(fin, &glyph_id_array, sizeof(BYTE), 256);
 	}
 
+	USHORT Byte_Encoding_Table::get_glyph_index(USHORT ch){
+		if(ch >= 256) return 0; // ERROR: ch should be no more than 256
+		return glyph_id_array[ch];
+	}
+
 	High_Byte_Mapping_Through_Table::High_Byte_Mapping_Through_Table(Encoding_Table &et, ifstream &fin)
 		:Encoding_Table(et){
 			ifstream_read_big_endian(fin, &subheader_keys, sizeof(BYTE), 256);
+			//FIXME: not finished
 	}
 
 	Segment_Mapping_To_Delta_Values::Segment_Mapping_To_Delta_Values(Encoding_Table &et, ifstream &fin)
@@ -61,6 +67,8 @@ namespace ttf_dll{
 		:Encoding_Table(et){
 			ifstream_read_big_endian(fin, &first_code, sizeof(USHORT));
 			ifstream_read_big_endian(fin, &entry_count, sizeof(USHORT));
+			glyph_id_array = new USHORT[entry_count];
+			ifstream_read_big_endian(fin, glyph_id_array, sizeof(USHORT), entry_count);
 	}
 
 	void Character_To_Glyph_Index_Mapping_Table::load_table(Table_Directory_Entry *entry, ifstream &fin){
@@ -192,12 +200,47 @@ namespace ttf_dll{
 		INDENT(fp, indent); fprintf(fp, "</idRangeOffset>\n");
 
 		INDENT(fp, indent); fprintf(fp, "<glyphIdArray>\n");
-		dump_array<USHORT>(fp, indent + 1, glyph_id_array, (seg_countx2 >> 1), "%+5u");
+		dump_array<USHORT>(fp, indent + 1, glyph_id_array, (seg_countx2 >> 1), "%+5u");//FIXME: the glyph_id_array is not dumped out with the right length.
 		INDENT(fp, indent); fprintf(fp, "</glyphIdArray>\n");
-
-		//FIXME: the glyph_id_array is not dumped out.
 
 		--indent;
 		INDENT(fp, indent); fprintf(fp, "</cmap_format_4>\n");
+	}
+
+	void Byte_Encoding_Table::dump_info(FILE *fp, size_t indent){
+		INDENT(fp, indent); fprintf(fp, "<cmap_format_0>\n");
+		++indent;
+		INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
+		INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
+		INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
+		INDENT(fp, indent); fprintf(fp, "<glyphIdArray>\n");
+		dump_array<BYTE>(fp, indent + 1, glyph_id_array, 256, "%+5u");
+		INDENT(fp, indent); fprintf(fp, "</glyphIdArray>\n");
+		--indent;
+		INDENT(fp, indent); fprintf(fp, "</cmap_format_0>\n");
+	}
+
+	void High_Byte_Mapping_Through_Table::dump_info(FILE *fp, size_t indent){
+		INDENT(fp, indent); fprintf(fp, "<cmap_format_2>\n");
+		++indent;
+		INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
+		INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
+		INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
+		dump_array<USHORT>(fp, indent + 1, subheader_keys, 256, "%+5u");
+		--indent;
+		INDENT(fp, indent); fprintf(fp, "</cmap_format_2>\n");
+	}
+
+	void Trimmed_Table_Mapping::dump_info(FILE *fp, size_t indent){
+		INDENT(fp, indent); fprintf(fp, "<cmap_format_6>\n");
+		++indent;
+		INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
+		INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
+		INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
+		fprintf(fp, "<firstCode value=\"%u\"/>\n", first_code);
+		fprintf(fp, "<entryCount value=\"%u\"/>\n", entry_count);
+		dump_array<USHORT>(fp, indent + 1, glyph_id_array, entry_count, "%+5u");
+		--indent;
+		INDENT(fp, indent); fprintf(fp, "</cmap_format_6>\n");
 	}
 }

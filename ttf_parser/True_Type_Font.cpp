@@ -2,10 +2,10 @@
 #include "True_Type_Font.h"
 
 namespace ttf_dll{
-	ULONG calc_table_checksum(ULONG *table, ULONG num_of_bytes_in_table){
+	ULONG calc_table_checksum(ULONG *table, ULONG num_of_bytes){
 		ULONG sum = 0L;
-		ULONG n = (num_of_bytes_in_table + 3) / sizeof(ULONG);
-		while(n-- > 0){
+		ULONG *end = table + ((num_of_bytes + 3) & ~3) / sizeof(ULONG);
+		while(table < end){
 			sum += *table++;
 		}
 		return sum;
