@@ -78,22 +78,6 @@ namespace ttf_dll{
 		int j = 0;
 	}
 
-	// FIXME: maybe the following #defines should be moved to name table.
-#define Unicode				0
-#define Macintosh			1
-#define ISO					2
-#define Windows				3
-#define Custom				4
-
-#define Symbol				0
-#define Unicode_BMP			1
-#define ShiftJIS			2
-#define PRC					3
-#define Big5				4
-#define Wansung				5
-#define Johab				6
-#define Unicode_UCS_4		10
-
 	void True_Type_Font::get_glyph_outline(USHORT ch){
 		USHORT glyph_index = cmap.get_glyph_index(Windows, Unicode_BMP, ch);
 		//ULONG location = loca.find_location(glyph_index);
@@ -116,6 +100,7 @@ namespace ttf_dll{
 		maxp.dump_info(fp, 1);
 		os_2.dump_info(fp, 1);
 		cmap.dump_info(fp, 1);
+		name.dump_info(fp, 1);
 		fprintf(fp, "</ttFont>\n");
 	}
 }

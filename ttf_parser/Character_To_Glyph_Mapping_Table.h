@@ -26,7 +26,7 @@ namespace ttf_dll{
 	class Encoding_Table_Entry{
 	public:
 		USHORT	platform_id;
-		USHORT	platform_specific_encoding_id;
+		USHORT	encoding_id;
 		ULONG	byte_offset;	// from beginning of table to the subtable for this encoding.
 		Encoding_Table *encoding_table;
 	};

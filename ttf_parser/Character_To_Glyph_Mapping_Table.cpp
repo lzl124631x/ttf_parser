@@ -79,7 +79,7 @@ namespace ttf_dll{
 		encoding_table_entries = new Encoding_Table_Entry[number_of_encoding_tables];
 		for(int i = 0; i < number_of_encoding_tables; ++i){
 			ifstream_read_big_endian(fin, &encoding_table_entries[i].platform_id, sizeof(USHORT));
-			ifstream_read_big_endian(fin, &encoding_table_entries[i].platform_specific_encoding_id, sizeof(USHORT));
+			ifstream_read_big_endian(fin, &encoding_table_entries[i].encoding_id, sizeof(USHORT));
 			ifstream_read_big_endian(fin, &encoding_table_entries[i].byte_offset, sizeof(ULONG));
 		}
 		encoding_tables = new Encoding_Table*[number_of_encoding_tables];
@@ -118,7 +118,7 @@ namespace ttf_dll{
 		Encoding_Table* t = NULL;
 		for(int i = 0; i < number_of_encoding_tables; ++i){
 			if(encoding_table_entries[i].platform_id == platform_id &&
-				encoding_table_entries[i].platform_specific_encoding_id == encoding_id){
+				encoding_table_entries[i].encoding_id == encoding_id){
 					t = encoding_table_entries[i].encoding_table;
 			}
 		}
@@ -143,7 +143,7 @@ namespace ttf_dll{
 			INDENT(fp, indent); fprintf(fp, "<encodingTable>\n");
 			++indent;
 			INDENT(fp, indent); fprintf(fp, "<platformID value=\"%u\"/>\n", entry.platform_id);
-			INDENT(fp, indent); fprintf(fp, "<encodingID value=\"%u\"/>\n", entry.platform_specific_encoding_id);
+			INDENT(fp, indent); fprintf(fp, "<encodingID value=\"%u\"/>\n", entry.encoding_id);
 			INDENT(fp, indent); fprintf(fp, "<offset value=\"%lu\"/>\n", entry.byte_offset);
 			--indent;
 			INDENT(fp, indent); fprintf(fp, "</encodingTable>\n");

@@ -4,22 +4,51 @@
 #include "TTF_Table.h"
 /******************************* name ***********************************/
 namespace ttf_dll{
+	enum Platform_ID{
+		Unicode			= 0,
+		Macintosh		= 1,
+		ISO				= 2,
+		Windows			= 3,
+		Custom			= 4
+	};
+
+	enum Windows_Encoding_ID{
+		Symbol			= 0,
+		Unicode_BMP		= 1,
+		ShiftJIS		= 2,
+		PRC				= 3,
+		Big5			= 4,
+		Wansung			= 5,
+		Johab			= 6,
+		// 7-9 are reserved.
+		Unicode_UCS_4 = 10
+	};
+
+	struct Name_Record{
+			USHORT	platform_id;	// Platform ID.
+			USHORT	encoding_id;	// Platform-specific encoding ID.
+			USHORT	language_id;	// Language ID.
+			USHORT	name_id;		// Name ID.
+			USHORT	length;			// String length (in bytes).
+			USHORT	offset;			// String offset from start of storage area (in bytes).
+			void dump_info(FILE *fp, size_t indent, char *str);
+	};
+	
+	// FIXME: There are two versions of naming table! The format 1 is not yet implemented.
 	class Naming_Table{
 	public:
-		USHORT	format_selector;
-		USHORT	number_of_name_records;
-		USHORT	offset;				// to start of string storage (from start of table)
-		typedef struct _Name_Record{
-			USHORT	platform_id;
-			USHORT	platform_specific_encoding_id;
-			USHORT	language_id;
-			USHORT	name_id;
-			USHORT	string_length;	// in bytes
-			USHORT	string_offset;	// from start of storage area (in bytes)
-		}Name_Record;
-		Name_Record	*name_records;/* [number_of_name_records] */
-		// (Variable) Storage for the actual string data.
+		USHORT	format;				// Format Selector.
+		USHORT	count;				// Number of name records.
+		USHORT	offset;				// Offset to start of string storage (from start of table).
+		Name_Record *name_records;	// The name records where count is the number of records.
+		char	**strings;			// (Variable) Storage for the actual string data.
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
+		void dump_info(FILE *fp, size_t indent);
+	};
+
+	struct Language_Tag_Record{
+		USHORT	length;				// Language-tag string length (in bytes)
+		USHORT	offset;				// Language-tag string offset from start of storage area (in bytes).
 	};
 }
 
