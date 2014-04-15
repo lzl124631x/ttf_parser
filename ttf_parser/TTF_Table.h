@@ -7,7 +7,7 @@
 using namespace std;
 
 namespace ttf_dll{
-	class Table_Directory_Entry{
+	class DLL_API Table_Directory_Entry{
 	public:
 		ULONG	tag;
 		ULONG	checksum;
@@ -17,17 +17,16 @@ namespace ttf_dll{
 		static void tag_ULONG_to_string(ULONG ul, char *str);
 	};
 
-	class Offset_Table{
+	class DLL_API Offset_Table{
 	public:
 		FIXED	sfnt_version;
 		USHORT	num_tables;
 		USHORT	search_range;
 		USHORT	entry_selector;
 		USHORT	range_shift;
-		hash_map<ULONG, Table_Directory_Entry*> table_directory_entries;
-		inline Table_Directory_Entry* Offset_Table::get_table_entry(char* tag){
-			return table_directory_entries[Table_Directory_Entry::tag_string_to_ULONG(tag)];
-		}
+		Table_Directory_Entry *table_directory_entries;
+		void load_table(ifstream &fin);
+		Table_Directory_Entry *get_table_entry(char *tag_str);
 		void dump_info(FILE *fp, size_t indent);
 	};
 

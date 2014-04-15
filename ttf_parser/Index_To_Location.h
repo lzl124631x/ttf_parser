@@ -4,7 +4,7 @@
 #include "TTF_Table.h"
 /******************************* loca ***********************************/
 namespace ttf_dll{
-	class Index_To_Location{
+	class DLL_API Index_To_Location{
 	public:
 		void *offsets; /* [num_glyphs] */
 		// Short Version: USHORT

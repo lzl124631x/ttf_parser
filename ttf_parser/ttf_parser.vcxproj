@@ -86,7 +86,6 @@
     <ClCompile Include="Post_Script.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="True_Type_Font.cpp" />
-    <ClCompile Include="TTF Parser APP.cpp" />
     <ClCompile Include="TTF_Table.cpp" />
   </ItemGroup>
   <ItemGroup>

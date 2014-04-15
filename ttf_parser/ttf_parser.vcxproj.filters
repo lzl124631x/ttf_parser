@@ -24,9 +24,6 @@
     <ClCompile Include="True_Type_Font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TTF Parser APP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Character_To_Glyph_Mapping_Table.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

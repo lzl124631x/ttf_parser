@@ -35,7 +35,7 @@ namespace ttf_dll{
 	};
 	
 	// FIXME: There are two versions of naming table! The format 1 is not yet implemented.
-	class Naming_Table{
+	class DLL_API Naming_Table{
 	public:
 		USHORT	format;				// Format Selector.
 		USHORT	count;				// Number of name records.

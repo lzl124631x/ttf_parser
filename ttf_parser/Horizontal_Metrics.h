@@ -5,13 +5,13 @@
 #include "TTF_Table.h"
 /******************************* hmtx ***********************************/
 namespace ttf_dll{
-	class True_Type_Font;
+	class True_Type_Font; // FIXME: How about remove this declaration?
 	typedef struct _Long_Hor_Metric{
 		UFWORD	advance_width;
 		FWORD	lsb;
 	}Long_Hor_Metric;
 
-	class Horizontal_Metrics{
+	class DLL_API Horizontal_Metrics{
 	public:
 		Long_Hor_Metric	*hmetrics;/* [number_of_hmetrics(from hhea)] */
 		FWORD			*left_side_bearing;/* [num_glyphs(from maxp) - number_of_hmetrics] */

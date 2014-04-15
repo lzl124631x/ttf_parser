@@ -18,16 +18,43 @@ namespace ttf_dll{
 		}
 	}
 
+	void Offset_Table::load_table(ifstream &fin){
+		fin.seekg(0, ios::beg);
+		ifstream_read_big_endian(fin, &sfnt_version, sizeof(FIXED));
+		ifstream_read_big_endian(fin, &num_tables, sizeof(USHORT));
+		ifstream_read_big_endian(fin, &search_range, sizeof(USHORT));
+		ifstream_read_big_endian(fin, &entry_selector, sizeof(USHORT));
+		ifstream_read_big_endian(fin, &range_shift, sizeof(USHORT));
+		table_directory_entries = new Table_Directory_Entry[num_tables];
+		for(int i = 0; i < num_tables; ++i){
+			Table_Directory_Entry *entry = &table_directory_entries[i];
+			ifstream_read_big_endian(fin, &entry->tag, sizeof(ULONG));
+			ifstream_read_big_endian(fin, &entry->checksum, sizeof(ULONG));
+			ifstream_read_big_endian(fin, &entry->offset, sizeof(ULONG));
+			ifstream_read_big_endian(fin, &entry->length, sizeof(ULONG));
+		};
+	}
+
+	Table_Directory_Entry* Offset_Table::get_table_entry(char *tag_str){
+		ULONG tag = Table_Directory_Entry::tag_string_to_ULONG(tag_str);
+		for(int i = 0; i < num_tables; ++i){
+			Table_Directory_Entry *entry = &table_directory_entries[i];
+			if(entry->tag == tag){
+				return entry;
+			}
+		}
+		return NULL;
+	}
+
 	void Offset_Table::dump_info(FILE *fp, size_t indent){
 		INDENT(fp, indent); fprintf(fp, "<offsetTable sfntVersion=\"%08x\" numTables=\"%d\" searchRange=\"%d\" entrySelector=\"%d\" rangeShift=\"%d\">\n",
 			sfnt_version, num_tables, search_range, entry_selector, range_shift);
 		++indent;
-		for(hash_map<ULONG, Table_Directory_Entry*>::iterator i = table_directory_entries.begin(); i != table_directory_entries.end(); ++i){
-			Table_Directory_Entry *entry = i->second;
-			char tag_str[5] = {0};
-			Table_Directory_Entry::tag_ULONG_to_string(entry->tag, tag_str);
-			INDENT(fp, indent); fprintf(fp, "<entry tag=\"%s\" checksum=\"%08x\" offset=\"%d\" length=\"%d\"/>\n",
-				tag_str, entry->checksum, entry->offset, entry->length);
+		for(int i = 0; i < num_tables; ++i){
+			Table_Directory_Entry *entry = &table_directory_entries[i];
+			INDENT(fp, indent);
+			fprintf(fp, "<entry tag=\"%.4s\" checksum=\"%08x\" offset=\"%d\" length=\"%d\"/>\n",
+				(char*)&entry->tag, entry->checksum, entry->offset, entry->length);
 		}
 		--indent;
 		INDENT(fp, indent); fprintf(fp, "</offsetTable>\n");

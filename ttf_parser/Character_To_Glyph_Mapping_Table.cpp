@@ -78,9 +78,10 @@ namespace ttf_dll{
 		if(number_of_encoding_tables <= 0) return;
 		encoding_table_entries = new Encoding_Table_Entry[number_of_encoding_tables];
 		for(int i = 0; i < number_of_encoding_tables; ++i){
-			ifstream_read_big_endian(fin, &encoding_table_entries[i].platform_id, sizeof(USHORT));
-			ifstream_read_big_endian(fin, &encoding_table_entries[i].encoding_id, sizeof(USHORT));
-			ifstream_read_big_endian(fin, &encoding_table_entries[i].byte_offset, sizeof(ULONG));
+			Encoding_Table_Entry *entry = &encoding_table_entries[i];
+			ifstream_read_big_endian(fin, &entry->platform_id, sizeof(USHORT));
+			ifstream_read_big_endian(fin, &entry->encoding_id, sizeof(USHORT));
+			ifstream_read_big_endian(fin, &entry->byte_offset, sizeof(ULONG));
 		}
 		encoding_tables = new Encoding_Table*[number_of_encoding_tables];
 		load_encoding_tables(fin, entry->offset);

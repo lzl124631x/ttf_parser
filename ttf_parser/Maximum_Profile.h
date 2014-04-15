@@ -4,7 +4,7 @@
 #include "TTF_Table.h"
 /******************************* maxp ***********************************/
 namespace ttf_dll{
-	class Maximum_Profile{
+	class DLL_API Maximum_Profile{
 	public:
 		FIXED	table_version_number;
 		USHORT	num_glyphs;

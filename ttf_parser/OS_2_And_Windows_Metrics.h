@@ -10,7 +10,7 @@ namespace ttf_dll{
 	// version 2: OpenType rev 1.2
 	// version 3: OpenType rev 1.4
 	// version 4: OpenType rev 1.6 http://www.microsoft.com/typography/otspec/
-	class OS_2_And_Windows_Metrics{// version 3
+	class DLL_API OS_2_And_Windows_Metrics{// version 3
 	public:
 		USHORT	version;
 		SHORT	x_avg_char_width;

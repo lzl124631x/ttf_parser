@@ -21,7 +21,7 @@ namespace ttf_dll{
 		void load_glyph_data_array(ifstream &fin);
 	public:
 		BYTE *file_binary;
-		Offset_Table *offset_table;
+		Offset_Table offset_table;
 		Character_To_Glyph_Index_Mapping_Table cmap;
 		Font_Header head;
 		Maximum_Profile maxp;
@@ -31,10 +31,10 @@ namespace ttf_dll{
 		Naming_Table name;
 		OS_2_And_Windows_Metrics os_2;
 		Glyph_Data **glyph_data_array;
-		bool load_path(string path);
+		bool load_path(string &path);
 		bool valid_checksum(char* tag);
 		void get_glyph_outline(USHORT ch);
-		void dump_ttf(FILE *fp);
+		void dump_ttf(char *path);
 		inline ULONG* get_table(Table_Directory_Entry *entry){
 			return (ULONG*)&file_binary[entry->offset];
 		}

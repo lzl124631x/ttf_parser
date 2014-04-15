@@ -101,7 +101,8 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	m_fileNameText.SetWindowTextW(_T("File Name:"));
-	m_ttf.load_path(std::string("C:\\Fonts\\Mathematica6.ttf"));
+	std::string str("C:\\Fonts\\Mathematica6.ttf");
+	m_ttf.load_path(str);
 	m_char.SetWindowText(_T("A"));
 	HDC hdc = ::GetDC(m_hWnd);
 	m_charBmp = CreateCompatibleBitmap(hdc, 300, 300); // FIXME: need to DeleteObject(m_charBmp)
@@ -304,7 +305,5 @@ void Cttf_parser_appDlg::OnBnClickedView()
 
 void Cttf_parser_appDlg::OnToolDumpinfo()
 {
-	FILE *fp = fopen("info.xml", "w");
-	m_ttf.dump_ttf(fp);
-	fclose(fp);
+	m_ttf.dump_ttf("info.xml");
 }
