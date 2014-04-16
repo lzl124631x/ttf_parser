@@ -36,6 +36,87 @@ namespace ttf_dll{
 		printf("\n");
 	}
 
+	void add_quadratic_bezier(GraphicsPath &path, const PointF &q0, const PointF &q1, const PointF &q2){
+		PointF c1, c2;
+		// first control point of cubic bezier: c1 = (q0 + 2 * q1)/3 = q0 + 2 * (q1 - q0)/3
+		c1.X = (q0.X + 2 * q1.X) / 3.0f;
+		c1.Y = (q0.Y + 2 * q1.Y) / 3.0f;
+
+		// second control point of cubic bezier: c2 = (2 * q1 + q2)/3 = c1 + (q2 - q0)/3
+		c2.X = (2 * q1.X + q2.X) / 3.0f;
+		c2.Y = (2 * q1.Y + q2.Y) / 3.0f;
+
+		path.AddBezier(q0, c1, c2, q2);
+	}
+
+	void Simple_Glyph_Description::glyph_to_path(GraphicsPath &path){
+		PointF start_point, prev_point, cur_point;
+		BYTE flag = 0;
+		bool new_contour = true;
+		for(int i = 0, j = 0; i < pt_num; ++i){
+		// i stands for the index of cur_point, while j stands for the index of current contour.
+			flag = flags[i] & ON_CURVE;
+			cur_point = PointF(x_coordinates[i], y_coordinates[i]);
+
+			if(new_contour){ // If this is the first point of jth contour.
+				path.StartFigure();
+				new_contour = false;
+				// Calculate the prev_point.
+				// <last_flag, flag>
+				// <0, 0>: prev_point = mid(last_point, cur_point);
+				// <0, 1>: prev_point = cur_point
+				// <1, *>: prev_point = last_point
+				int last = end_pts_of_contours[j];
+				if(flags[last] == ON_CURVE){ // If the last point is on-curve, it'll be the prev_point of the first point.
+					prev_point = PointF(x_coordinates[last], y_coordinates[last]);
+				}else{ // If the last point is off-curve...
+					if(flag == ON_CURVE){ // if the first point is on-curve, no need to draw anything.
+						prev_point = cur_point;
+					}else{ // Otherwise, the prev_point is the mid-point between the first and the last point (both off-curve).
+						prev_point = PointF(
+							(cur_point.X + x_coordinates[last]) / 2.0f,
+							(cur_point.Y + y_coordinates[last]) / 2.0f
+							);
+					}
+				}
+				start_point = prev_point; // start_point is not simply first point.
+			}
+
+			// Draw something.
+			// <flag, next_flag>
+			// <0, 0>: add_quadratic_bezier(prev_point, cur_point, implicit_next_point)
+			// <0, 1>: add_quadratic_bezier(prev_point, cur_point, next_point).
+			// <1, *>: AddLine(prev_point, cur_point)
+			if(flag == ON_CURVE){ // If this point is on-curve, just draw a straight line.
+				path.AddLine(prev_point, cur_point);
+				prev_point = cur_point;
+			}else{ // Otherwise, draw a quadratic bezier.
+				// Calculate the next point.
+				PointF next_point;
+				if(i == end_pts_of_contours[j]){ // If this is the last point, the start_point is served as next_point.
+					next_point = start_point;
+				}else{ // Otherwise...
+					BYTE next_flag = flags[i + 1];
+					if(next_flag == ON_CURVE){ // If the next point is on-curve, it'll be the next_point.
+						next_point = PointF(x_coordinates[i + 1], y_coordinates[i + 1]);
+					}else{ // Otherwise, next_point is the mid-point between cur_point and the next point.
+						next_point = PointF(
+							(cur_point.X + x_coordinates[i + 1]) / 2.0f,
+							(cur_point.Y + y_coordinates[i + 1]) / 2.0f
+							);
+					}
+				}
+				add_quadratic_bezier(path, prev_point, cur_point, next_point);
+				prev_point = next_point;
+			}
+			if(i == end_pts_of_contours[j]){ // If the last point is visited, close figure:)
+				path.CloseFigure();
+				new_contour = true;
+				++j;
+			}
+		}
+	}
+
 	/*
 	If the last point is off-curve, the first point is regarded as the end point.
 	If two off-curve point appear in a row, the midpoint of them is regarded as the implicit on-curve point.

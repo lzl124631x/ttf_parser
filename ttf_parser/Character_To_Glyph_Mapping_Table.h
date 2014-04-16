@@ -97,6 +97,9 @@ namespace ttf_dll{
 		USHORT	*id_range_offset;/*[seg_count]*/
 		USHORT	*glyph_id_array;/*[var_len]*/
 		Segment_Mapping_To_Delta_Values(Encoding_Table &et, ifstream &fin);
+		~Segment_Mapping_To_Delta_Values(){
+			delete[] end_count, start_count, id_delta, id_range_offset, glyph_id_array;
+		}
 		USHORT get_glyph_index(USHORT ch);
 		void dump_info(FILE *fp, size_t indent);
 	};
@@ -108,6 +111,9 @@ namespace ttf_dll{
 		USHORT	entry_count;
 		USHORT	*glyph_id_array;/*[entry_count]*/
 		Trimmed_Table_Mapping(Encoding_Table &et, ifstream &fin);
+		~Trimmed_Table_Mapping(){
+			delete[] glyph_id_array;
+		}
 		void dump_info(FILE *fp, size_t indent);
 	};
 	// The firstCode and entryCount values specify a subrange (beginning at firstCode,length = entryCount) within the range of possible character codes.

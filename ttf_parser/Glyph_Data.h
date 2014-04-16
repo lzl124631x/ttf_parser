@@ -2,6 +2,10 @@
 #define GLYPH_DATA_H
 #include "Type.h"
 #include "TTF_Table.h"
+#include <objidl.h>
+#include <gdiplus.h>
+using namespace Gdiplus;
+#pragma comment(lib, "gdiplus.lib")
 /******************************* glyf ***********************************/
 namespace ttf_dll{
 	class DLL_API Glyph_Data{
@@ -23,6 +27,7 @@ namespace ttf_dll{
 		}
 		virtual void dump_coordinates(){}
 		virtual void dump_svg_outline(FILE *fp){}
+		virtual void glyph_to_path(GraphicsPath &path){}
 	};
 
 	class DLL_API Simple_Glyph_Description: public Glyph_Data{
@@ -32,6 +37,7 @@ namespace ttf_dll{
 		void dump_flags();
 		void dump_coordinates();
 		void dump_svg_outline(FILE *fp);
+		void glyph_to_path(GraphicsPath &path);
 	public:
 		USHORT	*end_pts_of_contours;
 		USHORT	instruction_length;
@@ -43,6 +49,9 @@ namespace ttf_dll{
 		// Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
 		// The last contour's end point has the largest index which equals pt_num - 1.
 		Simple_Glyph_Description(Glyph_Data &gd, ifstream &fin);
+		~Simple_Glyph_Description(){
+			delete[] end_pts_of_contours, instructions, flags, x_coordinates, y_coordinates;
+		}
 	};
 
 	class Composite_Glyph_Description: public Glyph_Data{

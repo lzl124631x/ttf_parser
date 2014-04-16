@@ -10,6 +10,9 @@ namespace ttf_dll{
 		// Short Version: USHORT
 		// Long Version: ULONG
 		void load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT num_glyphs, SHORT loca_format);
+		~Index_To_Location(){
+			delete[] offsets;
+		}
 		inline ULONG find_location(USHORT index){
 			return ((ULONG*)offsets)[index];
 		}

@@ -16,6 +16,9 @@ namespace ttf_dll{
 		Long_Hor_Metric	*hmetrics;/* [number_of_hmetrics(from hhea)] */
 		FWORD			*left_side_bearing;/* [num_glyphs(from maxp) - number_of_hmetrics] */
 		void load_table(Table_Directory_Entry *entry, ifstream &fin, True_Type_Font *ttf);
+		~Horizontal_Metrics(){
+			delete[] hmetrics, left_side_bearing;
+		}
 	};
 }
 #endif

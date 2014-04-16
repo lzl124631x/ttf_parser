@@ -106,6 +106,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ttf_parser_app.h" />
     <ClInclude Include="ttf_parser_appDlg.h" />
+    <ClInclude Include="ttf_parser_gdiplus.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -114,6 +115,7 @@
     </ClCompile>
     <ClCompile Include="ttf_parser_app.cpp" />
     <ClCompile Include="ttf_parser_appDlg.cpp" />
+    <ClCompile Include="ttf_parser_gdiplus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ttf_parser_app.rc" />

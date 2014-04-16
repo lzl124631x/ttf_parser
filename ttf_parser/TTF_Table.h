@@ -26,6 +26,9 @@ namespace ttf_dll{
 		USHORT	range_shift;
 		Table_Directory_Entry *table_directory_entries;
 		void load_table(ifstream &fin);
+		~Offset_Table(){
+			delete[] table_directory_entries;
+		}
 		Table_Directory_Entry *get_table_entry(char *tag_str);
 		void dump_info(FILE *fp, size_t indent);
 	};

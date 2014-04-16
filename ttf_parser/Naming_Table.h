@@ -43,6 +43,12 @@ namespace ttf_dll{
 		Name_Record *name_records;	// The name records where count is the number of records.
 		char	**strings;			// (Variable) Storage for the actual string data.
 		void load_table(Table_Directory_Entry *entry, ifstream &fin);
+		~Naming_Table(){ // FIXME: more proper to move this function to .cpp?
+			delete[] name_records;
+			for(int i = 0; i < count; ++i){
+				delete[] strings[i];
+			}
+		}
 		void dump_info(FILE *fp, size_t indent);
 	};
 

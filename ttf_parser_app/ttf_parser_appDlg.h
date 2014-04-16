@@ -4,8 +4,6 @@
 
 #pragma once
 #include "afxwin.h"
-#include "True_Type_Font.h"
-using namespace ttf_dll;
 
 // Cttf_parser_appDlg dialog
 class Cttf_parser_appDlg : public CDialogEx
@@ -36,9 +34,8 @@ public:
 	afx_msg void OnFileExit();
 	CStatic m_fileNameText;
 	HBITMAP m_charBmp;
-	True_Type_Font m_ttf;
-	void render_glyph(HBITMAP bmp, ttf_dll::USHORT ch);
 	CEdit m_char;
 	afx_msg void OnBnClickedView();
-	afx_msg void OnToolDumpinfo();
+	afx_msg void OnToolDumpXml();
+	CButton m_btn_view;
 };

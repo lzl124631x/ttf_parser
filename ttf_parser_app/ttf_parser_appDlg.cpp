@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "ttf_parser_app.h"
 #include "ttf_parser_appDlg.h"
+#include "ttf_parser_gdiplus.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -55,6 +56,7 @@ void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_FILE_NAME, m_fileNameText);
 	DDX_Control(pDX, IDC_CHAR, m_char);
+	DDX_Control(pDX, IDC_VIEW, m_btn_view);
 }
 
 BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
@@ -64,12 +66,11 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 	ON_COMMAND(IDM_FILE_OPEN, &Cttf_parser_appDlg::OnFileOpen)
 	ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
 	ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
-	ON_COMMAND(ID_TOOL_DUMPINFO, &Cttf_parser_appDlg::OnToolDumpinfo)
+	ON_COMMAND(IDM_TOOL_DUMPXML, &Cttf_parser_appDlg::OnToolDumpXml)
 END_MESSAGE_MAP()
 
 
 // Cttf_parser_appDlg message handlers
-
 BOOL Cttf_parser_appDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -100,12 +101,18 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	
 	m_fileNameText.SetWindowTextW(_T("File Name:"));
-	std::string str("C:\\Fonts\\Mathematica6.ttf");
-	m_ttf.load_path(str);
-	m_char.SetWindowText(_T("A"));
+	// TEST: Following lines are for test.
+	// std::string str("C:\\Fonts\\Mathematica6.ttf");
+	// ttf.load_path(str);
+	// m_char.SetWindowText(_T("A"));
+
+	m_btn_view.EnableWindow(false);									// disable button "View"
+	GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, MF_DISABLED);		// disable menu button "Dump XML"
+	
 	HDC hdc = ::GetDC(m_hWnd);
-	m_charBmp = CreateCompatibleBitmap(hdc, 300, 300); // FIXME: need to DeleteObject(m_charBmp)
+	m_charBmp = CreateCompatibleBitmap(hdc, 500, 500); // FIXME: need to DeleteObject(m_charBmp)
 	::ReleaseDC(m_hWnd, hdc);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -153,7 +160,7 @@ void Cttf_parser_appDlg::OnPaint()
 		HDC hdc = ::GetDC(m_hWnd);
 		HDC memdc = CreateCompatibleDC(hdc);
 		HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, m_charBmp);
-		BitBlt(hdc, 100, 100, 300, 300, memdc, 0, 0, SRCCOPY);
+		BitBlt(hdc, 100, 100, 500, 500, memdc, 0, 0, SRCCOPY);
 		SelectObject(memdc, old_bmp);
 		DeleteObject(memdc);
 		::ReleaseDC(m_hWnd, hdc);
@@ -176,7 +183,9 @@ void Cttf_parser_appDlg::OnFileOpen()
 		m_fileNameText.SetWindowTextW(_T("File Name: ") + path_name);
 		CStringA path_nameS(path_name.GetBuffer(0));
 		std::string str = path_nameS.GetBuffer(0);
-		m_ttf.load_path(str);
+		ttf.load_path(str);
+		m_btn_view.EnableWindow(true);									// enable button "View"
+		GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, MF_ENABLED);		// enable menu button "Dump XML"
 	}
 }
 
@@ -186,124 +195,24 @@ void Cttf_parser_appDlg::OnFileExit()
 	EndDialog(0);
 }
 
-/*
-<flag, next_flag>
-<0, 0>: AddQuadraticBezier(last_point, cur_point, implicit_next_point)
-<0, 1>: AddQuadraticBezier(last_point, cur_point, next_point) and skip next point.
-<1, *>: AddLine(last_point, cur_point)
-If current point is the last point of contour,
-assume the first point of contour must be on-curve,
-<last_flag, first_flag>
-<0, 1>: AddQuadraticBezier(last_point, cur_point, first_point)
-<1, 1>: AddLine(last_point, cur_point)
-*/
-void AddQuadraticBezier(GraphicsPath &path, const Point &q0, const Point &q1, const Point &q2){
-	Point c1, c2;
-	//三次贝塞尔的控制点c1 = (q0 + 2 * q1)/3 = q0 + 2 * (q1 - q0)/3
-	c1.X = (q0.X + 2 * q1.X) / 3.0f;
-	c1.Y = (q0.Y + 2 * q1.Y) / 3.0f;
-
-	//三次贝塞尔的控制点c2 = (2 * q1 + q2)/3 = c1 + (q2 - q0)/3
-	c2.X = (2 * q1.X + q2.X)/3.0f;
-	c2.Y = (2 * q1.Y + q2.Y)/3.0f;
-
-	path.AddBezier(q0, c1, c2, q2);
-}
-// FIXME: the following definition should not be defined here.
-#define ON_CURVE			0x1 // FIXME: the following code is in test mode.
-#define Unicode				0
-#define Macintosh			1
-#define ISO					2
-#define Windows				3
-#define Custom				4
-
-#define Symbol				0
-#define Unicode_BMP			1
-#define ShiftJIS			2
-#define PRC					3
-#define Big5				4
-#define Wansung				5
-#define Johab				6
-#define Unicode_UCS_4		10
-void Cttf_parser_appDlg::render_glyph(HBITMAP bmp, ttf_dll::USHORT ch){
-	HDC hdc = ::GetDC(m_hWnd);
-	HDC memdc = CreateCompatibleDC(hdc);
-	HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, bmp);
-
-	ttf_dll::USHORT glyph_index = m_ttf.cmap.get_glyph_index(Windows, Unicode_BMP, ch);
-	Simple_Glyph_Description *glyph_data = (Simple_Glyph_Description*)m_ttf.glyph_data_array[glyph_index];
-	FWORD width = glyph_data->x_max - glyph_data->x_min;
-	FWORD height = glyph_data->y_max - glyph_data->y_min;
-	double x_ratio = 300.0 / width;
-	double y_ratio = 300.0 / height;
-	Graphics g(memdc);
-	g.Clear(Color::White);
-	g.SetSmoothingMode(SmoothingModeHighQuality);
-	GraphicsPath path;
-
-	Point start_point, last_point, cur_point;
-	ttf_dll::BYTE flag = 0, next_flag = 0;
-	bool new_contour = true;
-	for(int i = 0, j = 0; i < glyph_data->pt_num; ++i){
-		flag = glyph_data->flags[i] & ON_CURVE;
-		cur_point = Point(glyph_data->x_coordinates[i], glyph_data->y_coordinates[i]);
-		if(new_contour){
-			path.StartFigure();
-			new_contour = false;
-			start_point = last_point = cur_point;
-		}else if(flag == 1){
-			path.AddLine(last_point, cur_point);
-			last_point = cur_point;
-		}else{
-			Point next_point;
-			if(i == glyph_data->end_pts_of_contours[j]){// This is the last point of this jth contour.
-				next_flag = 1; // FIXME: this line has no use. The start point is assumed to be on-curve.
-				next_point = start_point;
-			}else{
-				next_flag = glyph_data->flags[i + 1];
-				if(next_flag == 1){
-					next_point = Point(glyph_data->x_coordinates[i + 1],
-						glyph_data->y_coordinates[i + 1]);
-				}else{
-					next_point = Point((cur_point.X + glyph_data->x_coordinates[i + 1]) >> 1,
-						(cur_point.Y + glyph_data->y_coordinates[i + 1]) >> 1);
-				}
-			}
-			AddQuadraticBezier(path, last_point, cur_point, next_point);
-			last_point = next_point;
-		}
-		if(i == glyph_data->end_pts_of_contours[j]){
-			path.CloseFigure();
-			new_contour = true;
-			++j;
-		}
-		next_flag = flag;
-	}
-	Matrix matrix(1, 0, 0, -1, 0, 0); // flip (x, y) to (x, -y)
-	matrix.Translate(-glyph_data->x_min, glyph_data->y_max, MatrixOrderAppend); // translate with (-xMin, yMax)
-	matrix.Scale(x_ratio, y_ratio, MatrixOrderAppend); // scale with (xRatio, yRatio)
-	path.Transform(&matrix);
-
-	g.FillPath(&SolidBrush(Color::Red), &path);
-	g.DrawPath(&Pen(Color::Red, 1), &path);
-	BitBlt(hdc, 0, 0, 300, 300, memdc, 0, 0, SRCCOPY);
-	SelectObject(memdc, old_bmp);
-	DeleteDC(memdc);
-	::ReleaseDC(m_hWnd, hdc);
-}
-
 void Cttf_parser_appDlg::OnBnClickedView()
 {
 	CString char_string;
 	m_char.GetWindowText(char_string);
 	if(!char_string.IsEmpty() && m_charBmp){
-		render_glyph(m_charBmp, char_string[0]); // FIXME: test if ttf is loaded before render.
+		HDC hdc = ::GetDC(m_hWnd);
+		render_glyph(hdc, m_charBmp, char_string[0], 500, 500); // FIXME: test if ttf is loaded before render.
 		Invalidate(1);
+		::ReleaseDC(m_hWnd, hdc);
 	}
 }
 
 
-void Cttf_parser_appDlg::OnToolDumpinfo()
+void Cttf_parser_appDlg::OnToolDumpXml()
 {
-	m_ttf.dump_ttf("info.xml");
+	if(ttf.dump_ttf("info.xml")){
+		MessageBox(_T("Dumped successfully!"), _T("Message"));
+	}else{
+		MessageBox(_T("Failed to dump info!"), _T("Message"));
+	}
 }

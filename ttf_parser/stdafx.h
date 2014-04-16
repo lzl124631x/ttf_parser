@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
+#include <assert.h>
 
 namespace ttf_dll{
 	void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned size);

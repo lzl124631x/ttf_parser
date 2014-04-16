@@ -32,9 +32,15 @@ namespace ttf_dll{
 		OS_2_And_Windows_Metrics os_2;
 		Glyph_Data **glyph_data_array;
 		bool load_path(string &path);
+		~True_Type_Font(){ // FIXME: more proper to move this into .cpp?
+			delete[] file_binary;
+			for(int i = 0; i < maxp.num_glyphs; ++i){
+				delete[] glyph_data_array[i];
+			}
+		}
 		bool valid_checksum(char* tag);
 		void get_glyph_outline(USHORT ch);
-		void dump_ttf(char *path);
+		bool dump_ttf(char *path);
 		inline ULONG* get_table(Table_Directory_Entry *entry){
 			return (ULONG*)&file_binary[entry->offset];
 		}

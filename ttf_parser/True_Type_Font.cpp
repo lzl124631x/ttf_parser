@@ -73,7 +73,7 @@ namespace ttf_dll{
 		}
 	}
 
-	void True_Type_Font::dump_ttf(char *path){
+	bool True_Type_Font::dump_ttf(char *path){
 		FILE *fp = NULL;
 		if(fp = fopen(path, "w")){
 			fprintf(fp, "<ttFont>\n");
@@ -86,6 +86,8 @@ namespace ttf_dll{
 			name.dump_info(fp, 1);
 			fprintf(fp, "</ttFont>\n");
 			fclose(fp);
+			return true;
 		}
+		return false;
 	}
 }
