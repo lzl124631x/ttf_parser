@@ -20,7 +20,6 @@ namespace ttf_dll{
 	private:
 		void load_glyph_data_array(ifstream &fin);
 	public:
-		BYTE *file_binary;
 		Offset_Table offset_table;
 		Character_To_Glyph_Index_Mapping_Table cmap;
 		Font_Header head;
@@ -33,17 +32,17 @@ namespace ttf_dll{
 		Glyph_Data **glyph_data_array;
 		bool load_path(string &path);
 		~True_Type_Font(){ // FIXME: more proper to move this into .cpp?
-			delete[] file_binary;
 			for(int i = 0; i < maxp.num_glyphs; ++i){
-				delete[] glyph_data_array[i];
+				delete glyph_data_array[i];
 			}
+      //delete[] glyph_data_array; // FIXME: why this line will cause more memory leak?
 		}
 		bool valid_checksum(char* tag);
 		void get_glyph_outline(USHORT ch);
 		bool dump_ttf(char *path);
-		inline ULONG* get_table(Table_Directory_Entry *entry){
-			return (ULONG*)&file_binary[entry->offset];
-		}
+    //ULONG* get_table(Table_Directory_Entry *entry){
+    //  return (ULONG*)&file_binary[entry->offset];
+    //}
 	};
 }
 

@@ -48,6 +48,7 @@ namespace ttf_dll{
 			for(int i = 0; i < count; ++i){
 				delete[] strings[i];
 			}
+      delete[] strings;
 		}
 		void dump_info(FILE *fp, size_t indent);
 	};

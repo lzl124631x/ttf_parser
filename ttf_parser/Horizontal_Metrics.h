@@ -17,7 +17,8 @@ namespace ttf_dll{
 		FWORD			*left_side_bearing;/* [num_glyphs(from maxp) - number_of_hmetrics] */
 		void load_table(Table_Directory_Entry *entry, ifstream &fin, True_Type_Font *ttf);
 		~Horizontal_Metrics(){
-			delete[] hmetrics, left_side_bearing;
+			delete[] hmetrics;
+      delete[] left_side_bearing;
 		}
 	};
 }

@@ -8,7 +8,7 @@ using namespace Gdiplus;
 #pragma comment(lib, "gdiplus.lib")
 /******************************* glyf ***********************************/
 namespace ttf_dll{
-	class DLL_API Glyph_Data{
+	class DLL_API Glyph_Data{ // FIXME: consider to change this class into a pure vitual class
 	private:
 		Glyph_Data(ifstream &fin, ULONG offset);
 	public:
@@ -22,6 +22,7 @@ namespace ttf_dll{
 			x_min(gd.x_min), y_min(gd.y_min),
 			x_max(gd.x_max), y_max(gd.y_max){}
 		static Glyph_Data* load_table(ifstream &fin, ULONG offset, USHORT max_contours);
+    virtual ~Glyph_Data(){};
 		inline bool Glyph_Data::is_simply_glyph(){
 			return number_of_contours >= 0; // Otherwise this is a composite glyph.	
 		}
@@ -50,7 +51,11 @@ namespace ttf_dll{
 		// The last contour's end point has the largest index which equals pt_num - 1.
 		Simple_Glyph_Description(Glyph_Data &gd, ifstream &fin);
 		~Simple_Glyph_Description(){
-			delete[] end_pts_of_contours, instructions, flags, x_coordinates, y_coordinates;
+			delete[] end_pts_of_contours;
+      delete[] instructions;
+      delete[] flags;
+      delete[] x_coordinates;
+      delete[] y_coordinates;
 		}
 	};
 

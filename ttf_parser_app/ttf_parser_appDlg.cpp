@@ -183,6 +183,7 @@ void Cttf_parser_appDlg::OnFileOpen()
 		m_fileNameText.SetWindowTextW(_T("File Name: ") + path_name);
 		CStringA path_nameS(path_name.GetBuffer(0));
 		std::string str = path_nameS.GetBuffer(0);
+    ttf.~True_Type_Font();
 		ttf.load_path(str);
 		m_btn_view.EnableWindow(true);									// enable button "View"
 		GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, MF_ENABLED);		// enable menu button "Dump XML"
