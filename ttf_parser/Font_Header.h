@@ -4,6 +4,7 @@
 #include "Type.h"
 #include "TTF_Table.h"
 /******************************* head ***********************************/
+// https://www.microsoft.com/typography/otspec/head.htm
 namespace ttf_dll{
   class DLL_API Font_Header{
   public:

@@ -34,25 +34,31 @@ namespace ttf_dll{
     name.load_table(offset_table.get_table_entry("name"), fin);
     os_2.load_table(offset_table.get_table_entry("OS/2"), fin);
 
-    load_glyph_data_array(fin);// FIXME
+    load_glyph_data_array(fin);
 
     fin.close();
     return true;
   }
 
+  True_Type_Font::~True_Type_Font(){
+    for(int i = 0; i < maxp.num_glyphs; ++i){
+      delete glyph_data_array[i];
+    }
+    delete[] glyph_data_array; // FIXME: why this line will cause more memory leak?
+  }
+
   void True_Type_Font::load_glyph_data_array(ifstream &fin){
     ULONG glyph_data_offset = offset_table.get_table_entry("glyf")->offset;
     glyph_data_array = new Glyph_Data*[maxp.num_glyphs];
-    for(int i = 0; i <= maxp.num_glyphs; ++i){
+    for(int i = 0; i < maxp.num_glyphs; ++i){
       ULONG offset = glyph_data_offset;
       if(head.index_to_loc_format){ // The format of 'loca' table is determined by the 'index_to_loc_format' entry in 'head' table.
         offset += *((ULONG*)loca.offsets + i); // 1 for ULONG
     }else{
         offset += *((USHORT*)loca.offsets + i); // 0 for USHORT
       }
-      glyph_data_array[i] = Glyph_Data::load_table(fin, offset, maxp.max_contours);
+      glyph_data_array[i] = Glyph_Data::create_glyph_data(fin, offset, maxp.max_contours);
     }
-    int j = 0;
   }
 
   void True_Type_Font::get_glyph_outline(USHORT ch){

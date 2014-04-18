@@ -17,9 +17,9 @@ using namespace std;
 #include <assert.h>
 
 namespace ttf_dll{
-	void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned size);
-	void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num);
-	#define INDENT(fp, indent) for(size_t i = 0; i < (indent); ++i) fprintf((fp), "\t")
+  void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned size);
+  void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num);
+  #define INDENT(fp, indent) for(size_t i = 0; i < (indent); ++i) fprintf((fp), "\t")
 }
 
 // TODO: reference additional headers your program requires here
