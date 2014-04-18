@@ -43,6 +43,10 @@ namespace ttf_dll{
     BYTE    *flags;                     // [number_of_points]
     SHORT   *x_coordinates;             // [number_of_points]
     SHORT   *y_coordinates;             // [number_of_points]
+    // Actually the type of coordinates is either BYTE or SHORT.
+    // Each coordinate might has different type according to the corresponding flag.
+    // Here I choose to store all the coordinates in a SHORT array.
+    // FIXME: Reading glyph data is the culprit of slow parsing speed. Consider read right before rendering.
     USHORT  pt_num;                     // the number of points in this glyph
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.

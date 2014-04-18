@@ -1,8 +1,3 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
 #pragma once
 
 #include "targetver.h"
@@ -24,8 +19,19 @@ namespace ttf_dll{
 
   #define INDENT(fp, indent) for(size_t i = 0; i < (indent); ++i) fprintf((fp), "\t")
 
+  // MEMO: Template function/class could not be separated into .h and .cpp files! Just define it in .h file!
   template<typename T>
-  void dump_array(FILE *fp, size_t indent, T *array, size_t len, char *format);
+  void dump_array(FILE *fp, size_t indent, T *array, size_t len, char *format){
+    INDENT(fp, indent);
+    for(size_t i = 0; i < len; ++i){
+      fprintf(fp, format, array[i]);
+      if((i + 1) % 10){
+        fprintf(fp, "\t");
+      }else if(i != len - 1){
+        fprintf(fp, "\n");
+        INDENT(fp, indent);
+      }
+    }
+    fprintf(fp, "\n");
+  }
 }
-
-// TODO: reference additional headers your program requires here

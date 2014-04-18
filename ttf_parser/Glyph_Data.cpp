@@ -80,13 +80,14 @@ namespace ttf_dll{
       flag = flags[i];
       *ptr = 0;
       if(flag & SHORT_VECTOR){
-        FREAD(fin, ptr);
+        FREAD(fin, (BYTE*)ptr);         // ATTENTION: DO NOT omit (BYTE*)! 
         if(~flag & IS_SAME){
           *ptr = -*ptr;
         }
       }else{
         if(~flag & IS_SAME){
-          FREAD(fin, ptr);
+          FREAD(fin, (SHORT*)ptr);
+          // ATTENTION: Though (SHORT*) is dispensable here, remember the coordinates are of either BYTE or SHORT!
         }
       }
       *ptr += last;
@@ -129,7 +130,7 @@ namespace ttf_dll{
     fprintf(fp, "</endPtsOfContours>\n");
     fprintf(fp, "<instructionLength value=\"%u\"/>\n", instruction_length);
     fprintf(fp, "<instructions>\n");
-    dump_array<BTYE>(fp, indent + 1, instructions, instruction_length, "%+08x");
+    dump_array<BYTE>(fp, indent + 1, instructions, instruction_length, "%+08x");
     fprintf(fp, "</instructions>\n");
     fprintf(fp, "<flags>\n");
     dump_array<BYTE>(fp, indent + 1, flags, pt_num, "%+08x");
@@ -302,5 +303,11 @@ namespace ttf_dll{
       FREAD(fin, &argument1);
       FREAD(fin, &argument1);
     }
+  }
+
+  void Composite_Glyph_Description::dump_info(FILE *fp, size_t indent){
+    INDENT(fp, indent); fprintf(fp, "<compositeGlyphDescription>\n");
+    INDENT(fp, indent + 1); fprintf(fp, "To be continued...\n");
+    INDENT(fp, indent); fprintf(fp, "</compositeGlyphDescription>\n");
   }
 }
