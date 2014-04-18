@@ -74,8 +74,8 @@ namespace ttf_dll{
   void Simple_Glyph_Description::read_coordinates(ifstream& fin, SHORT *ptr, bool read_x){
     SHORT last = 0;
     BYTE flag = 0;
-    BYTE SHORT_VECTOR = X_SHORT_VECTOR << (read_x? 0: 1);
-    BYTE IS_SAME = THIS_X_IS_SAME << (read_x? 0: 1);
+    BYTE SHORT_VECTOR = X_SHORT_VECTOR << (read_x ? 0: 1);
+    BYTE IS_SAME = THIS_X_IS_SAME << (read_x ? 0: 1);
     for(int i = 0; i < pt_num; ++i, ++ptr){
       flag = flags[i];
       *ptr = 0;

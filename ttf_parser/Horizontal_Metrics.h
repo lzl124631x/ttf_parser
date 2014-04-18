@@ -10,12 +10,13 @@ namespace ttf_dll{
   struct Long_Hor_Metric{
     UFWORD    advance_width;
     FWORD     lsb;
+    void load_metric(ifstream &fin);
   };
 
   class DLL_API Horizontal_Metrics{
   public:
-    Long_Hor_Metric  *hmetrics;/* [number_of_hmetrics(from hhea)] */
-    FWORD     *left_side_bearing;/* [num_glyphs(from maxp) - number_of_hmetrics] */
+    Long_Hor_Metric   *hmetrics;            // [number_of_hmetrics(from hhea)]
+    FWORD             *left_side_bearing;   // [num_glyphs(from maxp) - number_of_hmetrics]
     void load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT num_hmtx, USHORT num_glyphs);
     ~Horizontal_Metrics(){
       delete[] hmetrics;
