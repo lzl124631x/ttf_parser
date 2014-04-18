@@ -161,14 +161,14 @@ namespace ttf_dll{
       table_version_number, number_of_encoding_tables);
     ++indent;
     for(int i = 0; i < number_of_encoding_tables; ++i){
-      Encoding_Record entry = encoding_records[i];
-      INDENT(fp, indent); fprintf(fp, "<encodingTable>\n");
+      Encoding_Record *record = &encoding_records[i];
+      INDENT(fp, indent); fprintf(fp, "<encodingRecord>\n");
       ++indent;
-      INDENT(fp, indent); fprintf(fp, "<platformID value=\"%u\"/>\n", entry.platform_id);
-      INDENT(fp, indent); fprintf(fp, "<encodingID value=\"%u\"/>\n", entry.encoding_id);
-      INDENT(fp, indent); fprintf(fp, "<offset value=\"%lu\"/>\n", entry.byte_offset);
+      INDENT(fp, indent); fprintf(fp, "<platformID value=\"%u\"/>\n", record->platform_id);
+      INDENT(fp, indent); fprintf(fp, "<encodingID value=\"%u\"/>\n", record->encoding_id);
+      INDENT(fp, indent); fprintf(fp, "<offset value=\"%lu\"/>\n", record->byte_offset);
       --indent;
-      INDENT(fp, indent); fprintf(fp, "</encodingTable>\n");
+      INDENT(fp, indent); fprintf(fp, "</encodingRecord>\n");
     }
     for(int i = 0; i < number_of_encoding_tables; ++i){
       encoding_records[i].encoding_table->dump_info(fp, indent);
@@ -259,8 +259,8 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
     INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
     INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
-    fprintf(fp, "<firstCode value=\"%u\"/>\n", first_code);
-    fprintf(fp, "<entryCount value=\"%u\"/>\n", entry_count);
+    INDENT(fp, indent); fprintf(fp, "<firstCode value=\"%u\"/>\n", first_code);
+    INDENT(fp, indent); fprintf(fp, "<entryCount value=\"%u\"/>\n", entry_count);
     dump_array<USHORT>(fp, indent + 1, glyph_id_array, entry_count, "%+5u");
     --indent;
     INDENT(fp, indent); fprintf(fp, "</cmap_format_6>\n");

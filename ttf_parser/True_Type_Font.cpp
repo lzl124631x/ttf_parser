@@ -80,11 +80,11 @@ namespace ttf_dll{
     if(fopen_s(&fp, path, "w") == 0){ // Zero if successful; an error code on failure.
       fprintf(fp, "<ttFont>\n");
       offset_table.dump_info(fp, 1);
+      cmap.dump_info(fp, 1);
       head.dump_info(fp, 1);
       hhea.dump_info(fp, 1);
       maxp.dump_info(fp, 1);
       os_2.dump_info(fp, 1);
-      cmap.dump_info(fp, 1);
       name.dump_info(fp, 1);
       fprintf(fp, "</ttFont>\n");
       fclose(fp);
