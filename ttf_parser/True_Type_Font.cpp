@@ -61,6 +61,14 @@ namespace ttf_dll{
     }
   }
 
+  void True_Type_Font::dump_glyph_data_array(FILE *fp, size_t indent){
+    INDENT(fp, indent); fprintf(fp, "<glyf>\n");
+    for(int i = 0; i < maxp.num_glyphs; ++i){
+      glyph_data_array[i]->dump_info(fp, indent + 1);
+    }
+    INDENT(fp, indent); fprintf(fp, "</glyf>\n");
+  }
+
   void True_Type_Font::get_glyph_outline(USHORT ch){
     USHORT glyph_index = cmap.get_glyph_index(Windows, Unicode_BMP, ch);
     //ULONG location = loca.find_location(glyph_index);
@@ -86,6 +94,7 @@ namespace ttf_dll{
       maxp.dump_info(fp, 1);
       os_2.dump_info(fp, 1);
       name.dump_info(fp, 1);
+      dump_glyph_data_array(fp, 1);
       fprintf(fp, "</ttFont>\n");
       fclose(fp);
       return true;

@@ -63,15 +63,24 @@ namespace ttf_dll{
     void glyph_to_path(GraphicsPath &path);
     void dump_info(FILE *fp, size_t indent);
   };
-
+  
   class Composite_Glyph_Description : public Glyph_Data{
   public:
-    USHORT  flags;
-    USHORT  glyph_index;
-    SHORT   argument1;
-    SHORT   argument2;
+    USHORT      flags;                  // component flag
+    USHORT      glyph_index;            // glyph index of component
+    SHORT       argument1;              // x-offset for component or point number; type depends on bits 0 and 1 in component flags
+    SHORT       argument2;              // y-offset for component or point number; type depends on bits 0 and 1 in component flags
+    F2DOT14     x_scale;
+    F2DOT14     scale01;
+    F2DOT14     scale10;
+    F2DOT14     y_scale;
+    USHORT      number_of_instructions;
+    BYTE        *instructions;
+    // Some transformation options might follow.
     Composite_Glyph_Description(ifstream &fin, ULONG offset);
-    ~Composite_Glyph_Description(){}
+    ~Composite_Glyph_Description(){
+      delete[] instructions;
+    }
     void dump_coordinates(){}
     void dump_svg_outline(FILE *fp){}
     void glyph_to_path(GraphicsPath &path){}

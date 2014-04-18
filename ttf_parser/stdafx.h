@@ -25,13 +25,14 @@ namespace ttf_dll{
     INDENT(fp, indent);
     for(size_t i = 0; i < len; ++i){
       fprintf(fp, format, array[i]);
-      if((i + 1) % 10){
+      if(i == len - 1){           // end of array
+        fprintf(fp, "\n");
+      }else if((i + 1) % 10){     // in the middle of line
         fprintf(fp, "\t");
-      }else if(i != len - 1){
+      }else{                      // end of line
         fprintf(fp, "\n");
         INDENT(fp, indent);
       }
     }
-    fprintf(fp, "\n");
   }
 }

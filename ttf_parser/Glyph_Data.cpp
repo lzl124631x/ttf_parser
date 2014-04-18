@@ -125,18 +125,22 @@ namespace ttf_dll{
     fprintf(fp, "<simpleGlyphDescription numberOfContours=\"%d\" xMin=\"%d\" yMin=\"%d\" xMax=\"%d\" yMax=\"%d\">\n",
       number_of_contours, x_min, y_min, x_max, y_max); // FIME: These information should be dumped by the base class.
     ++indent;
-    fprintf(fp, "<endPtsOfContours>\n");
-    dump_array<USHORT>(fp, indent + 1, end_pts_of_contours, number_of_contours, "%+5u");
-    fprintf(fp, "</endPtsOfContours>\n");
-    fprintf(fp, "<instructionLength value=\"%u\"/>\n", instruction_length);
-    fprintf(fp, "<instructions>\n");
-    dump_array<BYTE>(fp, indent + 1, instructions, instruction_length, "%+08x");
-    fprintf(fp, "</instructions>\n");
-    fprintf(fp, "<flags>\n");
-    dump_array<BYTE>(fp, indent + 1, flags, pt_num, "%+08x");
-    fprintf(fp, "</flags>\n");
-    fprintf(fp, "<xCoordinates>\n");
-    fprintf(fp, "</xCoordinates>\n");
+    INDENT(fp, indent); fprintf(fp, "<endPtsOfContours>\n");
+    dump_array<USHORT>(fp, indent + 1, end_pts_of_contours, number_of_contours, "%-u");
+    INDENT(fp, indent); fprintf(fp, "</endPtsOfContours>\n");
+    INDENT(fp, indent); fprintf(fp, "<instructionLength value=\"%u\"/>\n", instruction_length);
+    INDENT(fp, indent); fprintf(fp, "<instructions>\n");
+    dump_array<BYTE>(fp, indent + 1, instructions, instruction_length, "%+02x");
+    INDENT(fp, indent); fprintf(fp, "</instructions>\n");
+    INDENT(fp, indent); fprintf(fp, "<flags>\n");
+    dump_array<BYTE>(fp, indent + 1, flags, pt_num, "%+02x");
+    INDENT(fp, indent); fprintf(fp, "</flags>\n");
+    INDENT(fp, indent); fprintf(fp, "<xCoordinates>\n");
+    dump_array<SHORT>(fp, indent + 1, x_coordinates, pt_num, "%+5d");
+    INDENT(fp, indent); fprintf(fp, "</xCoordinates>\n");
+    INDENT(fp, indent); fprintf(fp, "<yCoordinates>\n");
+    dump_array<SHORT>(fp, indent + 1, y_coordinates, pt_num, "%+5d");
+    INDENT(fp, indent); fprintf(fp, "</yCoordinates>\n");
     --indent;
     INDENT(fp, indent); fprintf(fp, "</simpleGlyphDescription>\n");
   }
@@ -281,27 +285,63 @@ namespace ttf_dll{
   // Bit Order of Composite Glyph Description Flag
   enum Composite_Glyph_Description_Flag{
     ARG_1_AND_2_ARE_WORDS         = 0x1,
+    // If this is set, the arguments are words; otherwise, they are bytes.
     ARGS_ARE_XY_VALUES            = (ARG_1_AND_2_ARE_WORDS << 1),
+    // If this is set, the arguments are xy values; otherwise, they are points.
     ROUND_XY_TO_GRID              = (ARGS_ARE_XY_VALUES << 1),
+    // For the xy values if the preceding is true.
     WE_HAVE_A_SCALE               = (ROUND_XY_TO_GRID << 1),
+    // This indicates that there is a simple scale for the component. Otherwise, scale = 1.0.
     // Bit 4 is reserved and set to 0.
     MORE_COMPONENTS               = (WE_HAVE_A_SCALE << 2),
+    // Indicates at least one more glyph after this one.
     WE_HAVE_AN_X_AND_Y_SCALE      = (MORE_COMPONENTS << 1),
+    // The x direction will use a different scale from the y direction.
     WE_HAVE_A_TWO_BY_TWO          = (WE_HAVE_AN_X_AND_Y_SCALE << 1),
+    // There is a 2 by 2 transformation that will be used to scale the component.
     WE_HAVE_INSTRUCTIONS          = (WE_HAVE_A_TWO_BY_TWO << 1),
-    USE_MY_METRICS                = (WE_HAVE_INSTRUCTIONS << 1)
+    // Following the last component are instructions for the composite character.
+    USE_MY_METRICS                = (WE_HAVE_INSTRUCTIONS << 1),
+    // If set, this forces the aw and lsb (and rsb) for the composite to be equal to those from this original glyph.
+    // This works for hinted and unhinted characters.
+    OVERLAP_COMPOUND              = (USE_MY_METRICS << 1),
+    // Used by Apple in GX fonts.
+    SCALED_COMPONENT_OFFSET       = (OVERLAP_COMPOUND << 1),
+    // Composite designed to have the component offset scaled (designed for Apple rasterizer).
+    UNSCALED_COMPONENT_OFFSET     = (SCALED_COMPONENT_OFFSET << 1)
+    // Composite designed not to have the component offset scaled (designed for the Microsoft TrueType rasterizer).
   };
 
   Composite_Glyph_Description::Composite_Glyph_Description(ifstream &fin, ULONG offset)
   : Glyph_Data(fin, offset){
-    FREAD(fin, &flags);
-    FREAD(fin, &glyph_index);
-    if(flags & ARG_1_AND_2_ARE_WORDS){
-      FREAD(fin, &argument1);
-      FREAD(fin, &argument1);
+    do{
+      FREAD(fin, &flags);
+      FREAD(fin, &glyph_index);
+      if(flags & ARG_1_AND_2_ARE_WORDS){
+        FREAD(fin, &argument1);
+        FREAD(fin, &argument2);
+      }else{
+        FREAD(fin, (BYTE*)&argument1);
+        FREAD(fin, (BYTE*)&argument2);
+      }
+      if(flags & WE_HAVE_A_SCALE){
+        FREAD(fin, &x_scale);
+      }else if(flags & WE_HAVE_AN_X_AND_Y_SCALE){
+        FREAD(fin, &x_scale);
+        FREAD(fin, &y_scale);
+      }else if(flags & WE_HAVE_A_TWO_BY_TWO){
+        FREAD(fin, &x_scale);
+        FREAD(fin, &scale01);
+        FREAD(fin, &scale10);
+        FREAD(fin, &y_scale);
+      }
+    }while(flags & MORE_COMPONENTS);
+    if(flags & WE_HAVE_INSTRUCTIONS){
+      FREAD(fin, &number_of_instructions);
+      instructions = new BYTE[number_of_instructions];
+      FREAD_N(fin, instructions, number_of_instructions);
     }else{
-      FREAD(fin, &argument1);
-      FREAD(fin, &argument1);
+      instructions = NULL;
     }
   }
 

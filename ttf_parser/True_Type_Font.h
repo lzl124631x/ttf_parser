@@ -19,6 +19,7 @@ namespace ttf_dll{
   class DLL_API True_Type_Font{
   private:
     void load_glyph_data_array(ifstream &fin);
+    void dump_glyph_data_array(FILE *fp, size_t indent);
   public:
     Offset_Table offset_table;
     Character_To_Glyph_Index_Mapping_Table cmap;
