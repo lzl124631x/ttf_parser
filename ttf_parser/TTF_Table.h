@@ -14,8 +14,6 @@ namespace ttf_dll{
     ULONG  offset;    // Offset from beginning of TrueType font file
     ULONG  length;
     void load_entry(ifstream &fin);
-    static ULONG tag_string_to_ULONG(char *str);
-    static void tag_ULONG_to_string(ULONG ul, char *str);
   };
 
   class DLL_API Offset_Table{

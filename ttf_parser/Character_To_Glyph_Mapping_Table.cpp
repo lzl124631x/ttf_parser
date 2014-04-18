@@ -177,21 +177,6 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "</cmap>\n");
   }
 
-  template<typename T>
-  void dump_array(FILE *fp, size_t indent, T *array, size_t len, char *format){
-    INDENT(fp, indent);
-    for(size_t i = 0; i < len; ++i){
-      fprintf(fp, format, array[i]);
-      if((i + 1) % 10){
-        fprintf(fp, "\t");
-      }else if(i != len - 1){
-        fprintf(fp, "\n");
-        INDENT(fp, indent);
-      }
-    }
-    fprintf(fp, "\n");
-  }
-
   void Segment_Mapping_To_Delta_Values::dump_info(FILE *fp, size_t indent){
     INDENT(fp, indent); fprintf(fp, "<cmap_format_4>\n");
     ++indent;

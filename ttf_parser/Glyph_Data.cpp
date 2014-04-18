@@ -119,6 +119,27 @@ namespace ttf_dll{
     printf("\n");
   }
 
+  void Simple_Glyph_Description::dump_info(FILE *fp, size_t indent){
+    INDENT(fp, indent);
+    fprintf(fp, "<simpleGlyphDescription numberOfContours=\"%d\" xMin=\"%d\" yMin=\"%d\" xMax=\"%d\" yMax=\"%d\">\n",
+      number_of_contours, x_min, y_min, x_max, y_max); // FIME: These information should be dumped by the base class.
+    ++indent;
+    fprintf(fp, "<endPtsOfContours>\n");
+    dump_array<USHORT>(fp, indent + 1, end_pts_of_contours, number_of_contours, "%+5u");
+    fprintf(fp, "</endPtsOfContours>\n");
+    fprintf(fp, "<instructionLength value=\"%u\"/>\n", instruction_length);
+    fprintf(fp, "<instructions>\n");
+    dump_array<BTYE>(fp, indent + 1, instructions, instruction_length, "%+08x");
+    fprintf(fp, "</instructions>\n");
+    fprintf(fp, "<flags>\n");
+    dump_array<BYTE>(fp, indent + 1, flags, pt_num, "%+08x");
+    fprintf(fp, "</flags>\n");
+    fprintf(fp, "<xCoordinates>\n");
+    fprintf(fp, "</xCoordinates>\n");
+    --indent;
+    INDENT(fp, indent); fprintf(fp, "</simpleGlyphDescription>\n");
+  }
+
   void add_quadratic_bezier(GraphicsPath &path, const PointF &q0, const PointF &q1, const PointF &q2){
     PointF c1, c2;
     // first control point of cubic bezier: c1 = (q0 + 2 * q1)/3 = q0 + 2 * (q1 - q0)/3

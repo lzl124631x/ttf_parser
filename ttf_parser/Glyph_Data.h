@@ -24,10 +24,11 @@ namespace ttf_dll{
     Glyph_Data(ifstream &fin, ULONG offset);
     static Glyph_Data* create_glyph_data(ifstream &fin, ULONG offset, USHORT max_contours);
     virtual ~Glyph_Data(){};
-    static bool is_simply_glyph(SHORT number_of_contours){ return number_of_contours >= 0; }
+    static bool is_simply_glyph(SHORT number_of_contours){ return number_of_contours >= 0; } // FIXME: does this function need to be member function?
     virtual void dump_coordinates() = 0;
     virtual void dump_svg_outline(FILE *fp) = 0;
     virtual void glyph_to_path(GraphicsPath &path) = 0;
+    virtual void dump_info(FILE *fp, size_t indent) = 0;
   };
 
   class DLL_API Simple_Glyph_Description : public Glyph_Data{
@@ -38,11 +39,11 @@ namespace ttf_dll{
   public:
     USHORT  *end_pts_of_contours;
     USHORT  instruction_length;
-    BYTE  *instructions; /* [instruction_length] */
-    BYTE  *flags;/* [number_of_points] */
-    SHORT  *x_coordinates;/* [number_of_points] */
-    SHORT  *y_coordinates;/* [number_of_points] */
-    USHORT  pt_num;/* the number of points in this glyph */
+    BYTE    *instructions;              // [instruction_length]
+    BYTE    *flags;                     // [number_of_points]
+    SHORT   *x_coordinates;             // [number_of_points]
+    SHORT   *y_coordinates;             // [number_of_points]
+    USHORT  pt_num;                     // the number of points in this glyph
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.
     Simple_Glyph_Description(ifstream &fin, ULONG offset);
@@ -56,6 +57,7 @@ namespace ttf_dll{
     void dump_coordinates();
     void dump_svg_outline(FILE *fp);
     void glyph_to_path(GraphicsPath &path);
+    void dump_info(FILE *fp, size_t indent);
   };
 
   class Composite_Glyph_Description : public Glyph_Data{
@@ -69,6 +71,7 @@ namespace ttf_dll{
     void dump_coordinates(){}
     void dump_svg_outline(FILE *fp){}
     void glyph_to_path(GraphicsPath &path){}
+    void dump_info(FILE *fp, size_t indent);
   };
 }
 #endif

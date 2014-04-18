@@ -21,4 +21,19 @@ namespace ttf_dll{
       buf = (char*)buf + unit_size;
     }
   }
+
+  template<typename T>
+  void dump_array(FILE *fp, size_t indent, T *array, size_t len, char *format){
+    INDENT(fp, indent);
+    for(size_t i = 0; i < len; ++i){
+      fprintf(fp, format, array[i]);
+      if((i + 1) % 10){
+        fprintf(fp, "\t");
+      }else if(i != len - 1){
+        fprintf(fp, "\n");
+        INDENT(fp, indent);
+      }
+    }
+    fprintf(fp, "\n");
+  }
 }

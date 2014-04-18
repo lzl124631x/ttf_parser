@@ -23,6 +23,9 @@ namespace ttf_dll{
 #define FREAD_N(f, b, n) ifstream_read_big_endian((f), (b), sizeof(*(b)), (n))
 
   #define INDENT(fp, indent) for(size_t i = 0; i < (indent); ++i) fprintf((fp), "\t")
+
+  template<typename T>
+  void dump_array(FILE *fp, size_t indent, T *array, size_t len, char *format);
 }
 
 // TODO: reference additional headers your program requires here

@@ -2,24 +2,10 @@
 #include "TTF_Table.h"
 
 namespace ttf_dll{
-  ULONG Table_Directory_Entry::tag_string_to_ULONG(char *str){
-    ULONG ul = 0;
-    for(int i = 0; i < 4; ++i){
-      ul <<= 8;
-      ul += *str++;
-    }
-    return ul;
-  }
-
-  void Table_Directory_Entry::tag_ULONG_to_string(ULONG ul, char *str){
-    for(int i = 3; i >= 0; --i){
-      *(str + i)= (ul & 0xFF);
-      ul >>= 8;
-    }
-  }
-
   void Table_Directory_Entry::load_entry(ifstream &fin){
-    FREAD(fin, &tag);
+    // The type of `tag` is ULONG, but it's actually a 4-character string.
+    // So don't use FREAD(fin, &tag) because it will reverse the character sequence.
+    fin.read((char*)&tag, sizeof(tag));
     FREAD(fin, &checksum);
     FREAD(fin, &offset);
     FREAD(fin, &length);
@@ -39,7 +25,7 @@ namespace ttf_dll{
   }
 
   Table_Directory_Entry* Offset_Table::get_table_entry(char *tag_str){
-    ULONG tag = Table_Directory_Entry::tag_string_to_ULONG(tag_str);
+    ULONG tag = *(ULONG*)tag_str;
     for(int i = 0; i < num_tables; ++i){
       Table_Directory_Entry *entry = &table_directory_entries[i];
       if(entry->tag == tag){
