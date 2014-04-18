@@ -4,20 +4,20 @@
 namespace ttf_dll{
   void Horizontal_Header::load_table(Table_Directory_Entry *entry, ifstream &fin){
     fin.seekg(entry->offset, ios::beg);
-    ifstream_read_big_endian(fin, &table_version_number, sizeof(FIXED));
-    ifstream_read_big_endian(fin, &ascender, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &descender, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &line_gap, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &advance_width_max, sizeof(UFWORD));
-    ifstream_read_big_endian(fin, &min_left_side_bearing, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &min_right_side_bearing, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &x_max_extent, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &caret_slope_rise, sizeof(SHORT));
-    ifstream_read_big_endian(fin, &caret_slope_run, sizeof(SHORT));
-    ifstream_read_big_endian(fin, &caret_offset, sizeof(SHORT));
+    FREAD(fin, &table_version_number);
+    FREAD(fin, &ascender);
+    FREAD(fin, &descender);
+    FREAD(fin, &line_gap);
+    FREAD(fin, &advance_width_max);
+    FREAD(fin, &min_left_side_bearing);
+    FREAD(fin, &min_right_side_bearing);
+    FREAD(fin, &x_max_extent);
+    FREAD(fin, &caret_slope_rise);
+    FREAD(fin, &caret_slope_run);
+    FREAD(fin, &caret_offset);
     fin.seekg(4 * sizeof(SHORT), ios::cur);
-    ifstream_read_big_endian(fin, &metric_data_format, sizeof(SHORT));
-    ifstream_read_big_endian(fin, &number_of_hmetrics, sizeof(USHORT));
+    FREAD(fin, &metric_data_format);
+    FREAD(fin, &number_of_hmetrics);
   }
 
   void Horizontal_Header::dump_info(FILE *fp, size_t indent){

@@ -30,7 +30,7 @@ namespace ttf_dll{
     maxp.load_table(offset_table.get_table_entry("maxp"), fin);
     loca.load_table(offset_table.get_table_entry("loca"), fin, maxp.num_glyphs, head.index_to_loc_format);
     hhea.load_table(offset_table.get_table_entry("hhea"), fin);
-    hmtx.load_table(offset_table.get_table_entry("hmtx"), fin, this);
+    hmtx.load_table(offset_table.get_table_entry("hmtx"), fin, hhea.number_of_hmetrics, maxp.num_glyphs);
     name.load_table(offset_table.get_table_entry("name"), fin);
     os_2.load_table(offset_table.get_table_entry("OS/2"), fin);
 
@@ -77,7 +77,7 @@ namespace ttf_dll{
 
   bool True_Type_Font::dump_ttf(char *path){
     FILE *fp = NULL;
-    if(fp = fopen(path, "w")){
+    if(fopen_s(&fp, path, "w") == 0){ // Zero if successful; an error code on failure.
       fprintf(fp, "<ttFont>\n");
       offset_table.dump_info(fp, 1);
       head.dump_info(fp, 1);

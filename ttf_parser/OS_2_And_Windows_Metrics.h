@@ -29,7 +29,7 @@ namespace ttf_dll{
     SHORT     y_strike_out_size;
     SHORT     y_strike_out_position;
     SHORT     s_family_class;
-    typedef struct _PANOSE{
+    struct PANOSE{
       BYTE      b_family_type;
       BYTE      b_serif_style;
       BYTE      b_weight;
@@ -40,7 +40,7 @@ namespace ttf_dll{
       BYTE      b_letter_form;
       BYTE      b_mid_line;
       BYTE      b_x_height;
-    }PANOSE;
+    };
     PANOSE    panose;
     ULONG     ul_unicode_range_1;      // Bits 0-31
     ULONG     ul_unicode_range_2;      // Bits 32-63

@@ -19,6 +19,9 @@ using namespace std;
 namespace ttf_dll{
   void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned size);
   void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num);
+#define FREAD(f, b) ifstream_read_big_endian((f), (b), sizeof(*(b)))
+#define FREAD_N(f, b, n) ifstream_read_big_endian((f), (b), sizeof(*(b)), (n))
+
   #define INDENT(fp, indent) for(size_t i = 0; i < (indent); ++i) fprintf((fp), "\t")
 }
 

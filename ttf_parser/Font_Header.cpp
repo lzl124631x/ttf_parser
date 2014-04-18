@@ -4,23 +4,23 @@
 namespace ttf_dll{
   void Font_Header::load_table(Table_Directory_Entry *entry, ifstream &fin){
     fin.seekg(entry->offset, ios::beg);
-    ifstream_read_big_endian(fin, &table_version_number, sizeof(FIXED));
-    ifstream_read_big_endian(fin, &font_revision, sizeof(FIXED));
-    ifstream_read_big_endian(fin, &checksum_adjustment, sizeof(ULONG));
-    ifstream_read_big_endian(fin, &magic_number, sizeof(ULONG));
-    ifstream_read_big_endian(fin, &flags, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &units_per_em, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &created, sizeof(longDateTime));
-    ifstream_read_big_endian(fin, &modified, sizeof(longDateTime));
-    ifstream_read_big_endian(fin, &x_min, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &y_min, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &x_max, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &y_max, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &mac_style, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &lowest_rec_ppem, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &font_direction_hint, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &index_to_loc_format, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &glygh_data_format, sizeof(USHORT));
+    FREAD(fin, &table_version_number);
+    FREAD(fin, &font_revision);
+    FREAD(fin, &checksum_adjustment);
+    FREAD(fin, &magic_number);
+    FREAD(fin, &flags);
+    FREAD(fin, &units_per_em);
+    FREAD(fin, &created);
+    FREAD(fin, &modified);
+    FREAD(fin, &x_min);
+    FREAD(fin, &y_min);
+    FREAD(fin, &x_max);
+    FREAD(fin, &y_max);
+    FREAD(fin, &mac_style);
+    FREAD(fin, &lowest_rec_ppem);
+    FREAD(fin, &font_direction_hint);
+    FREAD(fin, &index_to_loc_format);
+    FREAD(fin, &glygh_data_format);
   }
 
   void Font_Header::dump_info(FILE *fp, size_t indent){

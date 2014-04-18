@@ -6,8 +6,8 @@ namespace ttf_dll{
   void Character_To_Glyph_Index_Mapping_Table::load_table(Table_Directory_Entry *entry, ifstream &fin){
     fin.seekg(entry->offset, ios::beg);
     streampos base = fin.tellg();
-    ifstream_read_big_endian(fin, &table_version_number, sizeof(USHORT)); // FIXME: change to sizeof(variable)!
-    ifstream_read_big_endian(fin, &number_of_encoding_tables, sizeof(USHORT));
+    FREAD(fin, &table_version_number);
+    FREAD(fin, &number_of_encoding_tables);
     if(number_of_encoding_tables <= 0) return; // FIXME: futile?
     // Read encoding table entries.
     encoding_records = new Encoding_Record[number_of_encoding_tables];
@@ -50,7 +50,7 @@ namespace ttf_dll{
     fin.seekg(base);
     fin.seekg(byte_offset, ios::cur); // FXIME: fstream is random-access stream! Simplify the code!
     USHORT format = 0;
-    ifstream_read_big_endian(fin, &format, sizeof(format));
+    FREAD(fin, &format);
     fin.seekg(-(int)sizeof(format), ios::cur); // Rewind to let 'Encodint_Table' read the format.
     switch(format){
     case BYTE_ENCODING_TABLE:{
@@ -73,21 +73,21 @@ namespace ttf_dll{
   }
 
   void Encoding_Record::load_entry(ifstream &fin){
-    ifstream_read_big_endian(fin, &platform_id, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &encoding_id, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &byte_offset, sizeof(ULONG));
+    FREAD(fin, &platform_id);
+    FREAD(fin, &encoding_id);
+    FREAD(fin, &byte_offset);
   }
 
 /******************************* Encoding_Table ***********************************/
   Encoding_Table::Encoding_Table(ifstream &fin){
-    ifstream_read_big_endian(fin, &format, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &length, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &language, sizeof(USHORT));
+    FREAD(fin, &format);
+    FREAD(fin, &length);
+    FREAD(fin, &language);
   }
 
 /******************************* Byte_Encoding_Table ***********************************/
   Byte_Encoding_Table::Byte_Encoding_Table(ifstream &fin) : Encoding_Table(fin) {
-      ifstream_read_big_endian(fin, &glyph_id_array, sizeof(BYTE), 256);
+      FREAD_N(fin, glyph_id_array, 256);
   }
 
   USHORT Byte_Encoding_Table::get_glyph_index(USHORT ch){
@@ -97,7 +97,7 @@ namespace ttf_dll{
 
 /******************************* High_Byte_Mapping_Through_Table ***********************************/
   High_Byte_Mapping_Through_Table::High_Byte_Mapping_Through_Table(ifstream &fin) : Encoding_Table(fin) {
-      ifstream_read_big_endian(fin, &subheader_keys, sizeof(BYTE), 256);
+      FREAD_N(fin, subheader_keys, 256);
       //FIXME: not finished
   }
 
@@ -107,24 +107,24 @@ namespace ttf_dll{
 
 /******************************* Segment_Mapping_To_Delta_Values ***********************************/
   Segment_Mapping_To_Delta_Values::Segment_Mapping_To_Delta_Values(ifstream &fin) : Encoding_Table(fin) {
-      ifstream_read_big_endian(fin, &seg_countx2, sizeof(USHORT));
-      ifstream_read_big_endian(fin, &search_range, sizeof(USHORT));
-      ifstream_read_big_endian(fin, &entry_selector, sizeof(USHORT));
-      ifstream_read_big_endian(fin, &range_shift, sizeof(USHORT));
+      FREAD(fin, &seg_countx2);
+      FREAD(fin, &search_range);
+      FREAD(fin, &entry_selector);
+      FREAD(fin, &range_shift);
       USHORT seg_count = seg_countx2 >> 1;
 
       end_count = new USHORT[seg_count];
-      ifstream_read_big_endian(fin, end_count, sizeof(USHORT), seg_count);
-      ifstream_read_big_endian(fin, &reserved_pad, sizeof(USHORT));
+      FREAD_N(fin, end_count, seg_count);
+      FREAD(fin, &reserved_pad);
       start_count = new USHORT[seg_count];
-      ifstream_read_big_endian(fin, start_count, sizeof(USHORT), seg_count);
+      FREAD_N(fin, start_count, seg_count);
       id_delta = new SHORT[seg_count];
-      ifstream_read_big_endian(fin, id_delta, sizeof(SHORT), seg_count);
+      FREAD_N(fin, id_delta, seg_count);
       id_range_offset = new USHORT[seg_count];
-      ifstream_read_big_endian(fin, id_range_offset, sizeof(USHORT), seg_count);
+      FREAD_N(fin, id_range_offset, seg_count);
       USHORT var_len = length - sizeof(USHORT) * (8 + (seg_countx2 << 1));
       glyph_id_array = new USHORT[var_len];
-      ifstream_read_big_endian(fin, glyph_id_array, sizeof(USHORT), var_len);
+      FREAD_N(fin, glyph_id_array, var_len);
   }
 
   USHORT Segment_Mapping_To_Delta_Values::get_glyph_index(USHORT ch){
@@ -146,10 +146,10 @@ namespace ttf_dll{
 
 /******************************* Trimmed_Table_Mapping ***********************************/
   Trimmed_Table_Mapping::Trimmed_Table_Mapping(ifstream &fin) : Encoding_Table(fin) {
-      ifstream_read_big_endian(fin, &first_code, sizeof(USHORT));
-      ifstream_read_big_endian(fin, &entry_count, sizeof(USHORT));
+      FREAD(fin, &first_code);
+      FREAD(fin, &entry_count);
       glyph_id_array = new USHORT[entry_count];
-      ifstream_read_big_endian(fin, glyph_id_array, sizeof(USHORT), entry_count);
+      FREAD_N(fin, glyph_id_array, entry_count);
   }
 
   USHORT Trimmed_Table_Mapping::get_glyph_index(USHORT ch){

@@ -3,12 +3,12 @@
 
 namespace ttf_dll{
   void Name_Record::load_record(ifstream &fin){
-    ifstream_read_big_endian(fin, &platform_id, sizeof(platform_id));
-    ifstream_read_big_endian(fin, &encoding_id, sizeof(encoding_id));
-    ifstream_read_big_endian(fin, &language_id, sizeof(language_id));
-    ifstream_read_big_endian(fin, &name_id, sizeof(name_id));
-    ifstream_read_big_endian(fin, &length, sizeof(length));
-    ifstream_read_big_endian(fin, &offset, sizeof(offset));
+    FREAD(fin, &platform_id);
+    FREAD(fin, &encoding_id);
+    FREAD(fin, &language_id);
+    FREAD(fin, &name_id);
+    FREAD(fin, &length);
+    FREAD(fin, &offset);
   }
 
   void Name_Record::read_string(ifstream &fin){
@@ -29,9 +29,9 @@ namespace ttf_dll{
 
   void Naming_Table::load_table(Table_Directory_Entry *entry, ifstream &fin){
     fin.seekg(entry->offset, ios::beg);
-    ifstream_read_big_endian(fin, &format, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &count, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &offset, sizeof(USHORT));
+    FREAD(fin, &format);
+    FREAD(fin, &count);
+    FREAD(fin, &offset);
     name_records = new Name_Record[count];
     for(int i = 0; i < count; ++i){   // Load each name record sequentially.
       name_records[i].load_record(fin);      

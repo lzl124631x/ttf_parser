@@ -4,21 +4,21 @@
 namespace ttf_dll{
   void Maximum_Profile::load_table(Table_Directory_Entry *entry, ifstream &fin){
     fin.seekg(entry->offset, ios::beg);
-    ifstream_read_big_endian(fin, &table_version_number, sizeof(FIXED));
-    ifstream_read_big_endian(fin, &num_glyphs, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_points, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_contours, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_composite_points, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_composite_contours, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_zones, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_twilight_points, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_storage, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_function_defs, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_instruction_defs, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_stack_elements, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_size_of_instructions, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_component_elements, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &max_component_depth, sizeof(USHORT));
+    FREAD(fin, &table_version_number);
+    FREAD(fin, &num_glyphs);
+    FREAD(fin, &max_points);
+    FREAD(fin, &max_contours);
+    FREAD(fin, &max_composite_points);
+    FREAD(fin, &max_composite_contours);
+    FREAD(fin, &max_zones);
+    FREAD(fin, &max_twilight_points);
+    FREAD(fin, &max_storage);
+    FREAD(fin, &max_function_defs);
+    FREAD(fin, &max_instruction_defs);
+    FREAD(fin, &max_stack_elements);
+    FREAD(fin, &max_size_of_instructions);
+    FREAD(fin, &max_component_elements);
+    FREAD(fin, &max_component_depth);
   }
 
   void Maximum_Profile::dump_info(FILE *fp, size_t indent){

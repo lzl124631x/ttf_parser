@@ -4,21 +4,21 @@
 namespace ttf_dll{
 /******************************* Glyph_Data ***********************************/
   Glyph_Data::Glyph_Data(ifstream &fin, ULONG offset){
-    fin.seekg(offset, ios::beg);
-    ifstream_read_big_endian(fin, &number_of_contours, sizeof(SHORT));
-    ifstream_read_big_endian(fin, &x_min, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &y_min, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &x_max, sizeof(FWORD));
-    ifstream_read_big_endian(fin, &y_max, sizeof(FWORD));
+    FREAD(fin, &number_of_contours);
+    FREAD(fin, &x_min);
+    FREAD(fin, &y_min);
+    FREAD(fin, &x_max);
+    FREAD(fin, &y_max);
   }
 
   Glyph_Data* Glyph_Data::create_glyph_data(ifstream &fin, ULONG offset, USHORT max_contours){
     SHORT number_of_contours = 0;
     fin.seekg(offset, ios::beg);
-    ifstream_read_big_endian(fin, &number_of_contours, sizeof(number_of_contours));
+    FREAD(fin, &number_of_contours);
     if(number_of_contours > max_contours){ // FIXME: Mathematica6.ttf has some glyph with number_of_contours greater than max_contours.
       return NULL;
     }
+    fin.seekg(-(int)sizeof(number_of_contours), ios::cur); // Rewind to let 'Glyph_Data' read 'number_of_contours'
     if(is_simply_glyph(number_of_contours)){
       return new Simple_Glyph_Description(fin, offset);
     }else{
@@ -39,13 +39,11 @@ namespace ttf_dll{
   Simple_Glyph_Description::Simple_Glyph_Description(ifstream &fin, ULONG offset)
   : Glyph_Data(fin, offset){
     end_pts_of_contours = new USHORT[number_of_contours];
-    ifstream_read_big_endian(fin, end_pts_of_contours,
-      sizeof(USHORT), number_of_contours);
+    FREAD_N(fin, end_pts_of_contours, number_of_contours);
 
-    ifstream_read_big_endian(fin, &instruction_length, sizeof(USHORT));
+    FREAD(fin, &instruction_length);
     instructions = new BYTE[instruction_length];
-    ifstream_read_big_endian(fin, instructions,
-      sizeof(BYTE), instruction_length);
+    FREAD_N(fin, instructions, instruction_length);
 
     pt_num = end_pts_of_contours[number_of_contours - 1] + 1;
     read_flags(fin);
@@ -61,11 +59,11 @@ namespace ttf_dll{
     BYTE flag = 0;  
     flags = new BYTE[pt_num];
     for(int i = 0; i < pt_num;){
-      ifstream_read_big_endian(fin, &flag, sizeof(BYTE));
+      FREAD(fin, &flag);
       flags[i++] = flag;
       if(flag & REPEAT){
         BYTE repeat_num = 0;
-        ifstream_read_big_endian(fin, &repeat_num, sizeof(BYTE));
+        FREAD(fin, &repeat_num);
         while(repeat_num-- > 0){
           flags[i++] = flag;
         }
@@ -82,13 +80,13 @@ namespace ttf_dll{
       flag = flags[i];
       *ptr = 0;
       if(flag & SHORT_VECTOR){
-        ifstream_read_big_endian(fin, ptr, sizeof(BYTE));
+        FREAD(fin, ptr);
         if(~flag & IS_SAME){
           *ptr = -*ptr;
         }
       }else{
         if(~flag & IS_SAME){
-          ifstream_read_big_endian(fin, ptr, sizeof(SHORT));
+          FREAD(fin, ptr);
         }
       }
       *ptr += last;
@@ -274,14 +272,14 @@ namespace ttf_dll{
 
   Composite_Glyph_Description::Composite_Glyph_Description(ifstream &fin, ULONG offset)
   : Glyph_Data(fin, offset){
-    ifstream_read_big_endian(fin, &flags, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &glyph_index, sizeof(USHORT));
+    FREAD(fin, &flags);
+    FREAD(fin, &glyph_index);
     if(flags & ARG_1_AND_2_ARE_WORDS){
-      ifstream_read_big_endian(fin, &argument1, sizeof(SHORT));
-      ifstream_read_big_endian(fin, &argument1, sizeof(SHORT));
+      FREAD(fin, &argument1);
+      FREAD(fin, &argument1);
     }else{
-      ifstream_read_big_endian(fin, &argument1, sizeof(BYTE));
-      ifstream_read_big_endian(fin, &argument1, sizeof(BYTE));
+      FREAD(fin, &argument1);
+      FREAD(fin, &argument1);
     }
   }
 }

@@ -19,19 +19,19 @@ namespace ttf_dll{
   }
 
   void Table_Directory_Entry::load_entry(ifstream &fin){
-    ifstream_read_big_endian(fin, &tag, sizeof(tag));
-    ifstream_read_big_endian(fin, &checksum, sizeof(checksum));
-    ifstream_read_big_endian(fin, &offset, sizeof(offset));
-    ifstream_read_big_endian(fin, &length, sizeof(length));
+    FREAD(fin, &tag);
+    FREAD(fin, &checksum);
+    FREAD(fin, &offset);
+    FREAD(fin, &length);
   }
 
   void Offset_Table::load_table(ifstream &fin){
     fin.seekg(0, ios::beg);
-    ifstream_read_big_endian(fin, &sfnt_version, sizeof(FIXED));
-    ifstream_read_big_endian(fin, &num_tables, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &search_range, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &entry_selector, sizeof(USHORT));
-    ifstream_read_big_endian(fin, &range_shift, sizeof(USHORT));
+    FREAD(fin, &sfnt_version);
+    FREAD(fin, &num_tables);
+    FREAD(fin, &search_range);
+    FREAD(fin, &entry_selector);
+    FREAD(fin, &range_shift);
     table_directory_entries = new Table_Directory_Entry[num_tables];
     for(int i = 0; i < num_tables; ++i){
       table_directory_entries[i].load_entry(fin);

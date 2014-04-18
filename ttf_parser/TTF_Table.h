@@ -63,10 +63,10 @@ namespace ttf_dll{
   //class Grid_Fitting_And_Scan_Conversion_Procedure{
   //  USHORT  version;
   //  USHORT  num_ranges;
-  //  typedef struct _GASRANGE{
+  //  struct  GASRANGE{
   //    USHORT  range_max_ppem;
   //    USHORT  range_gasp_behavior;
-  //  }GASRANGE;
+  //  };
   //  GASPRANGE  gasp_range[num_ranges];
   //};
 
