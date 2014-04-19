@@ -48,7 +48,7 @@ namespace ttf_dll{
 /******************************* Encoding_Record ***********************************/
   void Encoding_Record::load_encoding_table(ifstream &fin, streampos base){
     fin.seekg(base);
-    fin.seekg(byte_offset, ios::cur); // FXIME: fstream is random-access stream! Simplify the code!
+    fin.seekg(byte_offset, ios::cur); // FIXME: fstream is random-access stream! Simplify the code!
     USHORT format = 0;
     FREAD(fin, &format);
     fin.seekg(-(int)sizeof(format), ios::cur); // Rewind to let 'Encodint_Table' read the format.
