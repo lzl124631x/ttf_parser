@@ -16,9 +16,9 @@ namespace ttf_dll{
     void load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT num_glyphs, SHORT loca_format);
     ~Index_To_Location(){
       if(loca_format){  // 1 for ULONG
-        delete[] (ULONG*)offsets;
+        DEL_T(offsets, ULONG);
       }else{            // 0 for USHORT
-        delete[] (USHORT*)offsets;
+        DEL_T(offsets, USHORT);
       }
     }
     ULONG find_location(USHORT index){

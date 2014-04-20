@@ -2,6 +2,9 @@
 #define TYPE_H
 
 namespace ttf_dll{
+#define DEL(p)  do{ delete (p); (p) = NULL; }while(0)
+#define DEL_A(p) do{ delete[] (p); (p) = NULL; }while(0)
+#define DEL_T(p, t) do{ delete[] ((t*)p); (p) = NULL; }while(0)
 // FIXME: the following export definition might not be suitable to be here.
 #ifdef TTF_PARSER_EXPORTS
 #define DLL_API __declspec(dllexport)

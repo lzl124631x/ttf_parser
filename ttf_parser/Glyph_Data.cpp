@@ -108,16 +108,11 @@ namespace ttf_dll{
   }
 
   void Simple_Glyph_Description::destroy(){
-    delete[] end_pts_of_contours;
-    end_pts_of_contours = NULL;
-    delete[] instructions;
-    instructions = NULL;
-    delete[] flags;
-    flags = NULL;
-    delete[] x_coordinates;
-    x_coordinates = NULL;
-    delete[] y_coordinates;
-    y_coordinates = NULL;
+    DEL_A(end_pts_of_contours);
+    DEL_A(instructions);
+    DEL_A(flags);
+    DEL_A(x_coordinates);
+    DEL_A(y_coordinates);
   }
 
   Glyph *Simple_Glyph_Description::load_glyph(Mem_Stream &msm){
@@ -133,23 +128,7 @@ namespace ttf_dll{
     read_coordinates(msm, y_coordinates, false);
     return this;
   }
-
-  // Simple_Glyph_Description::Simple_Glyph_Description(ifstream &fin) : Glyph(fin){
-  //   end_pts_of_contours = new USHORT[number_of_contours];
-  //   FREAD_N(fin, end_pts_of_contours, number_of_contours);
-
-  //   FREAD(fin, &instruction_length);
-  //   instructions = new BYTE[instruction_length];
-  //   FREAD_N(fin, instructions, instruction_length);
-
-  //   pt_num = end_pts_of_contours[number_of_contours - 1] + 1;
-  //   read_flags(fin);
-  //   x_coordinates = new SHORT[pt_num];
-  //   read_coordinates(fin, x_coordinates, true);
-  //   y_coordinates = new SHORT[pt_num];
-  //   read_coordinates(fin, y_coordinates, false);
-  // }
-
+  
   void Simple_Glyph_Description::read_flags(Mem_Stream &msm){
     BYTE flag = 0;  
     for(int i = 0; i < pt_num;){

@@ -26,8 +26,7 @@ namespace ttf_dll{
 
     void load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT max_p, USHORT max_c, USHORT max_instr);
     ~Glyph_Data(){
-      delete[] data;
-      data = NULL;
+      DEL_A(data);
     }
     void dump_info(FILE *fp, size_t indent);
     Glyph *load_glyph(ULONG offset);

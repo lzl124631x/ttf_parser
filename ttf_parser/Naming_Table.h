@@ -44,9 +44,9 @@ namespace ttf_dll{
       void read_string(ifstream &fin);
       ~Name_Record(){
         if(double_byte_string()){
-          delete[] (wchar_t*)string;
+          DEL_T(string, wchar_t);
         }else{
-          delete[] (char*)string;
+          DEL_T(string, char);
         }
       }
   };
@@ -60,7 +60,7 @@ namespace ttf_dll{
     Name_Record   *name_records;  // The name records where count is the number of records.
     void load_table(Table_Directory_Entry *entry, ifstream &fin);
     ~Naming_Table(){
-      delete[] name_records;
+      DEL_A(name_records);
     }
     void dump_info(FILE *fp, size_t indent);
   };

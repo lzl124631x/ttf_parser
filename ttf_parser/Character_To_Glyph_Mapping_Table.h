@@ -21,12 +21,12 @@ namespace ttf_dll{
     USHORT            platform_id;
     USHORT            encoding_id;
     ULONG             byte_offset;          // Byte offset from beginning of table to the subtable for this encoding.
-    Encoding_Table    *encoding_table;
+    Encoding_Table    *encoding_table;      // Just a pointer to the corresponding encoding table; not an array.
     Encoding_Record(){}
     void load_entry(ifstream &fin);
     void load_encoding_table(ifstream &fin, streampos base);
     ~Encoding_Record(){
-      delete encoding_table;
+      DEL(encoding_table);
     }
   };
 
@@ -39,7 +39,7 @@ namespace ttf_dll{
   public:
     void load_table(Table_Directory_Entry *entry, ifstream &fin);
     ~Character_To_Glyph_Index_Mapping_Table(){
-      delete[] encoding_records;
+      DEL_A(encoding_records);
     }
     USHORT get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch);
     void dump_info(FILE *fp, size_t indent);
@@ -85,7 +85,7 @@ namespace ttf_dll{
     Subheader  *subheaders;
     USHORT    glyph_id_array;
     High_Byte_Mapping_Through_Table(ifstream &fin);
-    ~High_Byte_Mapping_Through_Table(){ delete[] subheaders; }
+    ~High_Byte_Mapping_Through_Table(){ DEL_A(subheaders); }
     USHORT get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
@@ -99,16 +99,16 @@ namespace ttf_dll{
     USHORT  *end_count;/*[seg_count]*/
     USHORT  reserved_pad;
     USHORT  *start_count;/*[seg_count]*/
-    SHORT  *id_delta;/*[seg_count]*/
+    SHORT   *id_delta;/*[seg_count]*/
     USHORT  *id_range_offset;/*[seg_count]*/
     USHORT  *glyph_id_array;/*[var_len]*/
     Segment_Mapping_To_Delta_Values(ifstream &fin);
     ~Segment_Mapping_To_Delta_Values(){
-        delete[] end_count;
-        delete[] start_count;
-        delete[] id_delta;
-        delete[] id_range_offset;
-        delete[] glyph_id_array;
+      DEL_A(end_count);
+      DEL_A(start_count);
+      DEL_A(id_delta);
+      DEL_A(id_range_offset);
+      DEL_A(glyph_id_array);
     }
     USHORT get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
@@ -123,7 +123,7 @@ namespace ttf_dll{
     USHORT  entry_count;
     USHORT  *glyph_id_array;/*[entry_count]*/
     Trimmed_Table_Mapping(ifstream &fin);
-    ~Trimmed_Table_Mapping(){ delete[] glyph_id_array; }
+    ~Trimmed_Table_Mapping(){ DEL_A(glyph_id_array); }
     USHORT get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
