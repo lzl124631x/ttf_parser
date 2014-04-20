@@ -32,9 +32,10 @@ namespace ttf_dll{
   }
 
   Glyph *Glyph_Data::load_glyph(USHORT offset){ // FIXME: no proper. use glyph_index
-    SHORT number_of_contours = 0;
+    // Read 'number_of_contours' to determine the format of the glyph.
     Mem_Stream msm(data, length);
     msm.seek(offset);
+    SHORT number_of_contours = 0;
     MREAD(msm, &number_of_contours);
     if(number_of_contours > max_contours){ // FIXME: Mathematica6.ttf has some glyph with number_of_contours greater than max_contours.
       return NULL;
@@ -70,7 +71,6 @@ namespace ttf_dll{
   void Glyph::load_glyph_header(Mem_Stream &msm){
     // 'number_of_contours' is already read in Glyph_Data::load_glyph.
     MREAD(msm, &x_min);
-    MREAD(msm, &x_min);
     MREAD(msm, &y_min);
     MREAD(msm, &x_max);
     MREAD(msm, &y_max);
@@ -98,6 +98,28 @@ namespace ttf_dll{
     pt_num = 0;
   }
 
+  // This function works only when a new font is loaded.
+  void Simple_Glyph_Description::init(USHORT max_contours, USHORT max_points, USHORT max_size_of_instructions){
+    end_pts_of_contours = new USHORT[max_contours];
+    instructions = new BYTE[max_size_of_instructions];
+    flags = new BYTE[max_points];
+    x_coordinates = new SHORT[max_points];
+    y_coordinates = new SHORT[max_points];
+  }
+
+  void Simple_Glyph_Description::destroy(){
+    delete[] end_pts_of_contours;
+    end_pts_of_contours = NULL;
+    delete[] instructions;
+    instructions = NULL;
+    delete[] flags;
+    flags = NULL;
+    delete[] x_coordinates;
+    x_coordinates = NULL;
+    delete[] y_coordinates;
+    y_coordinates = NULL;
+  }
+
   Glyph *Simple_Glyph_Description::load_glyph(Mem_Stream &msm){
     MREAD_N(msm, end_pts_of_contours, number_of_contours);
     MREAD(msm, &instruction_length);
@@ -110,21 +132,6 @@ namespace ttf_dll{
     read_coordinates(msm, x_coordinates, true);
     read_coordinates(msm, y_coordinates, false);
     return this;
-  }
-
-// This function works only when a new font is loaded.
-  void Simple_Glyph_Description::init(USHORT max_contours, USHORT max_points, USHORT max_size_of_instructions){
-    end_pts_of_contours = new USHORT[max_contours];
-    instructions = new BYTE[max_size_of_instructions];
-    x_coordinates = new SHORT[max_points];
-    y_coordinates = new SHORT[max_points];
-  }
-
-  void Simple_Glyph_Description::destroy(){
-    delete[] end_pts_of_contours;
-    delete[] instructions;
-    delete[] x_coordinates;
-    delete[] y_coordinates;
   }
 
   // Simple_Glyph_Description::Simple_Glyph_Description(ifstream &fin) : Glyph(fin){

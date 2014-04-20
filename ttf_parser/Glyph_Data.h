@@ -87,7 +87,7 @@ namespace ttf_dll{
     void dump_info(FILE *fp, size_t indent);
   };
   
-  class Composite_Glyph_Description : public Glyph{
+  class DLL_API Composite_Glyph_Description : public Glyph{
   public:
     USHORT      flags;                  // component flag
     USHORT      glyph_index;            // glyph index of component
