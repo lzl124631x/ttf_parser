@@ -18,7 +18,7 @@ namespace ttf_dll{
     data = new BYTE[length];
     fin.read((char*)data, length);
 
-    glyf = this;
+    glyf = this;  // FIXME: this might be improper and error-prone. simple_glyph.init() must be after this line
     simple_glyph.init();
   }
 
@@ -219,7 +219,7 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "</simpleGlyphDescription>\n");
   }
 
-  void add_quadratic_bezier(GraphicsPath &path, const PointF &q0, const PointF &q1, const PointF &q2){
+  static void add_quadratic_bezier(GraphicsPath &path, const PointF &q0, const PointF &q1, const PointF &q2){
     PointF c1, c2;
     // first control point of cubic bezier: c1 = (q0 + 2 * q1)/3 = q0 + 2 * (q1 - q0)/3
     c1.X = (q0.X + 2 * q1.X) / 3.0f;
@@ -236,9 +236,10 @@ namespace ttf_dll{
     PointF start_point, prev_point, cur_point;
     BYTE flag = 0;
     bool new_contour = true;
+    int last = 0;               // The index of the last point of the jth contour.
     for(int i = 0, j = 0; i < pt_num; ++i){
     // i stands for the index of cur_point, while j stands for the index of current contour.
-      flag = flags[i] & ON_CURVE;
+      flag = flags[i];
       cur_point = PointF(x_coordinates[i], y_coordinates[i]);
 
       if(new_contour){ // If this is the first point of jth contour.
@@ -249,11 +250,11 @@ namespace ttf_dll{
         // <0, 0>: prev_point = mid(last_point, cur_point);
         // <0, 1>: prev_point = cur_point
         // <1, *>: prev_point = last_point
-        int last = end_pts_of_contours[j];
-        if(flags[last] == ON_CURVE){ // If the last point is on-curve, it'll be the prev_point of the first point.
+        last = end_pts_of_contours[j];
+        if(flags[last] & ON_CURVE){ // If the last point is on-curve, it'll be the prev_point of the first point.
           prev_point = PointF(x_coordinates[last], y_coordinates[last]);
         }else{ // If the last point is off-curve...
-          if(flag == ON_CURVE){ // if the first point is on-curve, no need to draw anything.
+          if(flag & ON_CURVE){ // if the first point is on-curve, no need to draw anything.
             prev_point = cur_point;
           }else{ // Otherwise, the prev_point is the mid-point between the first and the last point (both off-curve).
             prev_point = PointF(
@@ -262,7 +263,7 @@ namespace ttf_dll{
               );
           }
         }
-        start_point = prev_point; // start_point is not simply first point.
+        start_point = prev_point; // start_point is not simply the first point.
       }
 
       // Draw something.
@@ -270,17 +271,17 @@ namespace ttf_dll{
       // <0, 0>: add_quadratic_bezier(prev_point, cur_point, implicit_next_point)
       // <0, 1>: add_quadratic_bezier(prev_point, cur_point, next_point).
       // <1, *>: AddLine(prev_point, cur_point)
-      if(flag == ON_CURVE){ // If this point is on-curve, just draw a straight line.
+      if(flag & ON_CURVE){ // If this point is on-curve, just draw a straight line.
         path.AddLine(prev_point, cur_point);
         prev_point = cur_point;
       }else{ // Otherwise, draw a quadratic bezier.
         // Calculate the next point.
         PointF next_point;
-        if(i == end_pts_of_contours[j]){ // If this is the last point, the start_point is served as next_point.
+        if(i == last){ // If this is the last point, the start_point is served as next_point.
           next_point = start_point;
         }else{ // Otherwise...
           BYTE next_flag = flags[i + 1];
-          if(next_flag == ON_CURVE){ // If the next point is on-curve, it'll be the next_point.
+          if(next_flag & ON_CURVE){ // If the next point is on-curve, it'll be the next_point.
             next_point = PointF(x_coordinates[i + 1], y_coordinates[i + 1]);
           }else{ // Otherwise, next_point is the mid-point between cur_point and the next point.
             next_point = PointF(
@@ -292,7 +293,7 @@ namespace ttf_dll{
         add_quadratic_bezier(path, prev_point, cur_point, next_point);
         prev_point = next_point;
       }
-      if(i == end_pts_of_contours[j]){ // If the last point is visited, close figure:)
+      if(i == last){ // If the last point is visited, close figure:)
         path.CloseFigure();
         new_contour = true;
         ++j;
@@ -300,6 +301,7 @@ namespace ttf_dll{
     }
   }
 
+  // FIXME: The following code and comment is out-of-date. UPDATE!
   // If the last point is off-curve, the first point is regarded as the end point.
   // If two off-curve point appear in a row, the midpoint of them is regarded as the implicit on-curve point.
   // <prev_flag, flag>
@@ -355,6 +357,73 @@ namespace ttf_dll{
     fprintf(fp, "</g>");
     fprintf(fp, "</svg>");
   }
+
+// Count the point number needed to render glyph hint.
+// all_pt_num counts all the points, including those implicit points.
+// off_pt_num counts all the off-curve points.
+  void Simple_Glyph_Description::count_pt_num(int &all_pt_num, int &off_pt_num){
+    all_pt_num = off_pt_num = 0;
+    bool new_contour = true;
+    BYTE flag = 0, prev_flag = 0;
+    int last = 0;
+    for(int i = 0, j = 0; i < pt_num; ++i, ++all_pt_num){
+      flag = flags[i] & ON_CURVE;
+      if(new_contour){ // If this is the first point of jth contour.
+        new_contour = false;
+        last = end_pts_of_contours[j];
+        prev_flag = flags[last] & ON_CURVE;
+      }
+      if(!flag){ // If the current point is OFF-curve, count it.
+        ++off_pt_num;
+        if(!prev_flag){ // If the previous point is also OFF-curve, count the implicit on-curve point.
+          ++all_pt_num;
+        }
+      }
+      if(i == last){ // If the last point is visited.
+        new_contour = true;
+        ++j;
+      }
+      prev_flag = flag;
+    }
+  }
+
+// FIXME: why not combine 'output_pts' and 'glyph_to_path' together? 
+  void Simple_Glyph_Description::output_pts(PointF *all_pt, int *off_pt){
+    PointF prev_point, cur_point;
+    BYTE prev_flag = 0, flag = 0;
+    bool new_contour = true;
+    int last = 0;
+    PointF *pt = all_pt;
+    for(int i = 0, j = 0; i < pt_num; ++i){
+    // i stands for the index of cur_point, while j stands for the index of current contour.
+      flag = flags[i] & ON_CURVE;
+      cur_point = PointF(x_coordinates[i], y_coordinates[i]);
+
+      if(new_contour){ // If this is the first point of jth contour.
+        new_contour = false;
+        last = end_pts_of_contours[j];
+        prev_flag = flags[last] & ON_CURVE;
+        prev_point = PointF(x_coordinates[last], y_coordinates[last]);
+      }
+
+      if(!prev_flag && !flag){
+      // If the previous and current point are both OFF-curve, add the implicit on-curve point.
+        *pt++ = PointF(
+          (prev_point.X + cur_point.X) / 2.0f,
+          (prev_point.Y + cur_point.Y) / 2.0f
+          );
+      }
+      if(!flag){
+        *off_pt++ = pt - all_pt;    // record the index of the off-curve point
+      }
+      *pt++ = prev_point = cur_point;
+      prev_flag = flag;
+      if(i == last){ // If the last point is visited.
+        new_contour = true;
+        ++j;
+      }
+    }
+  }
 /************************************************************************/
 /*                     Composite Glyph Description                      */
 /************************************************************************/
@@ -402,39 +471,37 @@ namespace ttf_dll{
   }
 
   Glyph *Composite_Glyph_Description::load_glyph(Mem_Stream &msm){
-    return NULL;
+    do{
+      MREAD(msm, &flags);
+      MREAD(msm, &glyph_index);
+      if(flags & ARG_1_AND_2_ARE_WORDS){
+        MREAD(msm, &argument1);
+        MREAD(msm, &argument2);
+      }else{
+        MREAD(msm, (BYTE*)&argument1);
+        MREAD(msm, (BYTE*)&argument2);
+      }
+      if(flags & WE_HAVE_A_SCALE){
+        MREAD(msm, &x_scale);
+      }else if(flags & WE_HAVE_AN_X_AND_Y_SCALE){
+        MREAD(msm, &x_scale);
+        MREAD(msm, &y_scale);
+      }else if(flags & WE_HAVE_A_TWO_BY_TWO){
+        MREAD(msm, &x_scale);
+        MREAD(msm, &scale01);
+        MREAD(msm, &scale10);
+        MREAD(msm, &y_scale);
+      }
+    }while(flags & MORE_COMPONENTS);
+    if(flags & WE_HAVE_INSTRUCTIONS){
+      MREAD(msm, &number_of_instructions);
+      // instructions = new BYTE[number_of_instructions];
+      // FREAD_N(fin, instructions, number_of_instructions);
+    }else{
+      instructions = NULL;
+    }
+    return this;
   }
-  //Composite_Glyph_Description::Composite_Glyph_Description(ifstream &fin) : Glyph(fin){
-  //  do{
-  //    FREAD(fin, &flags);
-  //    FREAD(fin, &glyph_index);
-  //    if(flags & ARG_1_AND_2_ARE_WORDS){
-  //      FREAD(fin, &argument1);
-  //      FREAD(fin, &argument2);
-  //    }else{
-  //      FREAD(fin, (BYTE*)&argument1);
-  //      FREAD(fin, (BYTE*)&argument2);
-  //    }
-  //    if(flags & WE_HAVE_A_SCALE){
-  //      FREAD(fin, &x_scale);
-  //    }else if(flags & WE_HAVE_AN_X_AND_Y_SCALE){
-  //      FREAD(fin, &x_scale);
-  //      FREAD(fin, &y_scale);
-  //    }else if(flags & WE_HAVE_A_TWO_BY_TWO){
-  //      FREAD(fin, &x_scale);
-  //      FREAD(fin, &scale01);
-  //      FREAD(fin, &scale10);
-  //      FREAD(fin, &y_scale);
-  //    }
-  //  }while(flags & MORE_COMPONENTS);
-  //  if(flags & WE_HAVE_INSTRUCTIONS){
-  //    FREAD(fin, &number_of_instructions);
-  //    instructions = new BYTE[number_of_instructions];
-  //    FREAD_N(fin, instructions, number_of_instructions);
-  //  }else{
-  //    instructions = NULL;
-  //  }
-  //}
 
   void Composite_Glyph_Description::dump_info(FILE *fp, size_t indent){
     INDENT(fp, indent); fprintf(fp, "<compositeGlyphDescription>\n");

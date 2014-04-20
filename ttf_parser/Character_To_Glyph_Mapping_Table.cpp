@@ -39,7 +39,7 @@ namespace ttf_dll{
   USHORT Character_To_Glyph_Index_Mapping_Table::get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch){
     USHORT index = 0;
     Encoding_Table* encoding_table = get_encoding_table(platform_id, encoding_id);
-    if(encoding_id){
+    if(encoding_table){
       index = encoding_table->get_glyph_index(ch);
     }
     return index;

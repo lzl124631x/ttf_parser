@@ -53,6 +53,8 @@ namespace ttf_dll{
     virtual void dump_svg_outline(FILE *fp) = 0;
     virtual void glyph_to_path(GraphicsPath &path) = 0;
     virtual void dump_info(FILE *fp, size_t indent) = 0;
+    virtual void count_pt_num(int &all_pt_num, int &off_pt_num) = 0;
+    virtual void output_pts(PointF *all_pt, int *off_pt) = 0;
   };
 
   class DLL_API Simple_Glyph_Description : public Glyph{
@@ -84,6 +86,8 @@ namespace ttf_dll{
     void dump_svg_outline(FILE *fp);
     void glyph_to_path(GraphicsPath &path);
     void dump_info(FILE *fp, size_t indent);
+    void count_pt_num(int &all_pt_num, int &off_pt_num);
+    void output_pts(PointF *all_pt, int *off_pt);
   };
   
   class DLL_API Composite_Glyph_Description : public Glyph{
@@ -107,6 +111,8 @@ namespace ttf_dll{
     void dump_svg_outline(FILE *fp){}
     void glyph_to_path(GraphicsPath &path){}
     void dump_info(FILE *fp, size_t indent);
+    void count_pt_num(int &all_pt_num, int &off_pt_num){}
+    void output_pts(PointF *all_pt, int *off_pt){}
   };
 }
 #endif
