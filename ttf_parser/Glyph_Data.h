@@ -2,14 +2,39 @@
 #define GLYPH_DATA_H
 #include "Type.h"
 #include "TTF_Table.h"
+#include "Mem_Stream.h"
 #include <objidl.h>
 #include <gdiplus.h>
 using namespace Gdiplus;
 #pragma comment(lib, "gdiplus.lib")
-/******************************* glyf ***********************************/
-// https://www.microsoft.com/typography/otspec/glyf.htm
+
 namespace ttf_dll{
-  class DLL_API Glyph_Data{ // FIXME: consider to change this class into a pure vitual class
+/************************************************************************/
+/*                         glyf - Glyf Data                             */
+/* Spec: https://www.microsoft.com/typography/otspec/glyf.htm           */
+/************************************************************************/
+  class Glyph;
+
+  class DLL_API Glyph_Data{
+  public:
+    USHORT    max_points;                 // Maximum points in a non-composite glyph. (From 'maxp')
+    USHORT    max_contours;               // Maximum contours in a non-composite glyph. (From 'maxp')
+    USHORT    max_size_of_instructions;   // Maximum byte count for glyph instructions. (From 'maxp')
+
+    void      *data;                      // The whole chunk of data in glyph data table.
+    size_t    length;                     // Length of data in bytes.
+
+    void load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT max_p, USHORT max_c, USHORT max_instr);
+    ~Glyph_Data(){
+      delete[] data;
+      data = NULL;
+    }
+    void dump_info(FILE *fp, size_t indent);
+    Glyph *load_glyph(USHORT offset);
+    void clear();
+  };
+
+  class DLL_API Glyph{
   public:
     SHORT  number_of_contours;
     // If the 'number_of_contours' is greater than or equal to zero, this is a single glyph;
@@ -21,26 +46,26 @@ namespace ttf_dll{
     FWORD  y_min;
     FWORD  x_max;
     FWORD  y_max;
-    Glyph_Data(ifstream &fin, ULONG offset);
-    static Glyph_Data* create_glyph_data(ifstream &fin, ULONG offset, USHORT max_contours);
-    virtual ~Glyph_Data(){};
-    static bool is_simply_glyph(SHORT number_of_contours){ return number_of_contours >= 0; } // FIXME: does this function need to be member function?
+
+    Glyph();
+    void load_glyph_header(Mem_Stream &msm);
+    virtual Glyph *load_glyph(Mem_Stream &msm) = 0;
     virtual void dump_coordinates() = 0;
     virtual void dump_svg_outline(FILE *fp) = 0;
     virtual void glyph_to_path(GraphicsPath &path) = 0;
     virtual void dump_info(FILE *fp, size_t indent) = 0;
   };
 
-  class DLL_API Simple_Glyph_Description : public Glyph_Data{
+  class DLL_API Simple_Glyph_Description : public Glyph{
   private:
-    void read_flags(ifstream &fin);
-    void read_coordinates(ifstream& fin, SHORT *ptr, bool read_x);
+    void read_flags(Mem_Stream &msm);
+    void read_coordinates(Mem_Stream &msm, SHORT *ptr, bool read_x);
     void dump_flags();
   public:
-    USHORT  *end_pts_of_contours;
+    USHORT  *end_pts_of_contours;       // Array of last points of each contour; its length is the number of contours.
     USHORT  instruction_length;
     BYTE    *instructions;              // [instruction_length]
-    BYTE    *flags;                     // [number_of_points]
+    BYTE    *flags;                     // [variable_length]
     SHORT   *x_coordinates;             // [number_of_points]
     SHORT   *y_coordinates;             // [number_of_points]
     // Actually the type of coordinates is either BYTE or SHORT.
@@ -50,21 +75,19 @@ namespace ttf_dll{
     USHORT  pt_num;                     // the number of points in this glyph
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.
-    Simple_Glyph_Description(ifstream &fin, ULONG offset);
-    ~Simple_Glyph_Description(){
-      delete[] end_pts_of_contours;
-      delete[] instructions;
-      delete[] flags;
-      delete[] x_coordinates;
-      delete[] y_coordinates;
-    }
+    
+    Simple_Glyph_Description();
+    ~Simple_Glyph_Description(){}       // FIXME: destructor should be private
+    void init(USHORT max_contours, USHORT max_points, USHORT max_size_of_instructions);
+    void Simple_Glyph_Description::destroy();
+    Glyph *load_glyph(Mem_Stream &msm);
     void dump_coordinates();
     void dump_svg_outline(FILE *fp);
     void glyph_to_path(GraphicsPath &path);
     void dump_info(FILE *fp, size_t indent);
   };
   
-  class Composite_Glyph_Description : public Glyph_Data{
+  class Composite_Glyph_Description : public Glyph{
   public:
     USHORT      flags;                  // component flag
     USHORT      glyph_index;            // glyph index of component
@@ -77,10 +100,10 @@ namespace ttf_dll{
     USHORT      number_of_instructions;
     BYTE        *instructions;
     // Some transformation options might follow.
-    Composite_Glyph_Description(ifstream &fin, ULONG offset);
-    ~Composite_Glyph_Description(){
-      delete[] instructions;
-    }
+
+    Composite_Glyph_Description();
+    ~Composite_Glyph_Description(){}
+    Glyph *load_glyph(Mem_Stream &msm);
     void dump_coordinates(){}
     void dump_svg_outline(FILE *fp){}
     void glyph_to_path(GraphicsPath &path){}

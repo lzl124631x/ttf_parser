@@ -6,6 +6,8 @@
 // https://www.microsoft.com/typography/otspec/loca.htm
 namespace ttf_dll{
   class DLL_API Index_To_Location{
+    // The indexToLoc table stores the offsets to the locations of the glyphs in the font,
+    // relative to the beginning of the glyphData table.
   public:
     SHORT loca_format; // FIXME: this is a copy of head.index_to_loc_format. Consider remove it.
     void *offsets; /* [num_glyphs] */

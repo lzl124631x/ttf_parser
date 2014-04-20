@@ -12,6 +12,7 @@ using namespace std;
 #include <assert.h>
 
 namespace ttf_dll{
+#define BIT(b)  (1 << b)
   void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned size);
   void ifstream_read_big_endian(ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num);
 #define FREAD(f, b) ifstream_read_big_endian((f), (b), sizeof(*(b)))

@@ -2,68 +2,155 @@
 #include "Glyph_Data.h"
 
 namespace ttf_dll{
-/******************************* Glyph_Data ***********************************/
-  Glyph_Data::Glyph_Data(ifstream &fin, ULONG offset){
-    FREAD(fin, &number_of_contours);
-    FREAD(fin, &x_min);
-    FREAD(fin, &y_min);
-    FREAD(fin, &x_max);
-    FREAD(fin, &y_max);
+  static Glyph_Data *glyf;
+  static Simple_Glyph_Description       simple_glyph;
+  static Composite_Glyph_Description    composite_glyph;
+/************************************************************************/
+/*                             Glyph Data                               */
+/************************************************************************/
+  void Glyph_Data::load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT max_p, USHORT max_c, USHORT max_instr){
+    max_points = max_p;
+    max_contours = max_c;
+    max_size_of_instructions = max_instr;
+    data = NULL;
+    fin.seekg(entry->offset, ios::beg);
+    length = entry->length;
+    data = new BYTE[length];
+    fin.read((char*)data, length);
+
+    simple_glyph.init(max_points, max_contours, max_size_of_instructions);
+    glyf = this;
   }
 
-  Glyph_Data* Glyph_Data::create_glyph_data(ifstream &fin, ULONG offset, USHORT max_contours){
+  void Glyph_Data::clear(){
+    simple_glyph.destroy();
+    glyf = NULL;
+  }
+
+  static bool is_simply_glyph(SHORT number_of_contours){
+    return number_of_contours >= 0;
+  }
+
+  Glyph *Glyph_Data::load_glyph(USHORT offset){ // FIXME: no proper. use glyph_index
     SHORT number_of_contours = 0;
-    fin.seekg(offset, ios::beg);
-    FREAD(fin, &number_of_contours);
+    Mem_Stream msm(data, length);
+    msm.seek(offset);
+    MREAD(msm, &number_of_contours);
     if(number_of_contours > max_contours){ // FIXME: Mathematica6.ttf has some glyph with number_of_contours greater than max_contours.
       return NULL;
     }
-    fin.seekg(-(int)sizeof(number_of_contours), ios::cur); // Rewind to let 'Glyph_Data' read 'number_of_contours'
+    Glyph *glyph = NULL;
     if(is_simply_glyph(number_of_contours)){
-      return new Simple_Glyph_Description(fin, offset);
+      glyph = &simple_glyph;
     }else{
-      return new Composite_Glyph_Description(fin, offset);
+      glyph = &composite_glyph;
     }
+    glyph->number_of_contours = number_of_contours;
+    glyph->load_glyph_header(msm);
+    glyph->load_glyph(msm);
+    return glyph;
   }
-/******************************* Simple_Glyph_Description ***********************************/
+
+  void Glyph_Data::dump_info(FILE *fp, size_t indent){
+    INDENT(fp, indent); fprintf(fp, "<glyf>\n");
+    //for(int i = 0; i < maxp.num_glyphs; ++i){
+      //Glyph *glyph = create_glyph()
+      //glyph_data_array[i]->dump_info(fp, indent + 1);
+    //}
+    INDENT(fp, indent); fprintf(fp, "</glyf>\n");
+  }
+/************************************************************************/
+/*                              Glyph                                   */
+/************************************************************************/
+  Glyph::Glyph(){
+    number_of_contours = 0;
+    x_min = y_min = x_max = y_max = 0;
+  }
+
+  void Glyph::load_glyph_header(Mem_Stream &msm){
+    // 'number_of_contours' is already read in Glyph_Data::load_glyph.
+    MREAD(msm, &x_min);
+    MREAD(msm, &x_min);
+    MREAD(msm, &y_min);
+    MREAD(msm, &x_max);
+    MREAD(msm, &y_max);
+  }
+/************************************************************************/
+/*                     Simple Glyph Description                         */
+/************************************************************************/
   // Bit Order of Simply Glyph Description Flag
   enum Simple_Glyph_Description_Flag{ // FIXME: This enum should be defined in the declaration of class.
-    ON_CURVE            = 0x1,
-    X_SHORT_VECTOR      = (ON_CURVE << 1),
-    Y_SHORT_VECTOR      = (X_SHORT_VECTOR << 1),
-    REPEAT              = (Y_SHORT_VECTOR << 1),
-    THIS_X_IS_SAME      = (REPEAT << 1),
-    THIS_Y_IS_SAME      = (THIS_X_IS_SAME << 1)
+    ON_CURVE            = BIT(0),
+    X_SHORT_VECTOR      = BIT(1),
+    Y_SHORT_VECTOR      = BIT(2),
+    REPEAT              = BIT(3),
+    THIS_X_IS_SAME      = BIT(4),
+    THIS_Y_IS_SAME      = BIT(5)
   };
 
-  Simple_Glyph_Description::Simple_Glyph_Description(ifstream &fin, ULONG offset)
-  : Glyph_Data(fin, offset){
-    end_pts_of_contours = new USHORT[number_of_contours];
-    FREAD_N(fin, end_pts_of_contours, number_of_contours);
-
-    FREAD(fin, &instruction_length);
-    instructions = new BYTE[instruction_length];
-    FREAD_N(fin, instructions, instruction_length);
-
-    pt_num = end_pts_of_contours[number_of_contours - 1] + 1;
-    read_flags(fin);
-    x_coordinates = new SHORT[pt_num];
-    read_coordinates(fin, x_coordinates, true);
-    y_coordinates = new SHORT[pt_num];
-    read_coordinates(fin, y_coordinates, false);
-    //dump_flags(); // TEST
-    //dump_coordinates(); // TEST
+  Simple_Glyph_Description::Simple_Glyph_Description(){
+    end_pts_of_contours = NULL;
+    instruction_length = 0;
+    instructions = NULL;
+    flags = NULL;
+    x_coordinates = NULL;
+    y_coordinates = NULL;
+    pt_num = 0;
   }
 
-  void Simple_Glyph_Description::read_flags(ifstream &fin){
+  Glyph *Simple_Glyph_Description::load_glyph(Mem_Stream &msm){
+    MREAD_N(msm, end_pts_of_contours, number_of_contours);
+    MREAD(msm, &instruction_length);
+    if(instruction_length > glyf->max_size_of_instructions){
+      return NULL;
+    }
+    MREAD_N(msm, instructions, instruction_length);
+    pt_num = end_pts_of_contours[number_of_contours - 1] + 1;
+    read_flags(msm);
+    read_coordinates(msm, x_coordinates, true);
+    read_coordinates(msm, y_coordinates, false);
+    return this;
+  }
+
+// This function works only when a new font is loaded.
+  void Simple_Glyph_Description::init(USHORT max_contours, USHORT max_points, USHORT max_size_of_instructions){
+    end_pts_of_contours = new USHORT[max_contours];
+    instructions = new BYTE[max_size_of_instructions];
+    x_coordinates = new SHORT[max_points];
+    y_coordinates = new SHORT[max_points];
+  }
+
+  void Simple_Glyph_Description::destroy(){
+    delete[] end_pts_of_contours;
+    delete[] instructions;
+    delete[] x_coordinates;
+    delete[] y_coordinates;
+  }
+
+  // Simple_Glyph_Description::Simple_Glyph_Description(ifstream &fin) : Glyph(fin){
+  //   end_pts_of_contours = new USHORT[number_of_contours];
+  //   FREAD_N(fin, end_pts_of_contours, number_of_contours);
+
+  //   FREAD(fin, &instruction_length);
+  //   instructions = new BYTE[instruction_length];
+  //   FREAD_N(fin, instructions, instruction_length);
+
+  //   pt_num = end_pts_of_contours[number_of_contours - 1] + 1;
+  //   read_flags(fin);
+  //   x_coordinates = new SHORT[pt_num];
+  //   read_coordinates(fin, x_coordinates, true);
+  //   y_coordinates = new SHORT[pt_num];
+  //   read_coordinates(fin, y_coordinates, false);
+  // }
+
+  void Simple_Glyph_Description::read_flags(Mem_Stream &msm){
     BYTE flag = 0;  
-    flags = new BYTE[pt_num];
     for(int i = 0; i < pt_num;){
-      FREAD(fin, &flag);
+      MREAD(msm, &flag);
       flags[i++] = flag;
       if(flag & REPEAT){
         BYTE repeat_num = 0;
-        FREAD(fin, &repeat_num);
+        MREAD(msm, &repeat_num);
         while(repeat_num-- > 0){
           flags[i++] = flag;
         }
@@ -71,7 +158,7 @@ namespace ttf_dll{
     }
   }
 
-  void Simple_Glyph_Description::read_coordinates(ifstream& fin, SHORT *ptr, bool read_x){
+  void Simple_Glyph_Description::read_coordinates(Mem_Stream &msm, SHORT *ptr, bool read_x){
     SHORT last = 0;
     BYTE flag = 0;
     BYTE SHORT_VECTOR = X_SHORT_VECTOR << (read_x ? 0: 1);
@@ -80,13 +167,13 @@ namespace ttf_dll{
       flag = flags[i];
       *ptr = 0;
       if(flag & SHORT_VECTOR){
-        FREAD(fin, (BYTE*)ptr);         // ATTENTION: DO NOT omit (BYTE*)! 
+        MREAD(msm, (BYTE*)ptr);         // ATTENTION: DO NOT omit (BYTE*)! 
         if(~flag & IS_SAME){
           *ptr = -*ptr;
         }
       }else{
         if(~flag & IS_SAME){
-          FREAD(fin, (SHORT*)ptr);
+          MREAD(msm, (SHORT*)ptr);
           // ATTENTION: Though (SHORT*) is dispensable here, remember the coordinates are of either BYTE or SHORT!
         }
       }
@@ -94,6 +181,7 @@ namespace ttf_dll{
       last = *ptr;
     }
   }
+
   void Simple_Glyph_Description::dump_flags(){
     printf("Simple_Glyph_Description::dump_flags\n");
     for(int i = 0; i < pt_num; ++i){
@@ -108,8 +196,8 @@ namespace ttf_dll{
     printf("Simple_Glyph_Description::dump_coordinates\n");
     printf("<contour>\n");
     for(int i = 0, j = 0; i < pt_num; ++i){
-      printf("    <pt x=\"%d\" y=\"%d\" on=\"%d\"/>\n", x_coordinates[i], y_coordinates[i],
-        (flags[i] & ON_CURVE));
+      printf("    <pt x=\"%d\" y=\"%d\" on=\"%d\"/>\n",
+        x_coordinates[i], y_coordinates[i], (flags[i] & ON_CURVE));
       if(i == end_pts_of_contours[j]){
         printf("</contour>\n");
         ++j;
@@ -281,69 +369,86 @@ namespace ttf_dll{
     fprintf(fp, "</g>");
     fprintf(fp, "</svg>");
   }
-/******************************* Composite_Glyph_Description ***********************************/
+/************************************************************************/
+/*                     Composite Glyph Description                      */
+/************************************************************************/
   // Bit Order of Composite Glyph Description Flag
   enum Composite_Glyph_Description_Flag{
-    ARG_1_AND_2_ARE_WORDS         = 0x1,
+    ARG_1_AND_2_ARE_WORDS         = BIT(0),
     // If this is set, the arguments are words; otherwise, they are bytes.
-    ARGS_ARE_XY_VALUES            = (ARG_1_AND_2_ARE_WORDS << 1),
+    ARGS_ARE_XY_VALUES            = BIT(1),
     // If this is set, the arguments are xy values; otherwise, they are points.
-    ROUND_XY_TO_GRID              = (ARGS_ARE_XY_VALUES << 1),
+    ROUND_XY_TO_GRID              = BIT(2),
     // For the xy values if the preceding is true.
-    WE_HAVE_A_SCALE               = (ROUND_XY_TO_GRID << 1),
+    WE_HAVE_A_SCALE               = BIT(3),
     // This indicates that there is a simple scale for the component. Otherwise, scale = 1.0.
     // Bit 4 is reserved and set to 0.
-    MORE_COMPONENTS               = (WE_HAVE_A_SCALE << 2),
+    MORE_COMPONENTS               = BIT(5),
     // Indicates at least one more glyph after this one.
-    WE_HAVE_AN_X_AND_Y_SCALE      = (MORE_COMPONENTS << 1),
+    WE_HAVE_AN_X_AND_Y_SCALE      = BIT(6),
     // The x direction will use a different scale from the y direction.
-    WE_HAVE_A_TWO_BY_TWO          = (WE_HAVE_AN_X_AND_Y_SCALE << 1),
+    WE_HAVE_A_TWO_BY_TWO          = BIT(7),
     // There is a 2 by 2 transformation that will be used to scale the component.
-    WE_HAVE_INSTRUCTIONS          = (WE_HAVE_A_TWO_BY_TWO << 1),
+    WE_HAVE_INSTRUCTIONS          = BIT(8),
     // Following the last component are instructions for the composite character.
-    USE_MY_METRICS                = (WE_HAVE_INSTRUCTIONS << 1),
+    USE_MY_METRICS                = BIT(9),
     // If set, this forces the aw and lsb (and rsb) for the composite to be equal to those from this original glyph.
     // This works for hinted and unhinted characters.
-    OVERLAP_COMPOUND              = (USE_MY_METRICS << 1),
+    OVERLAP_COMPOUND              = BIT(10),
     // Used by Apple in GX fonts.
-    SCALED_COMPONENT_OFFSET       = (OVERLAP_COMPOUND << 1),
+    SCALED_COMPONENT_OFFSET       = BIT(11),
     // Composite designed to have the component offset scaled (designed for Apple rasterizer).
-    UNSCALED_COMPONENT_OFFSET     = (SCALED_COMPONENT_OFFSET << 1)
+    UNSCALED_COMPONENT_OFFSET     = BIT(12)
     // Composite designed not to have the component offset scaled (designed for the Microsoft TrueType rasterizer).
   };
 
-  Composite_Glyph_Description::Composite_Glyph_Description(ifstream &fin, ULONG offset)
-  : Glyph_Data(fin, offset){
-    do{
-      FREAD(fin, &flags);
-      FREAD(fin, &glyph_index);
-      if(flags & ARG_1_AND_2_ARE_WORDS){
-        FREAD(fin, &argument1);
-        FREAD(fin, &argument2);
-      }else{
-        FREAD(fin, (BYTE*)&argument1);
-        FREAD(fin, (BYTE*)&argument2);
-      }
-      if(flags & WE_HAVE_A_SCALE){
-        FREAD(fin, &x_scale);
-      }else if(flags & WE_HAVE_AN_X_AND_Y_SCALE){
-        FREAD(fin, &x_scale);
-        FREAD(fin, &y_scale);
-      }else if(flags & WE_HAVE_A_TWO_BY_TWO){
-        FREAD(fin, &x_scale);
-        FREAD(fin, &scale01);
-        FREAD(fin, &scale10);
-        FREAD(fin, &y_scale);
-      }
-    }while(flags & MORE_COMPONENTS);
-    if(flags & WE_HAVE_INSTRUCTIONS){
-      FREAD(fin, &number_of_instructions);
-      instructions = new BYTE[number_of_instructions];
-      FREAD_N(fin, instructions, number_of_instructions);
-    }else{
-      instructions = NULL;
-    }
+  Composite_Glyph_Description::Composite_Glyph_Description(){
+    flags = 0;
+    glyph_index = 0;
+    argument1 = 0;
+    argument2 = 0;
+    x_scale = 0;
+    scale01 = 0;
+    scale10 = 0;
+    y_scale = 0;
+    number_of_instructions = 0;
+    instructions = NULL;
   }
+
+  Glyph *Composite_Glyph_Description::load_glyph(Mem_Stream &msm){
+    return NULL;
+  }
+  //Composite_Glyph_Description::Composite_Glyph_Description(ifstream &fin) : Glyph(fin){
+  //  do{
+  //    FREAD(fin, &flags);
+  //    FREAD(fin, &glyph_index);
+  //    if(flags & ARG_1_AND_2_ARE_WORDS){
+  //      FREAD(fin, &argument1);
+  //      FREAD(fin, &argument2);
+  //    }else{
+  //      FREAD(fin, (BYTE*)&argument1);
+  //      FREAD(fin, (BYTE*)&argument2);
+  //    }
+  //    if(flags & WE_HAVE_A_SCALE){
+  //      FREAD(fin, &x_scale);
+  //    }else if(flags & WE_HAVE_AN_X_AND_Y_SCALE){
+  //      FREAD(fin, &x_scale);
+  //      FREAD(fin, &y_scale);
+  //    }else if(flags & WE_HAVE_A_TWO_BY_TWO){
+  //      FREAD(fin, &x_scale);
+  //      FREAD(fin, &scale01);
+  //      FREAD(fin, &scale10);
+  //      FREAD(fin, &y_scale);
+  //    }
+  //  }while(flags & MORE_COMPONENTS);
+  //  if(flags & WE_HAVE_INSTRUCTIONS){
+  //    FREAD(fin, &number_of_instructions);
+  //    instructions = new BYTE[number_of_instructions];
+  //    FREAD_N(fin, instructions, number_of_instructions);
+  //  }else{
+  //    instructions = NULL;
+  //  }
+  //}
 
   void Composite_Glyph_Description::dump_info(FILE *fp, size_t indent){
     INDENT(fp, indent); fprintf(fp, "<compositeGlyphDescription>\n");

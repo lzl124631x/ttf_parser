@@ -81,6 +81,7 @@
     <ClCompile Include="Horizontal_Metrics.cpp" />
     <ClCompile Include="Index_To_Location.cpp" />
     <ClCompile Include="Maximum_Profile.cpp" />
+    <ClCompile Include="Mem_Stream.cpp" />
     <ClCompile Include="Naming_Table.cpp" />
     <ClCompile Include="OS_2_And_Windows_Metrics.cpp" />
     <ClCompile Include="Post_Script.cpp" />
@@ -96,6 +97,7 @@
     <ClInclude Include="Horizontal_Metrics.h" />
     <ClInclude Include="Index_To_Location.h" />
     <ClInclude Include="Maximum_Profile.h" />
+    <ClInclude Include="Mem_Stream.h" />
     <ClInclude Include="Naming_Table.h" />
     <ClInclude Include="OS_2_And_Windows_Metrics.h" />
     <ClInclude Include="Post_Script.h" />
