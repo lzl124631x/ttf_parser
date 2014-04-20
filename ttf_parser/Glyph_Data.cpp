@@ -18,8 +18,8 @@ namespace ttf_dll{
     data = new BYTE[length];
     fin.read((char*)data, length);
 
-    simple_glyph.init(max_points, max_contours, max_size_of_instructions);
     glyf = this;
+    simple_glyph.init();
   }
 
   void Glyph_Data::clear(){
@@ -31,7 +31,7 @@ namespace ttf_dll{
     return number_of_contours >= 0;
   }
 
-  Glyph *Glyph_Data::load_glyph(USHORT offset){ // FIXME: no proper. use glyph_index
+  Glyph *Glyph_Data::load_glyph(ULONG offset){ // FIXME: no proper. use glyph_index
     // Read 'number_of_contours' to determine the format of the glyph.
     Mem_Stream msm(data, length);
     msm.seek(offset);
@@ -99,12 +99,12 @@ namespace ttf_dll{
   }
 
   // This function works only when a new font is loaded.
-  void Simple_Glyph_Description::init(USHORT max_contours, USHORT max_points, USHORT max_size_of_instructions){
-    end_pts_of_contours = new USHORT[max_contours];
-    instructions = new BYTE[max_size_of_instructions];
-    flags = new BYTE[max_points];
-    x_coordinates = new SHORT[max_points];
-    y_coordinates = new SHORT[max_points];
+  void Simple_Glyph_Description::init(){
+    end_pts_of_contours = new USHORT[glyf->max_contours];
+    instructions = new BYTE[glyf->max_size_of_instructions];
+    flags = new BYTE[glyf->max_points];
+    x_coordinates = new SHORT[glyf->max_points];
+    y_coordinates = new SHORT[glyf->max_points];
   }
 
   void Simple_Glyph_Description::destroy(){

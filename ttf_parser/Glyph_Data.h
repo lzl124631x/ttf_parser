@@ -30,7 +30,7 @@ namespace ttf_dll{
       data = NULL;
     }
     void dump_info(FILE *fp, size_t indent);
-    Glyph *load_glyph(USHORT offset);
+    Glyph *load_glyph(ULONG offset);
     void clear();
   };
 
@@ -78,7 +78,7 @@ namespace ttf_dll{
     
     Simple_Glyph_Description();
     ~Simple_Glyph_Description(){}       // FIXME: destructor should be private
-    void init(USHORT max_contours, USHORT max_points, USHORT max_size_of_instructions);
+    void init();
     void Simple_Glyph_Description::destroy();
     Glyph *load_glyph(Mem_Stream &msm);
     void dump_coordinates();
