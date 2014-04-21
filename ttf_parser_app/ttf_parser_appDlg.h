@@ -30,12 +30,15 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnFileOpen();
-	afx_msg void OnFileExit();
 	CStatic m_fileNameText;
 	HBITMAP m_charBmp;
 	CEdit m_char;
-	afx_msg void OnBnClickedView();
+  CButton m_btn_view;
+  bool render_hint;
+  void refresh_glyph();
+  afx_msg void OnFileOpen();
+  afx_msg void OnFileExit();
+  afx_msg void OnBnClickedView();
 	afx_msg void OnToolDumpXml();
-	CButton m_btn_view;
+  afx_msg void OnBnClickedHint();
 };

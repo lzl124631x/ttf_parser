@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 	ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
 	ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
 	ON_COMMAND(IDM_TOOL_DUMPXML, &Cttf_parser_appDlg::OnToolDumpXml)
+  ON_BN_CLICKED(IDC_HINT, &Cttf_parser_appDlg::OnBnClickedHint)
 END_MESSAGE_MAP()
 
 
@@ -102,6 +103,7 @@ BOOL Cttf_parser_appDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	
+  render_hint = false;        // No glyph hint by default.
 	m_fileNameText.SetWindowTextW(_T("File Name:"));
 	// TEST: Following lines are for test.
 	// std::string str("C:\\Fonts\\Mathematica6.ttf");
@@ -198,14 +200,7 @@ void Cttf_parser_appDlg::OnFileExit()
 
 void Cttf_parser_appDlg::OnBnClickedView()
 {
-	CString char_string;
-	m_char.GetWindowText(char_string);
-	if(!char_string.IsEmpty() && m_charBmp){
-		HDC hdc = ::GetDC(m_hWnd);
-		render_glyph(hdc, m_charBmp, char_string[0], 500, 500); // FIXME: test if ttf is loaded before render.
-		Invalidate(1);
-		::ReleaseDC(m_hWnd, hdc);
-	}
+  refresh_glyph();
 }
 
 
@@ -216,4 +211,22 @@ void Cttf_parser_appDlg::OnToolDumpXml()
 	}else{
 		MessageBox(_T("Failed to dump info!"), _T("Message"));
 	}
+}
+
+void Cttf_parser_appDlg::OnBnClickedHint()
+{
+  // If 'show hint' is check, render hint.
+  render_hint = (BST_CHECKED == IsDlgButtonChecked(IDC_HINT));
+  refresh_glyph();
+}
+
+void Cttf_parser_appDlg::refresh_glyph(){
+  CString char_string;
+  m_char.GetWindowText(char_string);
+  if(!char_string.IsEmpty() && m_charBmp){
+    HDC hdc = ::GetDC(m_hWnd);
+    render_glyph(hdc, m_charBmp, char_string[0], 500, 500, render_hint); // FIXME: test if ttf is loaded before render.
+    Invalidate();
+    ::ReleaseDC(m_hWnd, hdc);
+  }
 }
