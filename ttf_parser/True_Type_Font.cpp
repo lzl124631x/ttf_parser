@@ -16,6 +16,7 @@ namespace ttf_dll{
   //  Table_Directory_Entry *entry = offset_table.get_table_entry(tag);
   //  return entry->checksum == calc_table_checksum(get_table(entry), entry->length);
   //}
+  True_Type_Font *g_ttf;
 
   bool True_Type_Font::load_path(string &path){
     ifstream fin(path, ios::in | ios::binary); // FIXME: think twice about the parameter!
@@ -36,6 +37,7 @@ namespace ttf_dll{
     glyf.load_table(offset_table.get_table_entry("glyf"), fin, maxp.max_points, maxp.max_contours, maxp.max_size_of_instructions);
 
     fin.close();
+    g_ttf = this;
     return true;
   }
 
@@ -43,7 +45,7 @@ namespace ttf_dll{
     glyf.clear();
   }
 
-  Glyph *True_Type_Font::load_glyph(USHORT glyph_index){
+  ULONG True_Type_Font::glyph_index_to_offset(SHORT glyph_index){
     if(glyph_index >= maxp.num_glyphs){
       // Invalid parameter
       return NULL;
@@ -55,7 +57,12 @@ namespace ttf_dll{
     }else{
       offset += *((USHORT*)loca.offsets + glyph_index);     // 0 for USHORT
     }
-    return glyf.load_glyph(offset);
+    return offset;
+  }
+
+  Glyph *True_Type_Font::get_glyph(USHORT glyph_index){
+    // Each time user fetches the glyph, table 'glyf' will load the corresponding glyph.
+    return glyf.load_glyph(glyph_index);
   }
 
   void True_Type_Font::get_glyph_outline(USHORT ch){

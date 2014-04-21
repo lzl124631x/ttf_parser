@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Glyph_Data.h"
+#include "True_Type_Font.h"
 
 namespace ttf_dll{
   static Glyph_Data *glyf;
@@ -31,8 +32,9 @@ namespace ttf_dll{
     return number_of_contours >= 0;
   }
 
-  Glyph *Glyph_Data::load_glyph(ULONG offset){ // FIXME: no proper. use glyph_index
+  Glyph *Glyph_Data::load_glyph(SHORT glyph_index){
     // Read 'number_of_contours' to determine the format of the glyph.
+    ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
     Mem_Stream msm(data, length);
     msm.seek(offset);
     SHORT number_of_contours = 0;
@@ -474,6 +476,11 @@ namespace ttf_dll{
     do{
       MREAD(msm, &flags);
       MREAD(msm, &glyph_index);
+      ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
+      Mem_Stream temp(glyf->data, glyf->length);
+      temp.seek(offset);
+      SHORT num_cont;
+      MREAD(temp, &num_cont);
       if(flags & ARG_1_AND_2_ARE_WORDS){
         MREAD(msm, &argument1);
         MREAD(msm, &argument2);

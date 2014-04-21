@@ -29,7 +29,7 @@ namespace ttf_dll{
       DEL_A(data);
     }
     void dump_info(FILE *fp, size_t indent);
-    Glyph *load_glyph(ULONG offset);
+    Glyph *load_glyph(SHORT glyph_index);
     void clear();
   };
 

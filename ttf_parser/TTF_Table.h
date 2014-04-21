@@ -2,8 +2,6 @@
 #define TTF_TABLE_H
 
 #include "Type.h"
-#include <hash_map>
-#include <vector>
 using namespace std;
 
 namespace ttf_dll{

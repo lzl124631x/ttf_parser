@@ -5,7 +5,7 @@ using namespace ttf_dll;
 #define ON_CURVE			0x1 // FIXME: the following code is in test mode.
 void render_glyph(HDC hdc, HBITMAP bmp, ttf_dll::USHORT ch, size_t width, size_t height, bool render_hint){
 	ttf_dll::USHORT glyph_index = ttf.cmap.get_glyph_index(Windows, Unicode_BMP, ch);
-	Glyph *glyph = ttf.load_glyph(glyph_index);   // FIXME: the 'get_glyph' function should be member of ttf.
+	Glyph *glyph = ttf.get_glyph(5);
   if(!glyph){ // Error: no such glyph.
     return;
   }

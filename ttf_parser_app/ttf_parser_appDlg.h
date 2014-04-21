@@ -6,8 +6,7 @@
 #include "afxwin.h"
 
 // Cttf_parser_appDlg dialog
-class Cttf_parser_appDlg : public CDialogEx
-{
+class Cttf_parser_appDlg : public CDialogEx{
 // Construction
 public:
 	Cttf_parser_appDlg(CWnd* pParent = NULL);	// standard constructor
@@ -41,4 +40,5 @@ public:
   afx_msg void OnBnClickedView();
 	afx_msg void OnToolDumpXml();
   afx_msg void OnBnClickedHint();
+  BOOL PreTranslateMessage(MSG* pMsg);
 };

@@ -31,13 +31,18 @@ namespace ttf_dll{
     bool load_path(string &path);
     ~True_Type_Font();
     bool valid_checksum(char* tag);
-    Glyph *load_glyph(USHORT glyph_index);
+    Glyph *get_glyph(USHORT glyph_index);
     void get_glyph_outline(USHORT ch);
     bool dump_ttf(char *path);
+    ULONG glyph_index_to_offset(SHORT glyph_index);
     //ULONG* get_table(Table_Directory_Entry *entry){
     //  return (ULONG*)&file_binary[entry->offset];
     //}
   };
+
+  extern True_Type_Font *g_ttf;
+  // A global pointer to the ttf.
+  // Members of ttf use this pointer to access other members of ttf.
 }
 
 #endif
