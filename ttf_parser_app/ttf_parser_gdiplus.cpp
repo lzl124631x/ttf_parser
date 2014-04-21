@@ -3,9 +3,9 @@ using namespace ttf_dll;
 
 // FIXME: the following definition should not be defined here.
 #define ON_CURVE			0x1 // FIXME: the following code is in test mode.
-void render_glyph(HDC hdc, HBITMAP bmp, ttf_dll::USHORT ch, size_t width, size_t height, bool render_hint){
+void render_glyph(HDC hdc, HBITMAP bmp, ttf_dll::USHORT ch, size_t width, size_t height, bool render_point){
 	ttf_dll::USHORT glyph_index = ttf.cmap.get_glyph_index(Windows, Unicode_BMP, ch);
-	Glyph *glyph = ttf.get_glyph(5);
+	Glyph *glyph = ttf.get_glyph(glyph_index);
   if(!glyph){ // Error: no such glyph.
     return;
   }
@@ -38,8 +38,8 @@ void render_glyph(HDC hdc, HBITMAP bmp, ttf_dll::USHORT ch, size_t width, size_t
 	g.FillPath(&SolidBrush(Color::Red), &path);
 	g.DrawPath(&Pen(Color::Red, 1), &path);
 
-  // render hint
-  if(render_hint){
+  // render points
+  if(render_point){
     float radius = 1.0 / x_ratio;
     if(radius < 1e-6) radius = 1.0;
     float pen_width = radius;

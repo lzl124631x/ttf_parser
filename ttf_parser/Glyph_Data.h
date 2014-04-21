@@ -102,6 +102,7 @@ namespace ttf_dll{
     F2DOT14     y_scale;
     USHORT      number_of_instructions;
     BYTE        *instructions;
+    ULONG offset;
     // Some transformation options might follow.
 
     Composite_Glyph_Description();
@@ -109,7 +110,7 @@ namespace ttf_dll{
     Glyph *load_glyph(Mem_Stream &msm);
     void dump_coordinates(){}
     void dump_svg_outline(FILE *fp){}
-    void glyph_to_path(GraphicsPath &path){}
+    void glyph_to_path(GraphicsPath &path);
     void dump_info(FILE *fp, size_t indent);
     void count_pt_num(int &all_pt_num, int &off_pt_num){}
     void output_pts(PointF *all_pt, int *off_pt){}

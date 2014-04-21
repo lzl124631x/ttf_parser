@@ -17,6 +17,8 @@ using namespace std;
 
 namespace ttf_dll{
   class DLL_API True_Type_Font{
+  private:
+    Glyph *load_glyph(SHORT glyph_index, SHORT x_offset, SHORT y_offset);
   public:
     Offset_Table offset_table;
     Character_To_Glyph_Index_Mapping_Table cmap;

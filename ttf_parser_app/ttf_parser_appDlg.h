@@ -33,7 +33,7 @@ public:
 	HBITMAP m_charBmp;
 	CEdit m_char;
   CButton m_btn_view;
-  bool render_hint;
+  bool render_point;
   void refresh_glyph();
   afx_msg void OnFileOpen();
   afx_msg void OnFileExit();

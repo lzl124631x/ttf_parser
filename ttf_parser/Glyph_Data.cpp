@@ -360,7 +360,7 @@ namespace ttf_dll{
     fprintf(fp, "</svg>");
   }
 
-// Count the point number needed to render glyph hint.
+// Count the point number needed to render glyph points.
 // all_pt_num counts all the points, including those implicit points.
 // off_pt_num counts all the off-curve points.
   void Simple_Glyph_Description::count_pt_num(int &all_pt_num, int &off_pt_num){
@@ -462,25 +462,26 @@ namespace ttf_dll{
   Composite_Glyph_Description::Composite_Glyph_Description(){
     flags = 0;
     glyph_index = 0;
-    argument1 = 0;
-    argument2 = 0;
-    x_scale = 0;
-    scale01 = 0;
-    scale10 = 0;
-    y_scale = 0;
+    argument1 = argument2 = 0;
+    x_scale = scale01 = scale10 = y_scale = 0;
     number_of_instructions = 0;
     instructions = NULL;
   }
 
   Glyph *Composite_Glyph_Description::load_glyph(Mem_Stream &msm){
+    offset = msm.tell();
+    // FIXME: Composite glyph rendering is still in test mode.
+    // Currently I decide not to read information from composite glyph while loading.
+    return this;
+  }
+
+  void Composite_Glyph_Description::glyph_to_path(GraphicsPath &path){
+    Mem_Stream msm(glyf->data, glyf->length);
+    msm.seek(offset);
     do{
       MREAD(msm, &flags);
       MREAD(msm, &glyph_index);
-      ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
-      Mem_Stream temp(glyf->data, glyf->length);
-      temp.seek(offset);
-      SHORT num_cont;
-      MREAD(temp, &num_cont);
+      argument1 = argument2 = 0;
       if(flags & ARG_1_AND_2_ARE_WORDS){
         MREAD(msm, &argument1);
         MREAD(msm, &argument2);
@@ -488,6 +489,15 @@ namespace ttf_dll{
         MREAD(msm, (BYTE*)&argument1);
         MREAD(msm, (BYTE*)&argument2);
       }
+      Glyph *glyph = glyf->load_glyph(glyph_index);
+      GraphicsPath tmp_path;
+      glyph->glyph_to_path(tmp_path);
+      if(flags & ARGS_ARE_XY_VALUES){
+        Matrix mtx;
+        mtx.Translate(argument1, argument2);
+        tmp_path.Transform(&mtx);
+      }
+      path.AddPath(&tmp_path, false);
       if(flags & WE_HAVE_A_SCALE){
         MREAD(msm, &x_scale);
       }else if(flags & WE_HAVE_AN_X_AND_Y_SCALE){
@@ -502,12 +512,12 @@ namespace ttf_dll{
     }while(flags & MORE_COMPONENTS);
     if(flags & WE_HAVE_INSTRUCTIONS){
       MREAD(msm, &number_of_instructions);
+      // FIXME: test mode, instruction not support.
       // instructions = new BYTE[number_of_instructions];
       // FREAD_N(fin, instructions, number_of_instructions);
     }else{
       instructions = NULL;
     }
-    return this;
   }
 
   void Composite_Glyph_Description::dump_info(FILE *fp, size_t indent){
