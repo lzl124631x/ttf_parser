@@ -1,7 +1,3 @@
-
-// ttf_parser_appDlg.cpp : implementation file
-//
-
 #include "stdafx.h"
 #include "ttf_parser_app.h"
 #include "ttf_parser_appDlg.h"
@@ -12,9 +8,7 @@
 #define new DEBUG_NEW
 #endif
 
-
 // CAboutDlg dialog used for App About
-
 class CAboutDlg : public CDialogEx{
 public:
 	CAboutDlg();
@@ -40,7 +34,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX){
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-
 // Cttf_parser_appDlg dialog
 Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cttf_parser_appDlg::IDD, pParent){
@@ -48,10 +41,11 @@ Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
 }
 
 void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX){
-	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_FILE_NAME, m_fileNameText);
-	DDX_Control(pDX, IDC_CHAR, m_char);
-	DDX_Control(pDX, IDC_VIEW, m_btn_view);
+  CDialogEx::DoDataExchange(pDX);
+  DDX_Control(pDX, IDC_FILE_NAME, m_fileNameText);
+  DDX_Control(pDX, IDC_EDIT_CHAR, m_char);
+  DDX_Control(pDX, IDC_VIEW, m_btn_view);
+  DDX_Control(pDX, IDC_GLYPH_INDEX, m_combo_glyph_index);
 }
 
 BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
@@ -62,9 +56,9 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 	ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
 	ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
 	ON_COMMAND(IDM_TOOL_DUMPXML, &Cttf_parser_appDlg::OnToolDumpXml)
-  ON_BN_CLICKED(IDC_POINT, &Cttf_parser_appDlg::OnBnClickedHint)
+  ON_BN_CLICKED(IDC_CHECK_SHOW_POINT, &Cttf_parser_appDlg::OnBnClickedHint)
+  ON_CBN_SELCHANGE(IDC_GLYPH_INDEX, &Cttf_parser_appDlg::OnCbnSelchangeGlyphIndex)
 END_MESSAGE_MAP()
-
 
 // Cttf_parser_appDlg message handlers
 BOOL Cttf_parser_appDlg::OnInitDialog(){
@@ -104,9 +98,9 @@ BOOL Cttf_parser_appDlg::OnInitDialog(){
 
 	m_btn_view.EnableWindow(false);									// disable button "View"
 	GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, MF_DISABLED);		// disable menu button "Dump XML"
-	
+
 	HDC hdc = ::GetDC(m_hWnd);
-	m_charBmp = CreateCompatibleBitmap(hdc, 500, 500); // FIXME: need to DeleteObject(m_charBmp)
+	charBmp = CreateCompatibleBitmap(hdc, 500, 500); // FIXME: need to DeleteObject(m_charBmp)
 	::ReleaseDC(m_hWnd, hdc);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -123,7 +117,6 @@ void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam){
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
-
 void Cttf_parser_appDlg::OnPaint(){
 	Invalidate(1);
 	if (IsIconic()){ // Return TRUE if the dialog is minimized.
@@ -145,7 +138,7 @@ void Cttf_parser_appDlg::OnPaint(){
 		CDialogEx::OnPaint();
 		HDC hdc = ::GetDC(m_hWnd);
 		HDC memdc = CreateCompatibleDC(hdc);
-		HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, m_charBmp);
+		HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, charBmp);
 		BitBlt(hdc, 100, 100, 500, 500, memdc, 0, 0, SRCCOPY);
 		SelectObject(memdc, old_bmp);
 		DeleteObject(memdc);
@@ -171,18 +164,34 @@ void Cttf_parser_appDlg::OnFileOpen(){
 		ttf.load_path(str);
 		m_btn_view.EnableWindow(true);									// enable button "View"
 		GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, MF_ENABLED);		// enable menu button "Dump XML"
+    // set values of combobox 'glyph index'
+    // FIXME: Try to accelerate the loading process of combobox.
+    CString glyph_index;
+    int num_glyphs = ttf.maxp.num_glyphs;
+    glyph_index.Format(_T("%d"), num_glyphs);
+    int max_len = glyph_index.GetLength();
+    m_combo_glyph_index.ResetContent();
+    m_combo_glyph_index.InitStorage(num_glyphs, max_len);
+    for(int i = 0; i < num_glyphs; ++i){
+      glyph_index.Format(_T("%d"), i);
+      m_combo_glyph_index.InsertString(i, glyph_index);
+      m_combo_glyph_index.SetItemData(i, i);
+    }
 	}
 }
-
 
 void Cttf_parser_appDlg::OnFileExit(){
 	EndDialog(0);
 }
 
 void Cttf_parser_appDlg::OnBnClickedView(){
-  refresh_glyph();
+  CString char_string;
+  m_char.GetWindowText(char_string);
+  if(!char_string.IsEmpty() && charBmp){
+    glyph_index = ttf.cmap.get_glyph_index(ttf_dll::Windows, ttf_dll::Unicode_BMP, char_string[0]);
+    refresh_glyph(); // FIXME: test if ttf is loaded before render.
+  }
 }
-
 
 void Cttf_parser_appDlg::OnToolDumpXml(){
 	if(ttf.dump_ttf("info.xml")){
@@ -194,19 +203,15 @@ void Cttf_parser_appDlg::OnToolDumpXml(){
 
 void Cttf_parser_appDlg::OnBnClickedHint(){
   // Renew the status of 'show hint' and refresh glyph.
-  render_point = (IsDlgButtonChecked(IDC_POINT) == BST_CHECKED);
+  render_point = (IsDlgButtonChecked(IDC_CHECK_SHOW_POINT) == BST_CHECKED);
   refresh_glyph();
 }
 
 void Cttf_parser_appDlg::refresh_glyph(){
-  CString char_string;
-  m_char.GetWindowText(char_string);
-  if(!char_string.IsEmpty() && m_charBmp){
     HDC hdc = ::GetDC(m_hWnd);
-    render_glyph(hdc, m_charBmp, char_string[0], 500, 500, render_point); // FIXME: test if ttf is loaded before render.
+    render_glyph(hdc, charBmp, glyph_index, 500, 500, render_point); // FIXME: test if ttf is loaded before render.
     Invalidate();
     ::ReleaseDC(m_hWnd, hdc);
-  }
 }
 
 BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg){
@@ -219,4 +224,11 @@ BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg){
     } 
   }
   return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+void Cttf_parser_appDlg::OnCbnSelchangeGlyphIndex()
+{
+  int sel = m_combo_glyph_index.GetCurSel();
+  glyph_index = (USHORT)m_combo_glyph_index.GetItemData(sel);
+  refresh_glyph();
 }

@@ -3,55 +3,28 @@
 #include "True_Type_Font.h"
 
 namespace ttf_dll{
-  static Glyph_Data *glyf;
-  static Simple_Glyph_Description       simple_glyph;
-  static Composite_Glyph_Description    composite_glyph;
+  static Glyph_Data *glyf;  // FIXME: Do I really need this pointer?
+  static Glyph glyph;
 /************************************************************************/
 /*                             Glyph Data                               */
 /************************************************************************/
-  void Glyph_Data::load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT max_p, USHORT max_c, USHORT max_instr){
-    max_points = max_p;
-    max_contours = max_c;
-    max_size_of_instructions = max_instr;
+  void Glyph_Data::load_table(Table_Directory_Entry *entry, ifstream &fin){
     data = NULL;
     fin.seekg(entry->offset, ios::beg);
     length = entry->length;
     data = new BYTE[length];
     fin.read((char*)data, length);
-
-    glyf = this;  // FIXME: this might be improper and error-prone. simple_glyph.init() must be after this line
-    simple_glyph.init();
+    glyf = this;
   }
 
-  void Glyph_Data::clear(){
-    simple_glyph.destroy();
-    glyf = NULL;
-  }
-
-  static bool is_simply_glyph(SHORT number_of_contours){
-    return number_of_contours >= 0;
-  }
-
-  Glyph *Glyph_Data::load_glyph(SHORT glyph_index){
+  Glyph *Glyph_Data::load_glyph(USHORT glyph_index){
     // Read 'number_of_contours' to determine the format of the glyph.
     ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
     Mem_Stream msm(data, length);
     msm.seek(offset);
-    SHORT number_of_contours = 0;
-    MREAD(msm, &number_of_contours);
-    if(number_of_contours > max_contours){ // FIXME: Mathematica6.ttf has some glyph with number_of_contours greater than max_contours.
-      return NULL;
-    }
-    Glyph *glyph = NULL;
-    if(is_simply_glyph(number_of_contours)){
-      glyph = &simple_glyph;
-    }else{
-      glyph = &composite_glyph;
-    }
-    glyph->number_of_contours = number_of_contours;
-    glyph->load_glyph_header(msm);
-    glyph->load_glyph(msm);
-    return glyph;
+    Glyph_Loader loader(glyph);
+    glyph.load_glyph_header(msm);
+    return &glyph;
   }
 
   void Glyph_Data::dump_info(FILE *fp, size_t indent){
@@ -63,19 +36,76 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "</glyf>\n");
   }
 /************************************************************************/
+/*                           Glyph Loader                               */
+/************************************************************************/
+  Glyph_Loader::Glyph_Loader(Glyph &glyph){
+    end_contours = glyph.end_contours;
+    flags = glyph.flags;
+    x_coordinates = glyph.x_coordinates;
+    y_coordinates = glyph.y_coordinates;
+  }
+/************************************************************************/
 /*                              Glyph                                   */
 /************************************************************************/
   Glyph::Glyph(){
-    number_of_contours = 0;
+    num_contours = 0;
     x_min = y_min = x_max = y_max = 0;
+    end_contours = NULL;
+    flags = NULL;
+    x_coordinates = y_coordinates = NULL;
   }
 
-  void Glyph::load_glyph_header(Mem_Stream &msm){
-    // 'number_of_contours' is already read in Glyph_Data::load_glyph.
+  Glyph *Glyph::load(Mem_Stream &msm, Glyph_Loader &loader){
+    if(!load_glyph_header(msm)) return NULL;
+    if(is_simply_glyph()){
+      return glyph.load_simple_glyph(msm, loader);
+    }else if(is_composite_glyph()){
+      return glyph.load_composite_glyph(msm, loader);
+    }
+    return NULL;
+  }
+
+  bool Glyph::load_glyph_header(Mem_Stream &msm){
+    MREAD(msm, &num_contours);
+    if(is_simply_glyph() && num_contours > g_ttf->maxp.max_contours ||
+      is_composite_glyph() && num_contours > g_ttf->maxp.max_composite_contours){
+      // ERROR: The contour number of this glyph is out-of-bound.
+      return NULL;
+    }
     MREAD(msm, &x_min);
     MREAD(msm, &y_min);
     MREAD(msm, &x_max);
     MREAD(msm, &y_max);
+  }
+
+  Glyph *Glyph::load_simple_glyph(Mem_Stream &msm, Glyph_Loader &loader){
+    MREAD_N(msm, end_contours, num_contours);
+    MREAD(msm, &instr_len);
+    if(instr_len > g_ttf->maxp.max_size_of_instructions){
+      return NULL;
+    }
+    //MREAD_N(msm, instructions, instruction_length);
+    msm.seek(sizeof(BYTE) * instr_len); // FIXME: skip instructions
+    pt_num = end_contours[num_contours - 1] + 1;
+    read_flags(msm);
+    read_coordinates(msm, x_coordinates, true);
+    read_coordinates(msm, y_coordinates, false);
+    return NULL;
+  }
+
+  void Simple_Glyph_Description::read_flags(Mem_Stream &msm){
+    BYTE flag = 0;  
+    for(int i = 0; i < pt_num;){
+      MREAD(msm, &flag);
+      flags[i++] = flag;
+      if(flag & REPEAT){
+        BYTE repeat_num = 0;
+        MREAD(msm, &repeat_num);
+        while(repeat_num-- > 0){
+          flags[i++] = flag;
+        }
+      }
+    }
   }
 /************************************************************************/
 /*                     Simple Glyph Description                         */
@@ -83,11 +113,23 @@ namespace ttf_dll{
   // Bit Order of Simply Glyph Description Flag
   enum Simple_Glyph_Description_Flag{ // FIXME: This enum should be defined in the declaration of class.
     ON_CURVE            = BIT(0),
+    // If set, the point is on the curve; otherwise, it is off the curve.
     X_SHORT_VECTOR      = BIT(1),
+    // If set, the corresponding x-coordinate is 1 byte long. If not set, 2 bytes.
     Y_SHORT_VECTOR      = BIT(2),
+    // Correspondingly.
     REPEAT              = BIT(3),
+    // If set, the next byte specifies the number of additional times this set of flags is to be repeated.
+    // In this way, the number of flags listed can be smaller than the number of points in a character.
     THIS_X_IS_SAME      = BIT(4),
+    // This flag has two meanings, depending on how the x-Short Vector flag is set.
+    // If x-Short Vector is set, this bit describes the sign of the value, with 1 equalling positive and 0 negative.
+    // If the x-Short Vector bit is not set and this bit is set,
+    // then the current x-coordinate is the same as the previous x-coordinate.
+    // If the x-Short Vector bit is not set and this bit is also not set,
+    // the current x-coordinate is a signed 16-bit delta vector.
     THIS_Y_IS_SAME      = BIT(5)
+    // Correspondingly.
   };
 
   Simple_Glyph_Description::Simple_Glyph_Description(){
@@ -95,18 +137,20 @@ namespace ttf_dll{
     instruction_length = 0;
     instructions = NULL;
     flags = NULL;
-    x_coordinates = NULL;
-    y_coordinates = NULL;
+    x_coordinates = y_coordinates = NULL;
     pt_num = 0;
   }
 
   // This function works only when a new font is loaded.
   void Simple_Glyph_Description::init(){
-    end_pts_of_contours = new USHORT[glyf->max_contours];
-    instructions = new BYTE[glyf->max_size_of_instructions];
-    flags = new BYTE[glyf->max_points];
-    x_coordinates = new SHORT[glyf->max_points];
-    y_coordinates = new SHORT[glyf->max_points];
+    USHORT max_points = g_ttf->maxp.max_points;
+    USHORT max_contours = g_ttf->maxp.max_contours;
+    USHORT max_size_of_instructions = g_ttf->maxp.max_size_of_instructions;
+    end_pts_of_contours = new USHORT[max_contours];
+    instructions = new BYTE[max_size_of_instructions];
+    flags = new BYTE[max_points];
+    x_coordinates = new SHORT[max_points];
+    y_coordinates = new SHORT[max_points];
   }
 
   void Simple_Glyph_Description::destroy(){
@@ -129,21 +173,6 @@ namespace ttf_dll{
     read_coordinates(msm, x_coordinates, true);
     read_coordinates(msm, y_coordinates, false);
     return this;
-  }
-  
-  void Simple_Glyph_Description::read_flags(Mem_Stream &msm){
-    BYTE flag = 0;  
-    for(int i = 0; i < pt_num;){
-      MREAD(msm, &flag);
-      flags[i++] = flag;
-      if(flag & REPEAT){
-        BYTE repeat_num = 0;
-        MREAD(msm, &repeat_num);
-        while(repeat_num-- > 0){
-          flags[i++] = flag;
-        }
-      }
-    }
   }
 
   void Simple_Glyph_Description::read_coordinates(Mem_Stream &msm, SHORT *ptr, bool read_x){
@@ -468,6 +497,15 @@ namespace ttf_dll{
     instructions = NULL;
   }
 
+  void Composite_Glyph_Description::init(){
+    USHORT max_composite_points = g_ttf->maxp.max_composite_points;
+    USHORT max_composite_contours = g_ttf->maxp.max_composite_contours;
+    end_pts_of_contours = new USHORT[max_composite_contours];
+    flags = new BYTE[max_composite_points];
+    x_coordinates = new SHORT[max_composite_points];
+    y_coordinates = new SHORT[max_composite_points];
+  }
+
   Glyph *Composite_Glyph_Description::load_glyph(Mem_Stream &msm){
     offset = msm.tell();
     // FIXME: Composite glyph rendering is still in test mode.
@@ -482,6 +520,7 @@ namespace ttf_dll{
       MREAD(msm, &flags);
       MREAD(msm, &glyph_index);
       argument1 = argument2 = 0;
+      // Must reset these two arguments. Otherwise, if they are bytes in this run, you might get the wrong answer.
       if(flags & ARG_1_AND_2_ARE_WORDS){
         MREAD(msm, &argument1);
         MREAD(msm, &argument2);

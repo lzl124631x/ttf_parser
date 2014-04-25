@@ -30,10 +30,14 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	CStatic m_fileNameText;
-	HBITMAP m_charBmp;
 	CEdit m_char;
   CButton m_btn_view;
+  CComboBox m_combo_glyph_index;
+
+  ttf_dll::USHORT glyph_index;
   bool render_point;
+  HBITMAP charBmp;
+
   void refresh_glyph();
   afx_msg void OnFileOpen();
   afx_msg void OnFileExit();
@@ -41,4 +45,5 @@ public:
 	afx_msg void OnToolDumpXml();
   afx_msg void OnBnClickedHint();
   BOOL PreTranslateMessage(MSG* pMsg);
+  afx_msg void OnCbnSelchangeGlyphIndex();
 };
