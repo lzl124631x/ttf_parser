@@ -48,20 +48,31 @@ namespace ttf_dll{
       x_coordinates = glyph.x_coordinates;
       y_coordinates = glyph.y_coordinates;
     }
+	void load_glyph(Mem_Stream &msm, USHORT glyph_index);
+  void load_simple_glyph(Mem_Stream &msm);
+  void load_composite_glyph(Mem_Stream &msm);
   };
+
+  class DLL_API Glyph_Header{
+  public:
+	  SHORT  num_contours;
+	  // If the 'number_of_contours' is greater than zero, this is a single glyph;
+	  // if that field equals -1, this is a composite glyph.
+	  FWORD  x_min;
+	  FWORD  y_min;
+	  FWORD  x_max;
+	  FWORD  y_max;
+	  bool loaded;
+	  void init();
+	  bool load_glyph_header(Mem_Stream &msm);
+  };
+
+  bool is_simply_glyph(SHORT num_contours){ return num_contours > 0; }
+  bool is_composite_glyph(SHORT num_contours){ return num_contours == -1; }
 
   class DLL_API Glyph{
   public:
-    SHORT  num_contours;
-    // If the 'number_of_contours' is greater than or equal to zero, this is a single glyph;
-    // if negative, this is a composite glyph.
-    // FIXME: There is a discrepancy in this spec.
-    // The spec also says the numberOfContours of Simple Glyph is greater than zero,
-    // while that of Composite Glyph is -1.
-    FWORD  x_min;
-    FWORD  y_min;
-    FWORD  x_max;
-    FWORD  y_max;
+	Glyph_Header header;
 
     USHORT  *end_contours;       // Array of last points of each contour; its length is the number of contours.
     USHORT  instr_len;
@@ -75,10 +86,8 @@ namespace ttf_dll{
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.
 
-    Glyph();
+    void init();
     Glyph *Glyph::load(Mem_Stream &msm, Glyph_Loader &loader);
-    bool Glyph::is_simply_glyph(){ return num_contours > 0; }
-    bool Glyph::is_composite_glyph(){ return num_contours == -1; }
     Glyph *load_simple_glyph(Mem_Stream &msm, Glyph_Loader &loader);
     Glyph *load_composite_glyph(Mem_Stream &msm, Glyph_Loader &loader);
     bool load_glyph_header(Mem_Stream &msm);
