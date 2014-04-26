@@ -42,10 +42,10 @@ Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
 
 void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX){
   CDialogEx::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_FILE_NAME, m_fileNameText);
   DDX_Control(pDX, IDC_EDIT_CHAR, m_char);
   DDX_Control(pDX, IDC_VIEW, m_btn_view);
-  DDX_Control(pDX, IDC_GLYPH_INDEX, m_combo_glyph_index);
+  DDX_Control(pDX, IDC_SLIDER_GLYPH_INDEX, m_slider_glyph_index);
+  DDX_Control(pDX, IDC_TEXT_FILE_NAME, m_fileNameText);
 }
 
 BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
@@ -56,8 +56,8 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 	ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
 	ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
 	ON_COMMAND(IDM_TOOL_DUMPXML, &Cttf_parser_appDlg::OnToolDumpXml)
-  ON_BN_CLICKED(IDC_CHECK_SHOW_POINT, &Cttf_parser_appDlg::OnBnClickedHint)
-  ON_CBN_SELCHANGE(IDC_GLYPH_INDEX, &Cttf_parser_appDlg::OnCbnSelchangeGlyphIndex)
+  ON_BN_CLICKED(IDC_CHECK_SHOW_POINT, &Cttf_parser_appDlg::OnBnClickedShowPoint)
+  ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 
 // Cttf_parser_appDlg message handlers
@@ -89,8 +89,8 @@ BOOL Cttf_parser_appDlg::OnInitDialog(){
 
 	// TODO: Add extra initialization here
 	
-  render_point = false;        // No glyph hint by default.
-	m_fileNameText.SetWindowTextW(_T("File Name:"));
+  render_point = false;        // No glyph points are shown by default.
+	m_fileNameText.SetWindowText(_T("File Name:"));
 	// TEST: Following lines are for test.
 	// std::string str("C:\\Fonts\\Mathematica6.ttf");
 	// ttf.load_path(str);
@@ -118,7 +118,7 @@ void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam){
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 void Cttf_parser_appDlg::OnPaint(){
-	Invalidate(1);
+	Invalidate();
 	if (IsIconic()){ // Return TRUE if the dialog is minimized.
 		CPaintDC dc(this); // device context for painting
 
@@ -157,26 +157,14 @@ void Cttf_parser_appDlg::OnFileOpen(){
 	CFileDialog dlg(TRUE); // TRUE for "open" dialog; FALSE for "save as" dialog.
 	if(dlg.DoModal() == IDOK){
 		path_name = dlg.GetPathName();
-		m_fileNameText.SetWindowTextW(_T("File Name: ") + path_name);
+		m_fileNameText.SetWindowText(_T("File Name: ") + path_name);
 		CStringA path_nameS(path_name.GetBuffer(0));
 		std::string str = path_nameS.GetBuffer(0);
     ttf.~True_Type_Font();
 		ttf.load_path(str);
 		m_btn_view.EnableWindow(true);									// enable button "View"
 		GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, MF_ENABLED);		// enable menu button "Dump XML"
-    // set values of combobox 'glyph index'
-    // FIXME: Try to accelerate the loading process of combobox.
-    CString glyph_index;
-    int num_glyphs = ttf.maxp.num_glyphs;
-    glyph_index.Format(_T("%d"), num_glyphs);
-    int max_len = glyph_index.GetLength();
-    m_combo_glyph_index.ResetContent();
-    m_combo_glyph_index.InitStorage(num_glyphs, max_len);
-    for(int i = 0; i < num_glyphs; ++i){
-      glyph_index.Format(_T("%d"), i);
-      m_combo_glyph_index.InsertString(i, glyph_index);
-      m_combo_glyph_index.SetItemData(i, i);
-    }
+    m_slider_glyph_index.SetRange(0, ttf.maxp.num_glyphs - 1);
 	}
 }
 
@@ -201,8 +189,8 @@ void Cttf_parser_appDlg::OnToolDumpXml(){
 	}
 }
 
-void Cttf_parser_appDlg::OnBnClickedHint(){
-  // Renew the status of 'show hint' and refresh glyph.
+void Cttf_parser_appDlg::OnBnClickedShowPoint(){
+  // Renew the status of 'show point' and refresh glyph.
   render_point = (IsDlgButtonChecked(IDC_CHECK_SHOW_POINT) == BST_CHECKED);
   refresh_glyph();
 }
@@ -226,9 +214,9 @@ BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg){
   return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-void Cttf_parser_appDlg::OnCbnSelchangeGlyphIndex()
+void Cttf_parser_appDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-  int sel = m_combo_glyph_index.GetCurSel();
-  glyph_index = (USHORT)m_combo_glyph_index.GetItemData(sel);
+  glyph_index = (USHORT)m_slider_glyph_index.GetPos();
   refresh_glyph();
+  CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }

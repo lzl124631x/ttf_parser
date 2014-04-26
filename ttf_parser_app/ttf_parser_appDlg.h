@@ -4,6 +4,7 @@
 
 #pragma once
 #include "afxwin.h"
+#include "afxcmn.h"
 
 // Cttf_parser_appDlg dialog
 class Cttf_parser_appDlg : public CDialogEx{
@@ -29,10 +30,10 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	CStatic m_fileNameText;
 	CEdit m_char;
   CButton m_btn_view;
-  CComboBox m_combo_glyph_index;
+  CStatic m_fileNameText;
+  CSliderCtrl m_slider_glyph_index;
 
   ttf_dll::USHORT glyph_index;
   bool render_point;
@@ -43,7 +44,9 @@ public:
   afx_msg void OnFileExit();
   afx_msg void OnBnClickedView();
 	afx_msg void OnToolDumpXml();
-  afx_msg void OnBnClickedHint();
+  afx_msg void OnBnClickedShowPoint();
   BOOL PreTranslateMessage(MSG* pMsg);
   afx_msg void OnCbnSelchangeGlyphIndex();
+  afx_msg void OnNMCustomdrawSliderGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult);
+  afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 };

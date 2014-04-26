@@ -29,10 +29,10 @@ void render_glyph(HDC hdc, HBITMAP bmp, ttf_dll::SHORT glyph_index, size_t width
   g.SetTransform(&matrix);
   // render bound
   // FIXME: ugly code!
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->x_min, (float)ttf.head.y_max, (float)glyph->x_min, (float)-(height / y_ratio - ttf.head.y_max));
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->x_max, (float)ttf.head.y_max, (float)glyph->x_max, (float)-(height / y_ratio - ttf.head.y_max));
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->y_min, (float)width / x_ratio + ttf.head.x_min, (float)glyph->y_min);
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->y_max, (float)width / x_ratio + ttf.head.x_min, (float)glyph->y_max);
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->header.x_min, (float)ttf.head.y_max, (float)glyph->header.x_min, (float)-(height / y_ratio - ttf.head.y_max));
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->header.x_max, (float)ttf.head.y_max, (float)glyph->header.x_max, (float)-(height / y_ratio - ttf.head.y_max));
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->header.y_min, (float)width / x_ratio + ttf.head.x_min, (float)glyph->header.y_min);
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->header.y_max, (float)width / x_ratio + ttf.head.x_min, (float)glyph->header.y_max);
   // render glyph
   g.SetSmoothingMode(SmoothingModeHighQuality);
   g.FillPath(&SolidBrush(Color::Red), &path);

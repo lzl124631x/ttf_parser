@@ -25,6 +25,7 @@ namespace ttf_dll{
       return false;
     }
 
+    g_ttf = this;
     offset_table.load_table(fin);
     cmap.load_table(offset_table.get_table_entry("cmap"), fin);
     head.load_table(offset_table.get_table_entry("head"), fin);
@@ -34,16 +35,13 @@ namespace ttf_dll{
     hmtx.load_table(offset_table.get_table_entry("hmtx"), fin, hhea.number_of_hmetrics, maxp.num_glyphs);
     name.load_table(offset_table.get_table_entry("name"), fin);
     os_2.load_table(offset_table.get_table_entry("OS/2"), fin);
-    glyf.load_table(offset_table.get_table_entry("glyf"), fin, maxp.max_points, maxp.max_contours, maxp.max_size_of_instructions);
+    glyf.load_table(offset_table.get_table_entry("glyf"), fin);
 
     fin.close();
-    g_ttf = this;
     return true;
   }
 
-  True_Type_Font::~True_Type_Font(){
-    glyf.clear();
-  }
+  True_Type_Font::~True_Type_Font(){}
 
   ULONG True_Type_Font::glyph_index_to_offset(SHORT glyph_index){
     if(glyph_index >= maxp.num_glyphs){
