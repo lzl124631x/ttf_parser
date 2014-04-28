@@ -48,7 +48,7 @@ namespace ttf_dll{
     FREAD(fin, &ul_unicode_range_2);
     FREAD(fin, &ul_unicode_range_3);
     FREAD(fin, &ul_unicode_range_4);
-    FREAD(fin, ach_vend_id);
+    FREAD_N(fin, ach_vend_id, 4);
     FREAD(fin, &fs_selection);
     FREAD(fin, &us_first_char_index);
     FREAD(fin, &us_last_char_index);
@@ -71,7 +71,7 @@ namespace ttf_dll{
     ++indent;
     INDENT(fp, indent); fprintf(fp, "<version value=\"%u\"/>\n", version);
     INDENT(fp, indent); fprintf(fp, "<xAvgCharWidth value=\"%d\"/>\n", x_avg_char_width);
-    INDENT(fp, indent); fprintf(fp, "<usWeightClass value=\"%u\"/>\n", us_width_class);
+    INDENT(fp, indent); fprintf(fp, "<usWeightClass value=\"%u\"/>\n", us_weight_class);
     INDENT(fp, indent); fprintf(fp, "<usWidthClass value=\"%u\"/>\n", us_width_class);
     INDENT(fp, indent); fprintf(fp, "<fsType value=\"%u\"/>\n", fs_type);
     INDENT(fp, indent); fprintf(fp, "<ySubscriptXSize value=\"%d\"/>\n", y_subscript_x_size);
@@ -97,13 +97,13 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "<bLetterForm value=\"%d\"/>\n", panose.b_letter_form);
     INDENT(fp, indent); fprintf(fp, "<bMidline value=\"%d\"/>\n", panose.b_mid_line);
     INDENT(fp, indent); fprintf(fp, "<bXHeight value=\"%d\"/>\n", panose.b_x_height);
-    INDENT(fp, indent); fprintf(fp, "</panose>\n");
     --indent;
+    INDENT(fp, indent); fprintf(fp, "</panose>\n");
     INDENT(fp, indent); fprintf(fp, "<ulUnicodeRange1 value=\"%lu\"/>\n", ul_unicode_range_1);
     INDENT(fp, indent); fprintf(fp, "<ulUnicodeRange2 value=\"%lu\"/>\n", ul_unicode_range_2);
     INDENT(fp, indent); fprintf(fp, "<ulUnicodeRange3 value=\"%lu\"/>\n", ul_unicode_range_3);
     INDENT(fp, indent); fprintf(fp, "<ulUnicodeRange4 value=\"%lu\"/>\n", ul_unicode_range_4);
-    INDENT(fp, indent); fprintf(fp, "<achVendID value=\"%s\"/>\n", ach_vend_id); // FIXME: ach_vend_id is a string formed by four char, but here the end of string is not set.
+    INDENT(fp, indent); fprintf(fp, "<achVendID value=\"%.4s\"/>\n", ach_vend_id);
     INDENT(fp, indent); fprintf(fp, "<fsSelection value=\"%u\"/>\n", fs_selection);
     INDENT(fp, indent); fprintf(fp, "<usFirstCharIndex value=\"%u\"/>\n", us_first_char_index);
     INDENT(fp, indent); fprintf(fp, "<usLastCharIndex value=\"%u\"/>\n", us_last_char_index);

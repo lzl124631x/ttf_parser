@@ -1,14 +1,8 @@
 #include "stdafx.h"
 using namespace ttf_dll;
 
-// FIXME: the following definition should not be defined here.
-#define ON_CURVE			0x1 // FIXME: the following code is in test mode.
-
-void render_glyph(HDC hdc, HBITMAP bmp, ttf_dll::SHORT glyph_index, size_t width, size_t height, bool render_point){
-  Glyph *glyph = ttf.get_glyph(glyph_index);
-  if(!glyph){ // Error: no such glyph.
-    return;
-  }
+void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t height, bool render_point){
+  if(!glyph) return;
 
   FWORD glyph_width = ttf.head.x_max - ttf.head.x_min;
   FWORD glyph_height = ttf.head.y_max - ttf.head.y_min;

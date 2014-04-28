@@ -17,8 +17,6 @@ using namespace std;
 
 namespace ttf_dll{
   class DLL_API True_Type_Font{
-  private:
-    Glyph *load_glyph(SHORT glyph_index, SHORT x_offset, SHORT y_offset);
   public:
     Offset_Table offset_table;
     Character_To_Glyph_Index_Mapping_Table cmap;
@@ -36,10 +34,8 @@ namespace ttf_dll{
     Glyph *get_glyph(USHORT glyph_index);
     void get_glyph_outline(USHORT ch);
     bool dump_ttf(char *path);
-    ULONG glyph_index_to_offset(SHORT glyph_index);
-    //ULONG* get_table(Table_Directory_Entry *entry){
-    //  return (ULONG*)&file_binary[entry->offset];
-    //}
+    ULONG glyph_index_to_offset(USHORT glyph_index);
+    void True_Type_Font::glyph_info(Glyph *glyph, TCHAR *buf, size_t buf_len);
   };
 
   extern True_Type_Font *g_ttf;

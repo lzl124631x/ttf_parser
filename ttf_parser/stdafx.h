@@ -19,7 +19,7 @@ namespace ttf_dll{
 #define FREAD(f, b) ifstream_read_big_endian((f), (b), sizeof(*(b)))
 #define FREAD_N(f, b, n) ifstream_read_big_endian((f), (b), sizeof(*(b)), (n))
 
-  #define INDENT(fp, indent) for(size_t i = 0; i < (indent); ++i) fprintf((fp), "\t")
+#define INDENT(fp, indent) for(size_t __i = 0; __i < (indent); ++__i) fprintf((fp), "\t")
 
   // MEMO: Template function/class could not be separated into .h and .cpp files! Just define it in .h file!
   template<typename T>

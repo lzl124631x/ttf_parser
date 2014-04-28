@@ -25,7 +25,7 @@ namespace ttf_dll{
     Unicode_UCS_4   = 10
   };
 
-  struct Name_Record{
+  struct DLL_API Name_Record{
       USHORT  platform_id;  // Platform ID.
       USHORT  encoding_id;  // Platform-specific encoding ID.
       USHORT  language_id;  // Language ID.

@@ -15,7 +15,7 @@ namespace ttf_dll{
     USHORT          flags;
     USHORT          units_per_em;             // Valid range is from 16 to 16384. This value should be a power of 2 for fonts that have TrueType outlines.
     longDateTime    created;                  // Number of seconds since 12:00 midnight, January 1, 1904. 64-bit integer
-    longDateTime    modified;                 // Number of seconds since 12:00 midnight, January 1, 1904. 64-bit integer
+    longDateTime    modified;                 // As above.
     FWORD           x_min;                    // For all glyph bounding boxes.
     FWORD           y_min;                    // For all glyph bounding boxes.
     FWORD           x_max;                    // For all glyph bounding boxes.

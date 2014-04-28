@@ -11,13 +11,14 @@ namespace ttf_dll{
   // version 2: OpenType rev 1.2
   // version 3: OpenType rev 1.4
   // version 4: OpenType rev 1.6
-  class DLL_API OS_2_And_Windows_Metrics{// version 3
+  class DLL_API OS_2_And_Windows_Metrics{// version 4
+    // FIXME: This table varies in different version. Always using version 4 is wrong.
   public:
     USHORT    version;
     SHORT     x_avg_char_width;
     USHORT    us_weight_class;
     USHORT    us_width_class;
-    SHORT     fs_type;
+    USHORT    fs_type;
     SHORT     y_subscript_x_size;
     SHORT     y_subscript_y_size;
     SHORT     y_subscript_x_offset;
@@ -50,9 +51,9 @@ namespace ttf_dll{
     USHORT    fs_selection;
     USHORT    us_first_char_index;
     USHORT    us_last_char_index;
-    USHORT    s_typo_ascender;
-    USHORT    s_typo_descender;
-    USHORT    s_typo_line_cap;
+    SHORT     s_typo_ascender;
+    SHORT     s_typo_descender;
+    SHORT     s_typo_line_cap;
     USHORT    us_win_ascent;
     USHORT    us_win_descent;
     ULONG     ul_code_page_range_1;    // Bits 0-31

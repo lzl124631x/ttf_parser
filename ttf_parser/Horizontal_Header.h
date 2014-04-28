@@ -5,7 +5,7 @@
 /******************************* hhea ***********************************/
 // 
 namespace ttf_dll{
-  class Horizontal_Header{
+  class DLL_API Horizontal_Header{
   public:
     FIXED     table_version_number;
     FWORD     ascender;

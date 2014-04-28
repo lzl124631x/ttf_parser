@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Font_Header.h"
+#include <ctime>
 
 namespace ttf_dll{
   void Font_Header::load_table(Table_Directory_Entry *entry, ifstream &fin){
@@ -23,6 +24,23 @@ namespace ttf_dll{
     FREAD(fin, &glygh_data_format);
   }
 
+  static void longDateTime_to_string(char *buf, size_t buf_size, longDateTime time){
+    // Seconds between 00:00 1904-01-01 (Mac Time) and 00:00 1970-01-01 (UTC Time)
+    static const unsigned long secs_until_1970 = 2082844800;
+    if(time < secs_until_1970){
+        sprintf_s(buf, buf_size, "Invalid Time Stamp");
+        return;
+    }
+    tm mac_time = {0};
+    mac_time.tm_sec = (int)(time - secs_until_1970);
+    mac_time.tm_hour = 0;   // Adjust this for your timezone.
+    mac_time.tm_mday = 1;   // FIXME: Confused! I have to add this 'day to month' to get the right answer!
+                            // No use to modify 'day to year'! Why?
+    mac_time.tm_year = 70;
+    mktime(&mac_time);      // Adjust members of tm structure.
+    strftime(buf, buf_size, "%a %b %d %X %Y", &mac_time);
+  }
+
   void Font_Header::dump_info(FILE *fp, size_t indent){
     INDENT(fp, indent); fprintf(fp, "<head>\n");
     ++indent;
@@ -32,8 +50,11 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "<magicNumber value=\"0x%08x\"/>\n", magic_number);
     INDENT(fp, indent); fprintf(fp, "<flags value=\"0x%04x\"/>\n", flags);
     INDENT(fp, indent); fprintf(fp, "<unitsPerEm value=\"%d\"/>\n", units_per_em);
-    INDENT(fp, indent); fprintf(fp, "<created value=\"%d\"/>\n", created);
-    INDENT(fp, indent); fprintf(fp, "<modified value=\"%d\"/>\n", modified);
+    char time[50] = {0};
+    longDateTime_to_string(time, 50, created);
+    INDENT(fp, indent); fprintf(fp, "<created value=\"%s\"/>\n", time);
+    longDateTime_to_string(time, 50, modified);
+    INDENT(fp, indent); fprintf(fp, "<modified value=\"%s\"/>\n", time);
     INDENT(fp, indent); fprintf(fp, "<xMin value=\"%d\"/>\n", x_min);
     INDENT(fp, indent); fprintf(fp, "<yMin value=\"%d\"/>\n", y_min);
     INDENT(fp, indent); fprintf(fp, "<xMax value=\"%d\"/>\n", x_max);

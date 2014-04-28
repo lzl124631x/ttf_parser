@@ -8,7 +8,7 @@
 /* Spec: https://www.microsoft.com/typography/otspec/hmtx.htm           */
 /************************************************************************/
 namespace ttf_dll{
-  struct Long_Hor_Metric{
+  struct DLL_API Long_Hor_Metric{
     UFWORD    advance_width;
     FWORD     lsb;
     void load_metric(ifstream &fin);
@@ -27,11 +27,16 @@ namespace ttf_dll{
     // This generally is used with a run of monospaced glyphs (e.g., Kanji fonts or Courier fonts).
     // Only one run is allowed and it must be at the end.
     // This allows a monospaced font to vary the left side bearing values for each glyph.
-    void load_table(Table_Directory_Entry *entry, ifstream &fin, USHORT num_hmtx, USHORT num_glyphs);
+    USHORT            num_hmtx;
+    USHORT            num_glyphs;
+    void load_table(Table_Directory_Entry *entry, ifstream &fin);
     ~Horizontal_Metrics(){
       DEL_A(hmetrics);
       DEL_A(left_side_bearing);
     }
+    FWORD get_lsb(USHORT glyph_index);
+    UFWORD get_aw(USHORT glyph_index);
+    void dump_info(FILE *fp, size_t indent);
   };
 }
 #endif

@@ -14,6 +14,7 @@ namespace ttf_dll{
 /* Spec: https://www.microsoft.com/typography/otspec/glyf.htm           */
 /************************************************************************/
   class Glyph;
+  class Glyph_Loader;
 
   class DLL_API Glyph_Data{
   public:
@@ -39,21 +40,21 @@ namespace ttf_dll{
     bool load_glyph_header(Mem_Stream &msm);
   };
 
-  class Glyph_Loader;
-
   class DLL_API Glyph{
   public:
-    Glyph_Header header;
-    bool    root;
-    USHORT  *end_contours;       // Array of last points of each contour; its length is the number of contours.
-    USHORT  num_instr;
-    BYTE    *instrs;
-    BYTE    *flags;                     // [number_of_points]
-    PointF   *coordinates;             // [number_of_points]
+    Glyph_Header    header;
+    bool            root;
+    USHORT          glyph_index;
+    
+    USHORT          *end_contours;        // Array of last points of each contour; its length is the number of contours.
+    USHORT          num_instr;
+    BYTE            *instrs;
+    BYTE            *flags;               // [number_of_points]
+    PointF          *coordinates;         // [number_of_points]
     // Actually the type of coordinates is either BYTE or SHORT.
     // Each coordinate might has different type according to the corresponding flag.
     // Here I choose to store all the coordinates in a SHORT array.
-    USHORT  pt_num;                     // the number of points in this glyph
+    USHORT  pt_num;                       // the number of points in this glyph
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.
     void prepare();
@@ -71,7 +72,7 @@ namespace ttf_dll{
     void output_pts(PointF *all_pt, int *off_pt);
   };
 
-  class Glyph_Loader{
+  class DLL_API Glyph_Loader{
   private:
     void read_flags(Mem_Stream &msm);
     void read_coordinates(Mem_Stream &msm, PointF *ptr, bool read_x);
@@ -97,7 +98,7 @@ namespace ttf_dll{
       coordinates = glyph.coordinates;
       pt_num = 0;
     }
-	void load_glyph(USHORT glyph_index, const Matrix &mtx = Matrix());
+  void load_glyph(USHORT glyph_index, const Matrix &mtx = Matrix());
   void load_simple_glyph(Mem_Stream &msm);
   void load_composite_glyph(Mem_Stream &msm);
   };

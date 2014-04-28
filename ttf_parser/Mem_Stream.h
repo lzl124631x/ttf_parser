@@ -2,7 +2,7 @@
 #define MEM_STREAM_H
 
 namespace ttf_dll{
-  class Mem_Stream{
+  class DLL_API Mem_Stream{
   private:
     char *start;
     char *cursor;

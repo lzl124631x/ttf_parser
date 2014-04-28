@@ -53,7 +53,7 @@ namespace ttf_dll{
     TRIMMED_TABLE_MAPPING                     = 6
   };
   
-  class Byte_Encoding_Table: public Encoding_Table{
+  class DLL_API Byte_Encoding_Table: public Encoding_Table{
     // This is the Apple standard character to glyph index mapping table, a simple 1 to 1 mapping of character codes to glyph indices.
     // The glyph set is limited to 256. Note that if this format is used to index into a larger glyph set,
     // only the first 256 glyphs will be accessible.
@@ -65,7 +65,7 @@ namespace ttf_dll{
     void dump_info(FILE *fp, size_t indent);
   };
 
-  class High_Byte_Mapping_Through_Table: public Encoding_Table{
+  class DLL_API High_Byte_Mapping_Through_Table: public Encoding_Table{
     // This subtable is useful for the national character code standards used for Japanese, Chinese, and Korean characters.
     // These code standards use a mixed 8/16-bit encoding, in which certain byte values signal the first byte of a 2-byte character
     // (but these values are also legal as the second byte of a 2-byte character).
@@ -79,7 +79,7 @@ namespace ttf_dll{
     struct Subheader{
       USHORT  first_code;
       USHORT  entry_count;
-      SHORT  id_delta;
+      SHORT   id_delta;
       USHORT  id_range_offset;
     };
     Subheader  *subheaders;
@@ -114,7 +114,7 @@ namespace ttf_dll{
     void dump_info(FILE *fp, size_t indent);
   };
 
-  class Trimmed_Table_Mapping: public Encoding_Table{
+  class DLL_API Trimmed_Table_Mapping: public Encoding_Table{
     // The firstCode and entryCount values specify a subrange (beginning at firstCode,length = entryCount) within the range of possible character codes.
     // Codes outside of this subrange are mapped to glyph index 0.
     // The offset of the code (from the first code) within this subrange is used as index to the glyphIdArray, which provides the glyph index value.

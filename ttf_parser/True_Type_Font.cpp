@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "True_Type_Font.h"
+#include <sstream>
 
 namespace ttf_dll{
   // FIXME : Calculate the checksums!
@@ -30,9 +31,9 @@ namespace ttf_dll{
     cmap.load_table(offset_table.get_table_entry("cmap"), fin);
     head.load_table(offset_table.get_table_entry("head"), fin);
     maxp.load_table(offset_table.get_table_entry("maxp"), fin);
-    loca.load_table(offset_table.get_table_entry("loca"), fin, maxp.num_glyphs, head.index_to_loc_format);
+    loca.load_table(offset_table.get_table_entry("loca"), fin);
     hhea.load_table(offset_table.get_table_entry("hhea"), fin);
-    hmtx.load_table(offset_table.get_table_entry("hmtx"), fin, hhea.number_of_hmetrics, maxp.num_glyphs);
+    hmtx.load_table(offset_table.get_table_entry("hmtx"), fin);
     name.load_table(offset_table.get_table_entry("name"), fin);
     os_2.load_table(offset_table.get_table_entry("OS/2"), fin);
     glyf.load_table(offset_table.get_table_entry("glyf"), fin);
@@ -43,7 +44,7 @@ namespace ttf_dll{
 
   True_Type_Font::~True_Type_Font(){}
 
-  ULONG True_Type_Font::glyph_index_to_offset(SHORT glyph_index){
+  ULONG True_Type_Font::glyph_index_to_offset(USHORT glyph_index){
     if(glyph_index >= maxp.num_glyphs){
       // Invalid parameter
       return NULL;
@@ -88,11 +89,30 @@ namespace ttf_dll{
       maxp.dump_info(fp, 1);
       os_2.dump_info(fp, 1);
       name.dump_info(fp, 1);
+      loca.dump_info(fp, 1);
       glyf.dump_info(fp, 1);
+      hmtx.dump_info(fp, 1);
       fprintf(fp, "</ttFont>\n");
       fclose(fp);
       return true;
     }
     return false;
+  }
+
+  void True_Type_Font::glyph_info(Glyph *glyph, TCHAR *buf, size_t buf_len){
+    if(!buf || buf_len == 0) return;
+    if(!glyph){
+      buf[0] = _T('\0');
+      return;
+    }
+    int len = 0;
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("xMin: %d\n"), glyph->header.x_min);
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("xMax: %d\n"), glyph->header.x_max);
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("yMin: %d\n"), glyph->header.y_min);
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("yMax: %d\n"), glyph->header.y_max);
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("numberOfContours: %d\n"), glyph->header.num_contours);
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("leftSideBearing: %d\n"), g_ttf->hmtx.get_lsb(glyph->glyph_index));
+    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("advanceWidth: %d\n"), g_ttf->hmtx.get_aw(glyph->glyph_index));
+    // FIXME: um... how about define a macro...
   }
 }

@@ -149,13 +149,15 @@ namespace ttf_dll{
 /*                           Glyph Loader                               */
 /************************************************************************/
   void Glyph_Loader::load_glyph(USHORT glyph_index, const Matrix &mtx){
-	  // Read 'number_of_contours' to determine the format of the glyph.
-	  ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
+    ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
     Mem_Stream msm(glyf->data, glyf->length);
-	  msm.seek(offset);
-	  header.load_glyph_header(msm);
+    msm.seek(offset);
+    if(!header.load_glyph_header(msm)){
+      return; // Invalid header. Return directly.
+    }
     if(glyph.root == true){ // If this is the root node of current glyph
       glyph.root = false;
+      glyph.glyph_index = glyph_index;
       glyph.header = header;
       glyph.header.num_contours = 0; // Clear 'num_contours', increase this field after each subglyph is parsed.
     }
@@ -189,6 +191,7 @@ namespace ttf_dll{
 
   void Glyph::reset(){
     header.reset();
+    glyph_index = 0;
     num_instr = 0;
     pt_num = 0;
     root = true;
