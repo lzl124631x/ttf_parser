@@ -37,7 +37,7 @@ public:
   CEdit m_edit_glyph_index;
   CSpinButtonCtrl m_spin_glyph_index;
 
-  ttf_dll::USHORT glyph_index;
+  ttf_dll::GLYPH_ID glyph_index;
   bool render_point;
   HBITMAP charBmp;
 

@@ -36,13 +36,13 @@ namespace ttf_dll{
     return t;
   }
 
-  USHORT Character_To_Glyph_Index_Mapping_Table::get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch){
-    USHORT index = 0;
+  GLYPH_ID Character_To_Glyph_Index_Mapping_Table::get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch){
+    GLYPH_ID glyph_index = 0;
     Encoding_Table* encoding_table = get_encoding_table(platform_id, encoding_id);
     if(encoding_table){
-      index = encoding_table->get_glyph_index(ch);
+      glyph_index = encoding_table->get_glyph_index(ch);
     }
-    return index;
+    return glyph_index;
   }
 
 /******************************* Encoding_Record ***********************************/
@@ -90,7 +90,7 @@ namespace ttf_dll{
       FREAD_N(fin, glyph_id_array, 256);
   }
 
-  USHORT Byte_Encoding_Table::get_glyph_index(USHORT ch){
+  GLYPH_ID Byte_Encoding_Table::get_glyph_index(USHORT ch){
     if(ch >= 256) return 0; // ERROR: ch should be no more than 256
     return glyph_id_array[ch];
   }
@@ -101,7 +101,7 @@ namespace ttf_dll{
       //FIXME: not finished
   }
 
-  USHORT High_Byte_Mapping_Through_Table::get_glyph_index(USHORT ch){
+  GLYPH_ID High_Byte_Mapping_Through_Table::get_glyph_index(USHORT ch){
     return 0; // FIXME: not finished
   }
 
@@ -127,12 +127,12 @@ namespace ttf_dll{
       FREAD_N(fin, glyph_id_array, var_len);
   }
 
-  USHORT Segment_Mapping_To_Delta_Values::get_glyph_index(USHORT ch){
+  GLYPH_ID Segment_Mapping_To_Delta_Values::get_glyph_index(USHORT ch){
     int i = 0;
     while(end_count[i] != 0xFFFF && end_count[i] < ch){
       ++i;
     }
-    USHORT glyph_index = 0;
+    GLYPH_ID glyph_index = 0;
     if(start_count[i] <= ch){
       if(id_range_offset[i]){
         glyph_index = *(glyph_id_array + (id_range_offset[i] >> 1) + (ch - start_count[i])
@@ -152,7 +152,7 @@ namespace ttf_dll{
       FREAD_N(fin, glyph_id_array, entry_count);
   }
 
-  USHORT Trimmed_Table_Mapping::get_glyph_index(USHORT ch){
+  GLYPH_ID Trimmed_Table_Mapping::get_glyph_index(USHORT ch){
     return 0; // FIXME: not finished
   }
 

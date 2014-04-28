@@ -44,22 +44,23 @@ namespace ttf_dll{
 
   True_Type_Font::~True_Type_Font(){}
 
-  ULONG True_Type_Font::glyph_index_to_offset(USHORT glyph_index){
+  ULONG True_Type_Font::glyph_index_to_offset(GLYPH_ID glyph_index){
     if(glyph_index >= maxp.num_glyphs){
-      // Invalid parameter
-      return NULL;
+      // ERROR: Invalid parameter!
+      return 0;
     }
     ULONG offset = 0;
     // The format of 'loca' table is determined by the 'index_to_loc_format' entry in 'head' table.
     if(head.index_to_loc_format){                 // FIXME: write a function 'glyph_index_to_offset' in 'loca'.
-      offset += *((ULONG*)loca.offsets + glyph_index);      // 1 for ULONG
+      offset = *((ULONG*)loca.offsets + glyph_index);      // 1 for ULONG
     }else{
-      offset += *((USHORT*)loca.offsets + glyph_index);     // 0 for USHORT
+      offset = *((USHORT*)loca.offsets + glyph_index);     // 0 for USHORT
+      offset <<= 1;
     }
     return offset;
   }
 
-  Glyph *True_Type_Font::get_glyph(USHORT glyph_index){
+  Glyph *True_Type_Font::get_glyph(GLYPH_ID glyph_index){
     // Each time user fetches the glyph, table 'glyf' will load the corresponding glyph.
     return glyf.load_glyph(glyph_index);
   }
@@ -99,6 +100,8 @@ namespace ttf_dll{
     return false;
   }
 
+#define SNTPRINTFS(buf, buf_len, len, format, ...)\
+  (len) += _sntprintf_s((buf) + (len), (buf_len) - (len), _TRUNCATE, (format), __VA_ARGS__)
   void True_Type_Font::glyph_info(Glyph *glyph, TCHAR *buf, size_t buf_len){
     if(!buf || buf_len == 0) return;
     if(!glyph){
@@ -106,13 +109,13 @@ namespace ttf_dll{
       return;
     }
     int len = 0;
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("xMin: %d\n"), glyph->header.x_min);
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("xMax: %d\n"), glyph->header.x_max);
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("yMin: %d\n"), glyph->header.y_min);
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("yMax: %d\n"), glyph->header.y_max);
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("numberOfContours: %d\n"), glyph->header.num_contours);
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("leftSideBearing: %d\n"), g_ttf->hmtx.get_lsb(glyph->glyph_index));
-    len += _sntprintf_s(buf + len, buf_len - len, _TRUNCATE, _T("advanceWidth: %d\n"), g_ttf->hmtx.get_aw(glyph->glyph_index));
-    // FIXME: um... how about define a macro...
+    SNTPRINTFS(buf, buf_len, len, _T("xMin: %d\n"), glyph->header.x_min);
+    SNTPRINTFS(buf, buf_len, len, _T("xMin: %d\n"), glyph->header.x_min);
+    SNTPRINTFS(buf, buf_len, len, _T("xMax: %d\n"), glyph->header.x_max);
+    SNTPRINTFS(buf, buf_len, len, _T("yMin: %d\n"), glyph->header.y_min);
+    SNTPRINTFS(buf, buf_len, len, _T("yMax: %d\n"), glyph->header.y_max);
+    SNTPRINTFS(buf, buf_len, len, _T("numberOfContours: %d\n"), glyph->header.num_contours);
+    SNTPRINTFS(buf, buf_len, len, _T("leftSideBearing: %d\n"), g_ttf->hmtx.get_lsb(glyph->glyph_index));
+    SNTPRINTFS(buf, buf_len, len, _T("advanceWidth: %d\n"), g_ttf->hmtx.get_aw(glyph->glyph_index));
   }
 }

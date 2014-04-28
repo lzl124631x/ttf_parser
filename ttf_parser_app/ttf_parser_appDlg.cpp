@@ -8,7 +8,7 @@
 #define new DEBUG_NEW
 #endif
 
-static void set_edit_glyph_index(CEdit &edit, USHORT glyph_index);
+static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index);
 
 // CAboutDlg dialog used for App About
 class CAboutDlg : public CDialogEx{
@@ -231,7 +231,7 @@ void Cttf_parser_appDlg::enable_controls(bool b){
 }
 
 void Cttf_parser_appDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar){
-  glyph_index = (USHORT)m_slider_glyph_index.GetPos();
+  glyph_index = (ttf_dll::GLYPH_ID)m_slider_glyph_index.GetPos();
   set_edit_glyph_index(m_edit_glyph_index, glyph_index);
   CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
@@ -266,7 +266,7 @@ void Cttf_parser_appDlg::OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResul
   *pResult = 0;
 }
 
-static void set_edit_glyph_index(CEdit &edit, USHORT glyph_index){
+static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index){
   CString glyph_index_string;
   glyph_index_string.Format(_T("%u"), glyph_index);
   edit.SetWindowText(glyph_index_string);

@@ -31,10 +31,10 @@ namespace ttf_dll{
     bool load_path(string &path);
     ~True_Type_Font();
     bool valid_checksum(char* tag);
-    Glyph *get_glyph(USHORT glyph_index);
+    Glyph *get_glyph(GLYPH_ID glyph_index);
     void get_glyph_outline(USHORT ch);
     bool dump_ttf(char *path);
-    ULONG glyph_index_to_offset(USHORT glyph_index);
+    ULONG glyph_index_to_offset(GLYPH_ID glyph_index);
     void True_Type_Font::glyph_info(Glyph *glyph, TCHAR *buf, size_t buf_len);
   };
 

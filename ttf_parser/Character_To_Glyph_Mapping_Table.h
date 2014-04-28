@@ -12,7 +12,7 @@ namespace ttf_dll{
     USHORT  language;
     Encoding_Table(ifstream &fin);
     virtual ~Encoding_Table(){}
-    virtual USHORT get_glyph_index(USHORT ch) = 0;
+    virtual GLYPH_ID get_glyph_index(USHORT ch) = 0;
     virtual void dump_info(FILE *fp, size_t indent) = 0;
   };
 
@@ -41,7 +41,7 @@ namespace ttf_dll{
     ~Character_To_Glyph_Index_Mapping_Table(){
       DEL_A(encoding_records);
     }
-    USHORT get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch);
+    GLYPH_ID get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
 
@@ -61,7 +61,7 @@ namespace ttf_dll{
     BYTE  glyph_id_array[256];
     Byte_Encoding_Table(ifstream &fin);
     ~Byte_Encoding_Table(){}
-    USHORT get_glyph_index(USHORT ch);
+    GLYPH_ID get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
 
@@ -86,7 +86,7 @@ namespace ttf_dll{
     USHORT    glyph_id_array;
     High_Byte_Mapping_Through_Table(ifstream &fin);
     ~High_Byte_Mapping_Through_Table(){ DEL_A(subheaders); }
-    USHORT get_glyph_index(USHORT ch);
+    GLYPH_ID get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
   
@@ -110,7 +110,7 @@ namespace ttf_dll{
       DEL_A(id_range_offset);
       DEL_A(glyph_id_array);
     }
-    USHORT get_glyph_index(USHORT ch);
+    GLYPH_ID get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
 
@@ -124,7 +124,7 @@ namespace ttf_dll{
     USHORT  *glyph_id_array;/*[entry_count]*/
     Trimmed_Table_Mapping(ifstream &fin);
     ~Trimmed_Table_Mapping(){ DEL_A(glyph_id_array); }
-    USHORT get_glyph_index(USHORT ch);
+    GLYPH_ID get_glyph_index(USHORT ch);
     void dump_info(FILE *fp, size_t indent);
   };
 }

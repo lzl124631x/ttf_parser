@@ -24,7 +24,7 @@ namespace ttf_dll{
     FREAD(fin, &glygh_data_format);
   }
 
-  static void longDateTime_to_string(char *buf, size_t buf_size, longDateTime time){
+  static void long_date_time_to_string(char *buf, size_t buf_size, LONG_DATE_TIME time){
     // Seconds between 00:00 1904-01-01 (Mac Time) and 00:00 1970-01-01 (UTC Time)
     static const unsigned long secs_until_1970 = 2082844800;
     if(time < secs_until_1970){
@@ -51,9 +51,9 @@ namespace ttf_dll{
     INDENT(fp, indent); fprintf(fp, "<flags value=\"0x%04x\"/>\n", flags);
     INDENT(fp, indent); fprintf(fp, "<unitsPerEm value=\"%d\"/>\n", units_per_em);
     char time[50] = {0};
-    longDateTime_to_string(time, 50, created);
+    long_date_time_to_string(time, 50, created);
     INDENT(fp, indent); fprintf(fp, "<created value=\"%s\"/>\n", time);
-    longDateTime_to_string(time, 50, modified);
+    long_date_time_to_string(time, 50, modified);
     INDENT(fp, indent); fprintf(fp, "<modified value=\"%s\"/>\n", time);
     INDENT(fp, indent); fprintf(fp, "<xMin value=\"%d\"/>\n", x_min);
     INDENT(fp, indent); fprintf(fp, "<yMin value=\"%d\"/>\n", y_min);

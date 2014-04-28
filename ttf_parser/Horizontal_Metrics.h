@@ -34,8 +34,8 @@ namespace ttf_dll{
       DEL_A(hmetrics);
       DEL_A(left_side_bearing);
     }
-    FWORD get_lsb(USHORT glyph_index);
-    UFWORD get_aw(USHORT glyph_index);
+    FWORD get_lsb(GLYPH_ID glyph_index);
+    UFWORD get_aw(GLYPH_ID glyph_index);
     void dump_info(FILE *fp, size_t indent);
   };
 }

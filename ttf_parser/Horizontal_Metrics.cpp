@@ -8,7 +8,7 @@ namespace ttf_dll{
     FREAD(fin, &lsb);
   }
 
-  FWORD Horizontal_Metrics::get_lsb(USHORT glyph_index){
+  FWORD Horizontal_Metrics::get_lsb(GLYPH_ID glyph_index){
     if(glyph_index < num_hmtx){
       return hmetrics[glyph_index].lsb;
     }else if(glyph_index < num_glyphs){
@@ -19,7 +19,7 @@ namespace ttf_dll{
     }
   }
 
-  UFWORD Horizontal_Metrics::get_aw(USHORT glyph_index){
+  UFWORD Horizontal_Metrics::get_aw(GLYPH_ID glyph_index){
     if(glyph_index < num_hmtx){
       return hmetrics[glyph_index].advance_width;
     }else if(glyph_index < num_glyphs){

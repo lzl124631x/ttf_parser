@@ -29,8 +29,7 @@ void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t heigh
   g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->header.y_max, (float)width / x_ratio + ttf.head.x_min, (float)glyph->header.y_max);
   // render glyph
   g.SetSmoothingMode(SmoothingModeHighQuality);
-  g.FillPath(&SolidBrush(Color::Red), &path);
-  g.DrawPath(&Pen(Color::Red, 1), &path);
+  g.FillPath(&SolidBrush(Color::Black), &path);
 
   // render points
   if(render_point){

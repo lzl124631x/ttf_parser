@@ -24,7 +24,7 @@ namespace ttf_dll{
     void load_table(Table_Directory_Entry *entry, ifstream &fin);
     ~Glyph_Data();
     void dump_info(FILE *fp, size_t indent);
-    Glyph *load_glyph(USHORT glyph_index);
+    Glyph *load_glyph(GLYPH_ID glyph_index);
   };
 
   class DLL_API Glyph_Header{
@@ -44,7 +44,7 @@ namespace ttf_dll{
   public:
     Glyph_Header    header;
     bool            root;
-    USHORT          glyph_index;
+    GLYPH_ID        glyph_index;
     
     USHORT          *end_contours;        // Array of last points of each contour; its length is the number of contours.
     USHORT          num_instr;
@@ -54,7 +54,7 @@ namespace ttf_dll{
     // Actually the type of coordinates is either BYTE or SHORT.
     // Each coordinate might has different type according to the corresponding flag.
     // Here I choose to store all the coordinates in a SHORT array.
-    USHORT  pt_num;                       // the number of points in this glyph
+    USHORT          pt_num;                       // the number of points in this glyph
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.
     void prepare();
@@ -77,16 +77,16 @@ namespace ttf_dll{
     void read_flags(Mem_Stream &msm);
     void read_coordinates(Mem_Stream &msm, PointF *ptr, bool read_x);
   public:
-    Glyph_Header header;
-    USHORT  *end_contours;       // Array of last points of each contour; its length is the number of contours.
-    USHORT  num_instr;
-    BYTE    *instrs;
-    BYTE    *flags;                     // [number_of_points]
-    PointF   *coordinates;             // [number_of_points]
+    Glyph_Header  header;
+    USHORT        *end_contours;       // Array of last points of each contour; its length is the number of contours.
+    USHORT        num_instr;
+    BYTE          *instrs;
+    BYTE          *flags;                     // [number_of_points]
+    PointF        *coordinates;             // [number_of_points]
     // Actually the type of coordinates is either BYTE or SHORT.
     // Each coordinate might has different type according to the corresponding flag.
     // Here I choose to store all the coordinates in a SHORT array.
-    USHORT  pt_num;                     // the number of points in this glyph
+    USHORT        pt_num;                     // the number of points in this glyph
     // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
     // The last contour's end point has the largest index which equals pt_num - 1.
     Glyph_Loader(Glyph &glyph){
@@ -98,7 +98,7 @@ namespace ttf_dll{
       coordinates = glyph.coordinates;
       pt_num = 0;
     }
-  void load_glyph(USHORT glyph_index, const Matrix &mtx = Matrix());
+  void load_glyph(GLYPH_ID glyph_index, const Matrix &mtx = Matrix());
   void load_simple_glyph(Mem_Stream &msm);
   void load_composite_glyph(Mem_Stream &msm);
   };

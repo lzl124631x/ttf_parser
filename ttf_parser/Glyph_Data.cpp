@@ -130,7 +130,7 @@ namespace ttf_dll{
     glyph.destroy();
   }
 
-  Glyph *Glyph_Data::load_glyph(USHORT glyph_index){
+  Glyph *Glyph_Data::load_glyph(GLYPH_ID glyph_index){
     glyph.reset();
     Glyph_Loader loader(glyph);
     loader.load_glyph(glyph_index);
@@ -148,7 +148,7 @@ namespace ttf_dll{
 /************************************************************************/
 /*                           Glyph Loader                               */
 /************************************************************************/
-  void Glyph_Loader::load_glyph(USHORT glyph_index, const Matrix &mtx){
+  void Glyph_Loader::load_glyph(GLYPH_ID glyph_index, const Matrix &mtx){
     ULONG offset = g_ttf->glyph_index_to_offset(glyph_index);
     Mem_Stream msm(glyf->data, glyf->length);
     msm.seek(offset);
@@ -243,7 +243,7 @@ namespace ttf_dll{
 
   void Glyph_Loader::load_composite_glyph(Mem_Stream &msm){
     USHORT      flags;                  // component flag
-    USHORT      glyph_index;            // glyph index of component
+    GLYPH_ID    glyph_index;            // glyph index of component
     SHORT       arg1, arg2;             // x/y-offset for component or point number; type depends on bits 0 and 1 in component flags
     SHORT       x, y;                   // The translate part of matrix transformation
     F2DOT14     xx, xy, yx, yy;         // The linear part of matrix transformation
