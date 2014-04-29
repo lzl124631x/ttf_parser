@@ -44,21 +44,19 @@ namespace ttf_dll{
   }
 
   void Horizontal_Metrics::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<hmtx>\n");
+    IND_FP("<hmtx>\n");
     ++indent;
     int i = 0;
     for(; i < num_hmtx; ++i){
-      INDENT(fp, indent);
-      fprintf(fp, "<mtx glyphIndex=\"%u\" width=\"%u\" lsb=\"%d\"/>\n",
+      IND_FP("<mtx glyphIndex=\"%u\" width=\"%u\" lsb=\"%d\"/>\n",
         i, hmetrics[i].advance_width, hmetrics[i].lsb);
     }
     USHORT width = hmetrics[num_hmtx - 1].advance_width;
     for(; i < num_glyphs; ++i){
-      INDENT(fp, indent);
-      fprintf(fp, "<mtx glyphIndex=\"%u\" width=\"%u\" lsb=\"%d\"/>\n",
+      IND_FP("<mtx glyphIndex=\"%u\" width=\"%u\" lsb=\"%d\"/>\n",
         i, width, left_side_bearing[i - num_hmtx]);
     }
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</hmtx>\n");
+    IND_FP("</hmtx>\n");
   }
 }

@@ -16,10 +16,12 @@ namespace ttf_dll{
     USHORT            units_per_em;             // Valid range is from 16 to 16384. This value should be a power of 2 for fonts that have TrueType outlines.
     LONG_DATE_TIME    created;                  // Number of seconds since 12:00 midnight, January 1, 1904. 64-bit integer
     LONG_DATE_TIME    modified;                 // As above.
-    FWORD             x_min;                    // For all glyph bounding boxes.
-    FWORD             y_min;                    // For all glyph bounding boxes.
-    FWORD             x_max;                    // For all glyph bounding boxes.
-    FWORD             y_max;                    // For all glyph bounding boxes.
+    // For all glyph bounding boxes.
+    FWORD             x_min;
+    FWORD             y_min;
+    FWORD             x_max;
+    FWORD             y_max;
+    
     USHORT            mac_style;
     USHORT            lowest_rec_ppem;
     SHORT             font_direction_hint;

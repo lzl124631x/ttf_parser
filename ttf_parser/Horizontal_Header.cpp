@@ -21,26 +21,26 @@ namespace ttf_dll{
   }
 
   void Horizontal_Header::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<hhea>\n");
+    IND_FP("<hhea>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<tableVersion value=\"0x%08x\"/>\n", table_version_number);
-    INDENT(fp, indent); fprintf(fp, "<ascender value=\"%d\"/>\n", ascender);
-    INDENT(fp, indent); fprintf(fp, "<descender value=\"%d\"/>\n", descender);
-    INDENT(fp, indent); fprintf(fp, "<lineGap value=\"%d\"/>\n", line_gap);
-    INDENT(fp, indent); fprintf(fp, "<advanceWidthMax value=\"%u\"/>\n", advance_width_max);
-    INDENT(fp, indent); fprintf(fp, "<minLeftSideBearing value=\"%d\"/>\n", min_left_side_bearing);
-    INDENT(fp, indent); fprintf(fp, "<minRightSideBearing value=\"%d\"/>\n", min_right_side_bearing);
-    INDENT(fp, indent); fprintf(fp, "<xMaxExtent value=\"%d\"/>\n", x_max_extent);
-    INDENT(fp, indent); fprintf(fp, "<caretSlopeRise value=\"%d\"/>\n", caret_slope_rise);
-    INDENT(fp, indent); fprintf(fp, "<caretSlopeRun value=\"%d\"/>\n", caret_slope_run);
-    INDENT(fp, indent); fprintf(fp, "<caretOffset value=\"%d\"/>\n", caret_offset);
-    INDENT(fp, indent); fprintf(fp, "<reserved0 value=\"0\"/>\n");
-    INDENT(fp, indent); fprintf(fp, "<reserved1 value=\"0\"/>\n");
-    INDENT(fp, indent); fprintf(fp, "<reserved2 value=\"0\"/>\n");
-    INDENT(fp, indent); fprintf(fp, "<reserved3 value=\"0\"/>\n");
-    INDENT(fp, indent); fprintf(fp, "<metricDataFormat value=\"%d\"/>\n", metric_data_format);
-    INDENT(fp, indent); fprintf(fp, "<numberOfHMetrics value=\"%u\"/>\n", number_of_hmetrics);
+    IND_FP("<tableVersion value=\"0x%08x\"/>\n", table_version_number);
+    IND_FP("<ascender value=\"%d\"/>\n", ascender);
+    IND_FP("<descender value=\"%d\"/>\n", descender);
+    IND_FP("<lineGap value=\"%d\"/>\n", line_gap);
+    IND_FP("<advanceWidthMax value=\"%u\"/>\n", advance_width_max);
+    IND_FP("<minLeftSideBearing value=\"%d\"/>\n", min_left_side_bearing);
+    IND_FP("<minRightSideBearing value=\"%d\"/>\n", min_right_side_bearing);
+    IND_FP("<xMaxExtent value=\"%d\"/>\n", x_max_extent);
+    IND_FP("<caretSlopeRise value=\"%d\"/>\n", caret_slope_rise);
+    IND_FP("<caretSlopeRun value=\"%d\"/>\n", caret_slope_run);
+    IND_FP("<caretOffset value=\"%d\"/>\n", caret_offset);
+    IND_FP("<reserved0 value=\"0\"/>\n");
+    IND_FP("<reserved1 value=\"0\"/>\n");
+    IND_FP("<reserved2 value=\"0\"/>\n");
+    IND_FP("<reserved3 value=\"0\"/>\n");
+    IND_FP("<metricDataFormat value=\"%d\"/>\n", metric_data_format);
+    IND_FP("<numberOfHMetrics value=\"%u\"/>\n", number_of_hmetrics);
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</hhea>\n");
+    IND_FP("</hhea>\n");
   }
 }

@@ -13,6 +13,7 @@ namespace ttf_dll{
     Encoding_Table(ifstream &fin);
     virtual ~Encoding_Table(){}
     virtual GLYPH_ID get_glyph_index(USHORT ch) = 0;
+    void dump_table_header(FILE *fp, size_t indent);
     virtual void dump_info(FILE *fp, size_t indent) = 0;
   };
 
@@ -21,7 +22,7 @@ namespace ttf_dll{
     USHORT            platform_id;
     USHORT            encoding_id;
     ULONG             byte_offset;          // Byte offset from beginning of table to the subtable for this encoding.
-    Encoding_Table    *encoding_table;      // Just a pointer to the corresponding encoding table; not an array.
+    Encoding_Table    *encoding_table;      // Just a pointer to the corresponding encoding table; NOT an array.
     Encoding_Record(){}
     void load_entry(ifstream &fin);
     void load_encoding_table(ifstream &fin, streampos base);
@@ -33,7 +34,7 @@ namespace ttf_dll{
   class DLL_API Character_To_Glyph_Index_Mapping_Table{
   private:
     USHORT  table_version_number;
-    USHORT  number_of_encoding_tables;
+    USHORT  num_encoding_tables;
     Encoding_Record *encoding_records;
     Encoding_Table *get_encoding_table(USHORT platform_id, USHORT encoding_id);
   public:
@@ -115,7 +116,7 @@ namespace ttf_dll{
   };
 
   class DLL_API Trimmed_Table_Mapping: public Encoding_Table{
-    // The firstCode and entryCount values specify a subrange (beginning at firstCode,length = entryCount) within the range of possible character codes.
+    // The firstCode and entryCount values specify a subrange (beginning at firstCode, length = entryCount) within the range of possible character codes.
     // Codes outside of this subrange are mapped to glyph index 0.
     // The offset of the code (from the first code) within this subrange is used as index to the glyphIdArray, which provides the glyph index value.
   public:

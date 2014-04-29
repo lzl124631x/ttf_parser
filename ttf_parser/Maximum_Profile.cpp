@@ -22,24 +22,24 @@ namespace ttf_dll{
   }
 
   void Maximum_Profile::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<maxp>\n");
+    IND_FP("<maxp>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<tableVersion value=\"0x%08x\"/>\n", table_version_number);
-    INDENT(fp, indent); fprintf(fp, "<numGlyphs value=\"%u\"/>\n", num_glyphs);
-    INDENT(fp, indent); fprintf(fp, "<maxPoints value=\"%u\"/>\n", max_points);
-    INDENT(fp, indent); fprintf(fp, "<maxContours value=\"%u\"/>\n", max_contours);
-    INDENT(fp, indent); fprintf(fp, "<maxCompositePoints value=\"%u\"/>\n", max_composite_points);
-    INDENT(fp, indent); fprintf(fp, "<maxCompositeContours value=\"%u\"/>\n", max_composite_contours);
-    INDENT(fp, indent); fprintf(fp, "<maxZones value=\"%u\"/>\n", max_zones);
-    INDENT(fp, indent); fprintf(fp, "<maxTwilightPoints value=\"%u\"/>\n", max_twilight_points);
-    INDENT(fp, indent); fprintf(fp, "<maxStorage value=\"%u\"/>\n", max_storage);
-    INDENT(fp, indent); fprintf(fp, "<maxFunctionDefs value=\"%u\"/>\n", max_function_defs);
-    INDENT(fp, indent); fprintf(fp, "<maxInstructionDefs value=\"%u\"/>\n", max_instruction_defs);
-    INDENT(fp, indent); fprintf(fp, "<maxStackElements value=\"%u\"/>\n", max_stack_elements);
-    INDENT(fp, indent); fprintf(fp, "<maxSizeOfInstructions value=\"%u\"/>\n", max_size_of_instructions);
-    INDENT(fp, indent); fprintf(fp, "<maxComponentElements value=\"%u\"/>\n", max_component_elements);
-    INDENT(fp, indent); fprintf(fp, "<maxComponentDepth value=\"%u\"/>\n", max_component_depth);
+    IND_FP("<tableVersion value=\"0x%08x\"/>\n", table_version_number);
+    IND_FP("<numGlyphs value=\"%u\"/>\n", num_glyphs);
+    IND_FP("<maxPoints value=\"%u\"/>\n", max_points);
+    IND_FP("<maxContours value=\"%u\"/>\n", max_contours);
+    IND_FP("<maxCompositePoints value=\"%u\"/>\n", max_composite_points);
+    IND_FP("<maxCompositeContours value=\"%u\"/>\n", max_composite_contours);
+    IND_FP("<maxZones value=\"%u\"/>\n", max_zones);
+    IND_FP("<maxTwilightPoints value=\"%u\"/>\n", max_twilight_points);
+    IND_FP("<maxStorage value=\"%u\"/>\n", max_storage);
+    IND_FP("<maxFunctionDefs value=\"%u\"/>\n", max_function_defs);
+    IND_FP("<maxInstructionDefs value=\"%u\"/>\n", max_instruction_defs);
+    IND_FP("<maxStackElements value=\"%u\"/>\n", max_stack_elements);
+    IND_FP("<maxSizeOfInstructions value=\"%u\"/>\n", max_size_of_instructions);
+    IND_FP("<maxComponentElements value=\"%u\"/>\n", max_component_elements);
+    IND_FP("<maxComponentDepth value=\"%u\"/>\n", max_component_depth);
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</maxp>\n");
+    IND_FP("</maxp>\n");
   }
 }

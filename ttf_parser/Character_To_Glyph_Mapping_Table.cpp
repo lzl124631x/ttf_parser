@@ -7,16 +7,16 @@ namespace ttf_dll{
     fin.seekg(entry->offset, ios::beg);
     streampos base = fin.tellg();
     FREAD(fin, &table_version_number);
-    FREAD(fin, &number_of_encoding_tables);
-    if(number_of_encoding_tables <= 0) return; // FIXME: futile?
+    FREAD(fin, &num_encoding_tables);
+    if(num_encoding_tables == 0) return; // FIXME: futile?
     // Read encoding table entries.
-    encoding_records = new Encoding_Record[number_of_encoding_tables];
+    encoding_records = new Encoding_Record[num_encoding_tables];
     Encoding_Record *record = encoding_records;
-    for(int i = 0; i < number_of_encoding_tables; ++i, ++record){
+    for(int i = 0; i < num_encoding_tables; ++i, ++record){
       record->load_entry(fin);
     }
     record = encoding_records;
-    for(int i = 0; i < number_of_encoding_tables; ++i, ++record){
+    for(int i = 0; i < num_encoding_tables; ++i, ++record){
       record->load_encoding_table(fin, base);
     }
     // Since all the encoding records are stored sequentially, they are read first.
@@ -27,7 +27,7 @@ namespace ttf_dll{
   // FIXME: This Function uses sequential search. Maybe it can be more efficient.
   Encoding_Table* Character_To_Glyph_Index_Mapping_Table::get_encoding_table(USHORT platform_id, USHORT encoding_id){
     Encoding_Table* t = NULL;
-    for(int i = 0; i < number_of_encoding_tables; ++i){
+    for(int i = 0; i < num_encoding_tables; ++i){
       if(encoding_records[i].platform_id == platform_id &&
         encoding_records[i].encoding_id == encoding_id){
           t = encoding_records[i].encoding_table;
@@ -83,6 +83,12 @@ namespace ttf_dll{
     FREAD(fin, &format);
     FREAD(fin, &length);
     FREAD(fin, &language);
+  }
+
+  void Encoding_Table::dump_table_header(FILE *fp, size_t indent){
+    IND_FP("<format value=\"%u\"/>\n", format);
+    IND_FP("<length value=\"%u\"/>\n", length);
+    IND_FP("<language value=\"%u\"/>\n", language);
   }
 
 /******************************* Byte_Encoding_Table ***********************************/
@@ -157,97 +163,89 @@ namespace ttf_dll{
   }
 
   void Character_To_Glyph_Index_Mapping_Table::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<cmap tableVersion=\"0x%08x\" numberOfEncodingTables=\"%d\">\n",
-      table_version_number, number_of_encoding_tables);
+    IND_FP("<cmap tableVersion=\"0x%08x\" numberOfEncodingTables=\"%d\">\n",
+      table_version_number, num_encoding_tables);
     ++indent;
-    for(int i = 0; i < number_of_encoding_tables; ++i){
+    for(int i = 0; i < num_encoding_tables; ++i){
       Encoding_Record *record = &encoding_records[i];
-      INDENT(fp, indent); fprintf(fp, "<encodingRecord>\n");
+      IND_FP("<encodingRecord>\n");
       ++indent;
-      INDENT(fp, indent); fprintf(fp, "<platformID value=\"%u\"/>\n", record->platform_id);
-      INDENT(fp, indent); fprintf(fp, "<encodingID value=\"%u\"/>\n", record->encoding_id);
-      INDENT(fp, indent); fprintf(fp, "<offset value=\"%lu\"/>\n", record->byte_offset);
+      IND_FP("<platformID value=\"%u\"/>\n", record->platform_id);
+      IND_FP("<encodingID value=\"%u\"/>\n", record->encoding_id);
+      IND_FP("<offset value=\"%lu\"/>\n", record->byte_offset);
       --indent;
-      INDENT(fp, indent); fprintf(fp, "</encodingRecord>\n");
+      IND_FP("</encodingRecord>\n");
     }
-    for(int i = 0; i < number_of_encoding_tables; ++i){
+    for(int i = 0; i < num_encoding_tables; ++i){
       encoding_records[i].encoding_table->dump_info(fp, indent);
     }
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</cmap>\n");
+    IND_FP("</cmap>\n");
   }
 
   void Segment_Mapping_To_Delta_Values::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<cmap_format_4>\n");
+    IND_FP("<cmap_format_4>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format);
-    INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
-    INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
-    INDENT(fp, indent); fprintf(fp, "<segCountX2 value=\"%u\"/>\n", seg_countx2);
-    INDENT(fp, indent); fprintf(fp, "<searchRange value=\"%u\"/>\n", search_range);
-    INDENT(fp, indent); fprintf(fp, "<entrySelector value=\"%u\"/>\n", entry_selector);
-    INDENT(fp, indent); fprintf(fp, "<rangeShift value=\"%u\"/>\n", range_shift);
+    dump_table_header(fp, indent);
+    IND_FP("<segCountX2 value=\"%u\"/>\n", seg_countx2);
+    IND_FP("<searchRange value=\"%u\"/>\n", search_range);
+    IND_FP("<entrySelector value=\"%u\"/>\n", entry_selector);
+    IND_FP("<rangeShift value=\"%u\"/>\n", range_shift);
 
-    INDENT(fp, indent); fprintf(fp, "<endCount>\n");
-    dump_array<USHORT>(fp, indent + 1, end_count, (seg_countx2 >> 1), "%+5u");
-    INDENT(fp, indent); fprintf(fp, "</endCount>\n");
+    IND_FP("<endCount>\n");
+    dump_array<USHORT>(fp, indent + 1, end_count, (seg_countx2 >> 1), "%8u");
+    IND_FP("</endCount>\n");
 
-    INDENT(fp, indent); fprintf(fp, "<reservedPad value=\"%u\"/>\n", reserved_pad);
+    IND_FP("<reservedPad value=\"%u\"/>\n", reserved_pad);
 
-    INDENT(fp, indent); fprintf(fp, "<startCount>\n");
-    dump_array<USHORT>(fp, indent + 1, start_count, (seg_countx2 >> 1), "%+5u");
-    INDENT(fp, indent); fprintf(fp, "</startCount>\n");
+    IND_FP("<startCount>\n");
+    dump_array<USHORT>(fp, indent + 1, start_count, (seg_countx2 >> 1), "%8u");
+    IND_FP("</startCount>\n");
 
-    INDENT(fp, indent); fprintf(fp, "<idDelta>\n");
-    dump_array<SHORT>(fp, indent + 1, id_delta, (seg_countx2 >> 1), "%+5d");
-    INDENT(fp, indent); fprintf(fp, "</idDelta>\n");
+    IND_FP("<idDelta>\n");
+    dump_array<SHORT>(fp, indent + 1, id_delta, (seg_countx2 >> 1), "%8d");
+    IND_FP("</idDelta>\n");
 
-    INDENT(fp, indent); fprintf(fp, "<idRangeOffset>\n");
-    dump_array<USHORT>(fp, indent + 1, id_range_offset, (seg_countx2 >> 1), "%+5u");
-    INDENT(fp, indent); fprintf(fp, "</idRangeOffset>\n");
+    IND_FP("<idRangeOffset>\n");
+    dump_array<USHORT>(fp, indent + 1, id_range_offset, (seg_countx2 >> 1), "%8u");
+    IND_FP("</idRangeOffset>\n");
 
-    INDENT(fp, indent); fprintf(fp, "<glyphIdArray>\n");
-    dump_array<USHORT>(fp, indent + 1, glyph_id_array, (seg_countx2 >> 1), "%+5u");//FIXME: the glyph_id_array is not dumped out with the right length.
-    INDENT(fp, indent); fprintf(fp, "</glyphIdArray>\n");
+    IND_FP("<glyphIdArray>\n");
+    dump_array<USHORT>(fp, indent + 1, glyph_id_array, (seg_countx2 >> 1), "%8u");//FIXME: the glyph_id_array is not dumped out with the right length.
+    IND_FP("</glyphIdArray>\n");
 
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</cmap_format_4>\n");
+    IND_FP("</cmap_format_4>\n");
   }
 
   void Byte_Encoding_Table::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<cmap_format_0>\n");
+    IND_FP("<cmap_format_0>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
-    INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
-    INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
-    INDENT(fp, indent); fprintf(fp, "<glyphIdArray>\n");
-    dump_array<BYTE>(fp, indent + 1, glyph_id_array, 256, "%+5u");
-    INDENT(fp, indent); fprintf(fp, "</glyphIdArray>\n");
+    dump_table_header(fp, indent);
+    IND_FP("<glyphIdArray>\n");
+    dump_array<BYTE>(fp, indent + 1, glyph_id_array, 256, "%8u");
+    IND_FP("</glyphIdArray>\n");
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</cmap_format_0>\n");
+    IND_FP("</cmap_format_0>\n");
   }
 
   void High_Byte_Mapping_Through_Table::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<cmap_format_2>\n");
+    IND_FP("<cmap_format_2>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
-    INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
-    INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
-    dump_array<USHORT>(fp, indent + 1, subheader_keys, 256, "%+5u");
+    dump_table_header(fp, indent);
+    dump_array<USHORT>(fp, indent + 1, subheader_keys, 256, "%8u");
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</cmap_format_2>\n");
+    IND_FP("</cmap_format_2>\n");
   }
 
   void Trimmed_Table_Mapping::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<cmap_format_6>\n");
+    IND_FP("<cmap_format_6>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format); // FIXME: these three lines should be encapsulated into a function for Encoding_Table
-    INDENT(fp, indent); fprintf(fp, "<length value=\"%u\"/>\n", length);
-    INDENT(fp, indent); fprintf(fp, "<language value=\"%u\"/>\n", language);
-    INDENT(fp, indent); fprintf(fp, "<firstCode value=\"%u\"/>\n", first_code);
-    INDENT(fp, indent); fprintf(fp, "<entryCount value=\"%u\"/>\n", entry_count);
-    dump_array<USHORT>(fp, indent + 1, glyph_id_array, entry_count, "%+5u");
+    dump_table_header(fp, indent);
+    IND_FP("<firstCode value=\"%u\"/>\n", first_code);
+    IND_FP("<entryCount value=\"%u\"/>\n", entry_count);
+    dump_array<USHORT>(fp, indent + 1, glyph_id_array, entry_count, "%8u");
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</cmap_format_6>\n");
+    IND_FP("</cmap_format_6>\n");
   }
 }

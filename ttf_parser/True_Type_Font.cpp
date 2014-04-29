@@ -44,27 +44,6 @@ namespace ttf_dll{
 
   True_Type_Font::~True_Type_Font(){}
 
-  ULONG True_Type_Font::glyph_index_to_offset(GLYPH_ID glyph_index){
-    if(glyph_index >= maxp.num_glyphs){
-      // ERROR: Invalid parameter!
-      return 0;
-    }
-    ULONG offset = 0;
-    // The format of 'loca' table is determined by the 'index_to_loc_format' entry in 'head' table.
-    if(head.index_to_loc_format){                 // FIXME: write a function 'glyph_index_to_offset' in 'loca'.
-      offset = *((ULONG*)loca.offsets + glyph_index);      // 1 for ULONG
-    }else{
-      offset = *((USHORT*)loca.offsets + glyph_index);     // 0 for USHORT
-      offset <<= 1;
-    }
-    return offset;
-  }
-
-  Glyph *True_Type_Font::get_glyph(GLYPH_ID glyph_index){
-    // Each time user fetches the glyph, table 'glyf' will load the corresponding glyph.
-    return glyf.load_glyph(glyph_index);
-  }
-
   void True_Type_Font::get_glyph_outline(USHORT ch){
     //USHORT glyph_index = cmap.get_glyph_index(Windows, Unicode_BMP, ch);
     ////ULONG location = loca.find_location(glyph_index);

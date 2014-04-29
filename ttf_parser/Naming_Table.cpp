@@ -44,21 +44,22 @@ namespace ttf_dll{
   }
 
   void Naming_Table::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<name>\n");
+    IND_FP("<name>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<format value=\"%u\"/>\n", format);
-    INDENT(fp, indent); fprintf(fp, "<count value=\"%u\"/>\n", count);
-    INDENT(fp, indent); fprintf(fp, "<offset value=\"%u\"/>\n", offset);
+    IND_FP("<format value=\"%u\"/>\n", format);
+    IND_FP("<count value=\"%u\"/>\n", count);
+    IND_FP("<offset value=\"%u\"/>\n", offset);
     for(int i = 0; i < count; ++i){
       name_records[i].dump_info(fp, indent);
     }
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</name>\n");
+    IND_FP("</name>\n");
   }
 
   void Name_Record::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp,
-      "<nameRecord platformID=\"%u\" encodingID=\"%u\" languageID=\"%u\" nameID=\"%u\" length=\"%u\" offset=\"%u\">\n",
+    IND_FP(
+      "<nameRecord platformID=\"%u\" encodingID=\"%u\" languageID=\"%u\" "
+      "nameID=\"%u\" length=\"%u\" offset=\"%u\">\n",
       platform_id, encoding_id, language_id, name_id, length, offset);
     INDENT(fp, indent + 1); 
     if(double_byte_string()){
@@ -66,6 +67,6 @@ namespace ttf_dll{
     }else{
       fprintf(fp, "%s\n", (char*)string);
     }
-    INDENT(fp, indent); fprintf(fp, "</nameRecord>\n");
+    IND_FP("</nameRecord>\n");
   }
 }

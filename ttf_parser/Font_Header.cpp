@@ -42,29 +42,29 @@ namespace ttf_dll{
   }
 
   void Font_Header::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<head>\n");
+    IND_FP("<head>\n");
     ++indent;
-    INDENT(fp, indent); fprintf(fp, "<tableVersion value=\"0x%08x\"/>\n", table_version_number);
-    INDENT(fp, indent); fprintf(fp, "<fontRevision value=\"0x%08x\"/>\n", font_revision);
-    INDENT(fp, indent); fprintf(fp, "<checkSumAdjustment value=\"0x%08x\"/>\n", checksum_adjustment);
-    INDENT(fp, indent); fprintf(fp, "<magicNumber value=\"0x%08x\"/>\n", magic_number);
-    INDENT(fp, indent); fprintf(fp, "<flags value=\"0x%04x\"/>\n", flags);
-    INDENT(fp, indent); fprintf(fp, "<unitsPerEm value=\"%d\"/>\n", units_per_em);
+    IND_FP("<tableVersion value=\"0x%08x\"/>\n", table_version_number);
+    IND_FP("<fontRevision value=\"0x%08x\"/>\n", font_revision);
+    IND_FP("<checkSumAdjustment value=\"0x%08x\"/>\n", checksum_adjustment);
+    IND_FP("<magicNumber value=\"0x%08x\"/>\n", magic_number);
+    IND_FP("<flags value=\"0x%04x\"/>\n", flags);
+    IND_FP("<unitsPerEm value=\"%d\"/>\n", units_per_em);
     char time[50] = {0};
     long_date_time_to_string(time, 50, created);
-    INDENT(fp, indent); fprintf(fp, "<created value=\"%s\"/>\n", time);
+    IND_FP("<created value=\"%s\"/>\n", time);
     long_date_time_to_string(time, 50, modified);
-    INDENT(fp, indent); fprintf(fp, "<modified value=\"%s\"/>\n", time);
-    INDENT(fp, indent); fprintf(fp, "<xMin value=\"%d\"/>\n", x_min);
-    INDENT(fp, indent); fprintf(fp, "<yMin value=\"%d\"/>\n", y_min);
-    INDENT(fp, indent); fprintf(fp, "<xMax value=\"%d\"/>\n", x_max);
-    INDENT(fp, indent); fprintf(fp, "<yMax value=\"%d\"/>\n", y_max);
-    INDENT(fp, indent); fprintf(fp, "<macStyle value=\"0x%04x\"/>\n", mac_style);
-    INDENT(fp, indent); fprintf(fp, "<lowestRecPPEM value=\"%u\"/>\n", lowest_rec_ppem);
-    INDENT(fp, indent); fprintf(fp, "<fontDirectionHint value=\"%d\"/>\n", font_direction_hint);
-    INDENT(fp, indent); fprintf(fp, "<indexToLocFormat value=\"%d\"/>\n", index_to_loc_format);
-    INDENT(fp, indent); fprintf(fp, "<glyphDataFormat value=\"%d\"/>\n", glygh_data_format);
+    IND_FP("<modified value=\"%s\"/>\n", time);
+    IND_FP("<xMin value=\"%d\"/>\n", x_min);
+    IND_FP("<yMin value=\"%d\"/>\n", y_min);
+    IND_FP("<xMax value=\"%d\"/>\n", x_max);
+    IND_FP("<yMax value=\"%d\"/>\n", y_max);
+    IND_FP("<macStyle value=\"0x%04x\"/>\n", mac_style);
+    IND_FP("<lowestRecPPEM value=\"%u\"/>\n", lowest_rec_ppem);
+    IND_FP("<fontDirectionHint value=\"%d\"/>\n", font_direction_hint);
+    IND_FP("<indexToLocFormat value=\"%d\"/>\n", index_to_loc_format);
+    IND_FP("<glyphDataFormat value=\"%d\"/>\n", glygh_data_format);
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</head>\n");
+    IND_FP("</head>\n");
   }
 }

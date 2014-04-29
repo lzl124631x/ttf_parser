@@ -36,16 +36,16 @@ namespace ttf_dll{
   }
 
   void Offset_Table::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<offsetTable sfntVersion=\"%08x\" numTables=\"%d\" searchRange=\"%d\" entrySelector=\"%d\" rangeShift=\"%d\">\n",
+    IND_FP("<offsetTable sfntVersion=\"%08x\" numTables=\"%d\" "
+      "searchRange=\"%d\" entrySelector=\"%d\" rangeShift=\"%d\">\n",
       sfnt_version, num_tables, search_range, entry_selector, range_shift);
     ++indent;
     for(int i = 0; i < num_tables; ++i){
       Table_Directory_Entry *entry = &table_directory_entries[i];
-      INDENT(fp, indent);
-      fprintf(fp, "<entry tag=\"%.4s\" checksum=\"%08x\" offset=\"%d\" length=\"%d\"/>\n",
+      IND_FP("<entry tag=\"%.4s\" checksum=\"%08x\" offset=\"%d\" length=\"%d\"/>\n",
         (char*)&entry->tag, entry->checksum, entry->offset, entry->length);
     }
     --indent;
-    INDENT(fp, indent); fprintf(fp, "</offsetTable>\n");
+    IND_FP("</offsetTable>\n");
   }
 }

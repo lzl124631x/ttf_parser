@@ -138,12 +138,12 @@ namespace ttf_dll{
   }
 
   void Glyph_Data::dump_info(FILE *fp, size_t indent){
-    INDENT(fp, indent); fprintf(fp, "<glyf>\n");
+    IND_FP("<glyf>\n");
     //for(int i = 0; i < maxp.num_glyphs; ++i){
       //Glyph *glyph = create_glyph()
       //glyph_data_array[i]->dump_info(fp, indent + 1);
     //}
-    INDENT(fp, indent); fprintf(fp, "</glyf>\n");
+    IND_FP("</glyf>\n");
   }
 /************************************************************************/
 /*                           Glyph Loader                               */

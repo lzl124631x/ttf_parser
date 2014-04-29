@@ -31,6 +31,7 @@ namespace ttf_dll{
         DEL_T(offsets, USHORT);
       }
     }
+    ULONG glyph_index_to_offset(GLYPH_ID glyph_index);
     void dump_info(FILE *fp, size_t indent);
   };
 }
