@@ -10,6 +10,17 @@
 
 static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index);
 
+BOOL CMySliderCtrl::PreTranslateMessage(MSG* pMsg){
+  if(pMsg->message == WM_KEYDOWN){
+    if(pMsg->wParam == VK_UP){
+      pMsg->wParam = VK_DOWN;
+    }else if(pMsg->wParam == VK_DOWN){
+      pMsg->wParam = VK_UP;
+    }
+  }
+  return CSliderCtrl::PreTranslateMessage(pMsg);
+}
+
 // CAboutDlg dialog used for App About
 class CAboutDlg : public CDialogEx{
 public:
@@ -231,8 +242,11 @@ void Cttf_parser_appDlg::enable_controls(bool b){
 }
 
 void Cttf_parser_appDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar){
-  glyph_index = (ttf_dll::GLYPH_ID)m_slider_glyph_index.GetPos();
-  set_edit_glyph_index(m_edit_glyph_index, glyph_index);
+  int tmp = m_slider_glyph_index.GetPos();
+  if(tmp != glyph_index){
+    glyph_index = (ttf_dll::GLYPH_ID)tmp;
+    set_edit_glyph_index(m_edit_glyph_index, glyph_index);
+  }
   CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 

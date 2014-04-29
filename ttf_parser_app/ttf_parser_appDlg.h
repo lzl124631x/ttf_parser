@@ -6,6 +6,16 @@
 #include "afxwin.h"
 #include "afxcmn.h"
 
+// A customized slider control. The default horizontal slider control
+// will move right and increment the 'Pos' value when the DOWN arrow key
+// is pressed. I want it to work in the opposite way: slider moves right/left
+// as the UP/DOWN key is pressed. It's done by overriding the function
+// 'PreTranslateMessage'.
+class CMySliderCtrl : public CSliderCtrl{
+private:
+  BOOL PreTranslateMessage(MSG* pMsg);
+};
+
 // Cttf_parser_appDlg dialog
 class Cttf_parser_appDlg : public CDialogEx{
 // Construction
@@ -33,7 +43,7 @@ public:
 	CEdit m_edit_char;
   CButton m_btn_view;
   CStatic m_text_file_name;
-  CSliderCtrl m_slider_glyph_index;
+  CMySliderCtrl m_slider_glyph_index;
   CEdit m_edit_glyph_index;
   CSpinButtonCtrl m_spin_glyph_index;
 

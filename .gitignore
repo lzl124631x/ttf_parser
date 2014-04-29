@@ -7,3 +7,4 @@
 ipch
 *.suo
 .DS_store
+*/*.aps

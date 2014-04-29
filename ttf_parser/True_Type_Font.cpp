@@ -110,7 +110,6 @@ namespace ttf_dll{
     }
     int len = 0;
     SNTPRINTFS(buf, buf_len, len, _T("xMin: %d\n"), glyph->header.x_min);
-    SNTPRINTFS(buf, buf_len, len, _T("xMin: %d\n"), glyph->header.x_min);
     SNTPRINTFS(buf, buf_len, len, _T("xMax: %d\n"), glyph->header.x_max);
     SNTPRINTFS(buf, buf_len, len, _T("yMin: %d\n"), glyph->header.y_min);
     SNTPRINTFS(buf, buf_len, len, _T("yMax: %d\n"), glyph->header.y_max);
