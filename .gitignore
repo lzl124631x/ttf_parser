@@ -1,10 +1,17 @@
-*Debug/*
+# folder Debug and Release
 */Debug/*
-*Release/*
 */Release/*
+
+# VS2010
+*/ipch/
 *.user
 *.sdf
-ipch
 *.suo
+*.aps
+# Mac OS file
 .DS_store
-*/*.aps
+
+# VC++6
+*.ncb
+*.opt
+*.plg
