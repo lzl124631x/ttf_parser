@@ -10,11 +10,11 @@
 
 static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index);
 
-BOOL CMySliderCtrl::PreTranslateMessage(MSG* pMsg){
-  if(pMsg->message == WM_KEYDOWN){
-    if(pMsg->wParam == VK_UP){
+BOOL CMySliderCtrl::PreTranslateMessage(MSG* pMsg) {
+  if(pMsg->message == WM_KEYDOWN) {
+    if(pMsg->wParam == VK_UP) {
       pMsg->wParam = VK_DOWN;
-    }else if(pMsg->wParam == VK_DOWN){
+    } else if(pMsg->wParam == VK_DOWN) {
       pMsg->wParam = VK_UP;
     }
   }
@@ -22,25 +22,25 @@ BOOL CMySliderCtrl::PreTranslateMessage(MSG* pMsg){
 }
 
 // CAboutDlg dialog used for App About
-class CAboutDlg : public CDialogEx{
-public:
+class CAboutDlg : public CDialogEx {
+ public:
   CAboutDlg();
 
 // Dialog Data
   enum { IDD = IDD_ABOUTBOX };
 
-  protected:
+ protected:
   virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
-protected:
+ protected:
   DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD){
+CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD) {
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX){
+void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
   CDialogEx::DoDataExchange(pDX);
 }
 
@@ -49,11 +49,11 @@ END_MESSAGE_MAP()
 
 // Cttf_parser_appDlg dialog
 Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
-  : CDialogEx(Cttf_parser_appDlg::IDD, pParent){
+  : CDialogEx(Cttf_parser_appDlg::IDD, pParent) {
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX){
+void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX) {
   CDialogEx::DoDataExchange(pDX);
   DDX_Control(pDX, IDC_EDIT_CHAR, m_edit_char);
   DDX_Control(pDX, IDC_VIEW, m_btn_view);
@@ -78,7 +78,7 @@ BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 // Cttf_parser_appDlg message handlers
-BOOL Cttf_parser_appDlg::OnInitDialog(){
+BOOL Cttf_parser_appDlg::OnInitDialog() {
   CDialogEx::OnInitDialog();
 
   // Add "About..." menu item to system menu.
@@ -88,12 +88,12 @@ BOOL Cttf_parser_appDlg::OnInitDialog(){
   ASSERT(IDM_ABOUTBOX < 0xF000);
 
   CMenu* pSysMenu = GetSystemMenu(FALSE);
-  if (pSysMenu != NULL){
+  if (pSysMenu != NULL) {
     BOOL bNameValid;
     CString strAboutMenu;
     bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
     ASSERT(bNameValid);
-    if (!strAboutMenu.IsEmpty()){
+    if (!strAboutMenu.IsEmpty()) {
       pSysMenu->AppendMenu(MF_SEPARATOR);
       pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
     }
@@ -119,11 +119,11 @@ BOOL Cttf_parser_appDlg::OnInitDialog(){
   return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam){
-  if ((nID & 0xFFF0) == IDM_ABOUTBOX){
+void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+  if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
     CAboutDlg dlgAbout;
     dlgAbout.DoModal();
-  }else{
+  } else {
     CDialogEx::OnSysCommand(nID, lParam);
   }
 }
@@ -131,8 +131,8 @@ void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam){
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
-void Cttf_parser_appDlg::OnPaint(){
-  if (IsIconic()){ // Return TRUE if the dialog is minimized.
+void Cttf_parser_appDlg::OnPaint() {
+  if (IsIconic()) { // Return TRUE if the dialog is minimized.
     CPaintDC dc(this); // device context for painting
 
     SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
@@ -147,7 +147,7 @@ void Cttf_parser_appDlg::OnPaint(){
 
     // Draw the icon
     dc.DrawIcon(x, y, m_hIcon);
-  }else{
+  } else {
     CDialogEx::OnPaint();
     HDC hdc = ::GetDC(m_hWnd);
     HDC memdc = CreateCompatibleDC(hdc);
@@ -161,77 +161,75 @@ void Cttf_parser_appDlg::OnPaint(){
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR Cttf_parser_appDlg::OnQueryDragIcon(){
+HCURSOR Cttf_parser_appDlg::OnQueryDragIcon() {
   return static_cast<HCURSOR>(m_hIcon);
 }
 
-void Cttf_parser_appDlg::OnFileOpen(){
+void Cttf_parser_appDlg::OnFileOpen() {
   CString path_name;
   CFileDialog dlg(TRUE); // TRUE for "open" dialog; FALSE for "save as" dialog.
-  if(dlg.DoModal() == IDOK){
+  if(dlg.DoModal() == IDOK) {
     path_name = dlg.GetPathName();
     m_text_file_name.SetWindowText(_T("File Name: ") + path_name);
-    CStringA path_nameS(path_name.GetBuffer(0));
-    std::string str = path_nameS.GetBuffer(0);
     ttf.~True_Type_Font();
-    ttf.load_path(str);
+    ttf.load_path(path_name.GetBuffer(0));
     enable_controls(true);
     m_slider_glyph_index.SetRange(0, ttf.maxp.num_glyphs - 1);
     m_spin_glyph_index.SetRange(0, ttf.maxp.num_glyphs - 1);
   }
 }
 
-void Cttf_parser_appDlg::OnFileExit(){
+void Cttf_parser_appDlg::OnFileExit() {
   EndDialog(0);
 }
 
-void Cttf_parser_appDlg::OnBnClickedView(){
+void Cttf_parser_appDlg::OnBnClickedView() {
   CString char_string;
   m_edit_char.GetWindowText(char_string);
-  if(!char_string.IsEmpty() && charBmp){
+  if(!char_string.IsEmpty() && charBmp) {
     glyph_index = ttf.cmap.get_glyph_index(ttf_dll::Windows, ttf_dll::Unicode_BMP, char_string[0]);
     set_edit_glyph_index(m_edit_glyph_index, glyph_index);
   }
 }
 
-void Cttf_parser_appDlg::OnToolDumpXml(){
-  if(ttf.dump_ttf("info.xml")){
+void Cttf_parser_appDlg::OnToolDumpXml() {
+  if(ttf.dump_ttf("info.xml")) {
     MessageBox(_T("Dumped successfully!"), _T("Message"));
-  }else{
+  } else {
     MessageBox(_T("Failed to dump info!"), _T("Message"));
   }
 }
 
-void Cttf_parser_appDlg::OnBnClickedShowPoint(){
+void Cttf_parser_appDlg::OnBnClickedShowPoint() {
   // Renew the status of 'show point' and refresh glyph.
   render_point = (IsDlgButtonChecked(IDC_CHECK_SHOW_POINT) == BST_CHECKED);
   refresh_glyph();
 }
 
-void Cttf_parser_appDlg::refresh_glyph(){
-    HDC hdc = ::GetDC(m_hWnd);
-    ttf_dll::Glyph *glyph = ttf.get_glyph(glyph_index);
-    render_glyph(hdc, charBmp, glyph, 500, 500, render_point); // FIXME: test if ttf is loaded before render.
-    Invalidate();
-    TCHAR buf[300] = {0};
-    ttf.glyph_info(glyph, buf, 300);
-    GetDlgItem(IDC_TEXT_GLYPH_INFO)->SetWindowText(buf);
-    ::ReleaseDC(m_hWnd, hdc);
+void Cttf_parser_appDlg::refresh_glyph() {
+  HDC hdc = ::GetDC(m_hWnd);
+  ttf_dll::Glyph *glyph = ttf.get_glyph(glyph_index);
+  render_glyph(hdc, charBmp, glyph, 500, 500, render_point); // FIXME: test if ttf is loaded before render.
+  Invalidate();
+  TCHAR buf[300] = {0};
+  ttf.glyph_info(glyph, buf, 300);
+  GetDlgItem(IDC_TEXT_GLYPH_INFO)->SetWindowText(buf);
+  ::ReleaseDC(m_hWnd, hdc);
 }
 
-BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg){
-  if(pMsg->message == WM_KEYDOWN) { 
-    switch(pMsg->wParam)  {  
-    case VK_RETURN:   // omit Enter 
-      return true;  
-    case VK_ESCAPE:   // omit Esc  
-      return true;  
-    } 
+BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg) {
+  if(pMsg->message == WM_KEYDOWN) {
+    switch(pMsg->wParam)  {
+      case VK_RETURN:   // omit Enter
+        return true;
+      case VK_ESCAPE:   // omit Esc
+        return true;
+    }
   }
   return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-void Cttf_parser_appDlg::enable_controls(bool b){
+void Cttf_parser_appDlg::enable_controls(bool b) {
   m_btn_view.EnableWindow(b);                                                   // button "View"
   GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, b ? MF_ENABLED : MF_DISABLED);    // menu button "Dump XML"
   GetDlgItem(IDC_CHECK_SHOW_POINT)->EnableWindow(b);                            // check box "show point"
@@ -241,24 +239,24 @@ void Cttf_parser_appDlg::enable_controls(bool b){
   m_edit_glyph_index.SetWindowText(_T("0"));
 }
 
-void Cttf_parser_appDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar){
+void Cttf_parser_appDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
   int tmp = m_slider_glyph_index.GetPos();
-  if(tmp != glyph_index){
+  if(tmp != glyph_index) {
     glyph_index = (ttf_dll::GLYPH_ID)tmp;
     set_edit_glyph_index(m_edit_glyph_index, glyph_index);
   }
   CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
-void Cttf_parser_appDlg::OnEnChangeEditGlyphIndex(){
+void Cttf_parser_appDlg::OnEnChangeEditGlyphIndex() {
   if(ttf.maxp.num_glyphs == 0) return;
   CString glyph_index_string;
   m_edit_glyph_index.GetWindowText(glyph_index_string);
   int tmp = _ttoi(glyph_index_string);
-  if(tmp >= ttf.maxp.num_glyphs){
+  if(tmp >= ttf.maxp.num_glyphs) {
     glyph_index = ttf.maxp.num_glyphs - 1;
     set_edit_glyph_index(m_edit_glyph_index, glyph_index);
-  }else{
+  } else {
     glyph_index = tmp;
     m_slider_glyph_index.SetPos(glyph_index);
     refresh_glyph();
@@ -266,21 +264,21 @@ void Cttf_parser_appDlg::OnEnChangeEditGlyphIndex(){
 }
 
 
-void Cttf_parser_appDlg::OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult){
+void Cttf_parser_appDlg::OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult) {
   LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-  if(pNMUpDown->iDelta == -1){          // The down arrow is pressed.
-    if(glyph_index > 0){
+  if(pNMUpDown->iDelta == -1) {         // The down arrow is pressed.
+    if(glyph_index > 0) {
       --glyph_index;
     }
-  }else if(pNMUpDown->iDelta == 1){     // The up arrow is pressed.
-    if(glyph_index < ttf.maxp.num_glyphs - 1){
+  } else if(pNMUpDown->iDelta == 1) {    // The up arrow is pressed.
+    if(glyph_index < ttf.maxp.num_glyphs - 1) {
       ++glyph_index;
     }
   }
   *pResult = 0;
 }
 
-static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index){
+static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index) {
   CString glyph_index_string;
   glyph_index_string.Format(_T("%u"), glyph_index);
   edit.SetWindowText(glyph_index_string);

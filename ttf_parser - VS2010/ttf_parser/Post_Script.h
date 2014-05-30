@@ -7,17 +7,19 @@
 // Is there any better solution that can combine the two #include?
 /******************************* post ***********************************/
 // https://www.microsoft.com/typography/otspec/post.htm
-namespace ttf_dll{
-  class DLL_API Post_Script{
-    FIXED  format_type;
-    FIXED  italic_angle;
-    FWORD  underline_position;
-    FWORD  underline_thickness;
-    ULONG  is_fixed_pitch;
-    ULONG  min_mem_type42;
-    ULONG  max_mem_type42;
-    ULONG  min_mem_type1;
-    ULONG  max_mem_type1;
-  };
-}
+namespace ttf_dll {
+
+class DLL_API Post_Script {
+  FIXED  format_type;
+  FIXED  italic_angle;
+  FWORD  underline_position;
+  FWORD  underline_thickness;
+  ULONG  is_fixed_pitch;
+  ULONG  min_mem_type42;
+  ULONG  max_mem_type42;
+  ULONG  min_mem_type1;
+  ULONG  max_mem_type1;
+};
+
+} // namespace ttf_dll
 #endif

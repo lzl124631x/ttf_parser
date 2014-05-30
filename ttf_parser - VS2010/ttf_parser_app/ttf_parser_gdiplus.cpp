@@ -1,7 +1,7 @@
 #include "stdafx.h"
 using namespace ttf_dll;
 
-void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t height, bool render_point){
+void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t height, bool render_point) {
   if(!glyph) return;
 
   FWORD glyph_width = ttf.head.x_max - ttf.head.x_min;
@@ -32,7 +32,7 @@ void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t heigh
   g.FillPath(&SolidBrush(Color::Black), &path);
 
   // render points
-  if(render_point){
+  if(render_point) {
     float radius = 1.0f / x_ratio;
     if(radius < 1e-6) radius = 1.0;
     float pen_width = radius;
@@ -46,11 +46,11 @@ void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t heigh
     int *off_pt = new int[off_pt_num];
     glyph->output_pts(all_pt, off_pt);
     PointF *pt = all_pt;
-    for(int i = 0, j = 0; i < all_pt_num; ++i, ++pt){
-      if(i == off_pt[j]){   // render off-curve point
+    for(int i = 0, j = 0; i < all_pt_num; ++i, ++pt) {
+      if(i == off_pt[j]) {  // render off-curve point
         g.DrawRectangle(&off_pen, pt->X - radius, pt->Y - radius, radius * 2.0f, radius * 2.0f);
         ++j;
-      }else{                // render on-curve point
+      } else {               // render on-curve point
         g.DrawEllipse(&on_pen, pt->X - radius, pt->Y - radius, radius * 2.0f, radius * 2.0f);
       }
     }

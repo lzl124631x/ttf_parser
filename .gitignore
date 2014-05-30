@@ -1,9 +1,9 @@
 # folder Debug and Release
-*/Debug/*
-*/Release/*
+Debug/
+Release/
 
 # VS2010
-*/ipch/
+ipch/
 *.user
 *.sdf
 *.suo

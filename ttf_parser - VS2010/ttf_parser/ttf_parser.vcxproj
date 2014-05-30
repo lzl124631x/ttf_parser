@@ -88,6 +88,7 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="True_Type_Font.cpp" />
     <ClCompile Include="TTF_Table.cpp" />
+    <ClCompile Include="XML_Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Character_To_Glyph_Mapping_Table.h" />
@@ -106,6 +107,7 @@
     <ClInclude Include="True_Type_Font.h" />
     <ClInclude Include="TTF_Table.h" />
     <ClInclude Include="Type.h" />
+    <ClInclude Include="XML_Logger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
