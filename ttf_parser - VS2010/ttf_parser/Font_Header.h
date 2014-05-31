@@ -1,49 +1,49 @@
 #ifndef FONT_HEADER_H
 #define FONT_HEADER_H
 
-#include "Type.h"
-#include "TTF_Table.h"
+#include "type.h"
+#include "ttf_table.h"
 /******************************* head ***********************************/
 // https://www.microsoft.com/typography/otspec/head.htm
 namespace ttf_dll {
   
-class DLL_API Font_Header {
+class DLL_API FontHeader {
  public:
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
-  void load_table(Table_Record_Entry *entry, ifstream &fin);
+  void LoadTable(TableRecordEntry *entry, ifstream &fin);
   // Dumps the information of this table to an XML file.
-  void dump_info(Xml_Logger &logger) const;
+  void DumpInfo(XmlLogger &logger) const;
   
-  FIXED             table_version_number;
+  Fixed             table_version_number_;
   // Set by font manufacturer.
-  FIXED             font_revision;
+  Fixed             font_revision_;
   // To compute: set it to 0, sum the entire font as ULONG, then store
   // 0xB1B0AFBA - sum.
-  ULONG             checksum_adjustment;
+  ULong             checksum_adjustment_;
   // Set to 0x5F0F3CF5.
-  ULONG             magic_number;
-  USHORT            flags;
+  ULong             magic_number_;
+  UShort            flags_;
   // Valid range is from 16 to 16384. This value should be a power of 2 for
   // fonts that have TrueType outlines.
-  USHORT            units_per_em;
+  UShort            units_per_em_;
   // Number of seconds since 12:00 midnight, January 1, 1904. 64-bit integer
-  LONG_DATE_TIME    created;
+  LongDateTime      created_;
   // As above.
-  LONG_DATE_TIME    modified;
+  LongDateTime      modified_;
   // For all glyph bounding boxes.
-  FWORD             x_min;
-  FWORD             y_min;
-  FWORD             x_max;
-  FWORD             y_max;
+  FWord             x_min_;
+  FWord             y_min_;
+  FWord             x_max_;
+  FWord             y_max_;
 
-  USHORT            mac_style;
-  USHORT            lowest_rec_ppem;
-  SHORT             font_direction_hint;
+  UShort            mac_style_;
+  UShort            lowest_rec_ppem_;
+  Short             font_direction_hint_;
   // This field specifies the version of the 'loca' table. 0 for short
   // offsets, 1 for long.
-  SHORT             loca_format;
-  SHORT             glygh_data_format;
+  Short             loca_format_;
+  Short             glygh_data_format_;
 };
 
 } // namespace ttf_dll

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ttf_parser_app.h"
-#include "ttf_parser_appDlg.h"
+#include "ttf_parser_app_dlg.h"
 #include "ttf_parser_gdiplus.h"
 #include "afxdialogex.h"
 
@@ -8,7 +8,7 @@
 #define new DEBUG_NEW
 #endif
 
-static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index);
+static void SetEditGlyphIndex(CEdit &edit, ttf_dll::GlyphID glyph_index);
 
 BOOL CMySliderCtrl::PreTranslateMessage(MSG* pMsg) {
   if(pMsg->message == WM_KEYDOWN) {
@@ -47,38 +47,38 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-// Cttf_parser_appDlg dialog
-Cttf_parser_appDlg::Cttf_parser_appDlg(CWnd* pParent /*=NULL*/)
-  : CDialogEx(Cttf_parser_appDlg::IDD, pParent) {
+// CTTFParserAppDlg dialog
+CTTFParserAppDlg::CTTFParserAppDlg(CWnd* pParent /*=NULL*/)
+  : CDialogEx(CTTFParserAppDlg::IDD, pParent) {
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void Cttf_parser_appDlg::DoDataExchange(CDataExchange* pDX) {
+void CTTFParserAppDlg::DoDataExchange(CDataExchange* pDX) {
   CDialogEx::DoDataExchange(pDX);
-  DDX_Control(pDX, IDC_EDIT_CHAR, m_edit_char);
-  DDX_Control(pDX, IDC_VIEW, m_btn_view);
-  DDX_Control(pDX, IDC_SLIDER_GLYPH_INDEX, m_slider_glyph_index);
-  DDX_Control(pDX, IDC_TEXT_FILE_NAME, m_text_file_name);
-  DDX_Control(pDX, IDC_EDIT_GLYPH_INDEX, m_edit_glyph_index);
-  DDX_Control(pDX, IDC_SPIN_GLYPH_INDEX, m_spin_glyph_index);
+  DDX_Control(pDX, IDC_EDIT_CHAR, m_edit_char_);
+  DDX_Control(pDX, IDC_VIEW, m_btn_view_);
+  DDX_Control(pDX, IDC_SLIDER_GLYPH_INDEX, m_slider_glyph_index_);
+  DDX_Control(pDX, IDC_TEXT_FILE_NAME, m_text_file_name_);
+  DDX_Control(pDX, IDC_EDIT_GLYPH_INDEX, m_edit_glyph_index_);
+  DDX_Control(pDX, IDC_SPIN_GLYPH_INDEX, m_spin_glyph_index_);
 }
 
-BEGIN_MESSAGE_MAP(Cttf_parser_appDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CTTFParserAppDlg, CDialogEx)
   ON_WM_SYSCOMMAND()
   ON_WM_PAINT()
   ON_WM_QUERYDRAGICON()
-  ON_COMMAND(IDM_FILE_OPEN, &Cttf_parser_appDlg::OnFileOpen)
-  ON_COMMAND(IDM_FILE_EXIT, &Cttf_parser_appDlg::OnFileExit)
-  ON_BN_CLICKED(IDC_VIEW, &Cttf_parser_appDlg::OnBnClickedView)
-  ON_COMMAND(IDM_TOOL_DUMPXML, &Cttf_parser_appDlg::OnToolDumpXml)
-  ON_BN_CLICKED(IDC_CHECK_SHOW_POINT, &Cttf_parser_appDlg::OnBnClickedShowPoint)
+  ON_COMMAND(IDM_FILE_OPEN, &CTTFParserAppDlg::OnFileOpen)
+  ON_COMMAND(IDM_FILE_EXIT, &CTTFParserAppDlg::OnFileExit)
+  ON_BN_CLICKED(IDC_VIEW, &CTTFParserAppDlg::OnBnClickedView)
+  ON_COMMAND(IDM_TOOL_DUMPXML, &CTTFParserAppDlg::OnToolDumpXml)
+  ON_BN_CLICKED(IDC_CHECK_SHOW_POINT, &CTTFParserAppDlg::OnBnClickedShowPoint)
   ON_WM_HSCROLL()
-  ON_EN_CHANGE(IDC_EDIT_GLYPH_INDEX, &Cttf_parser_appDlg::OnEnChangeEditGlyphIndex)
-  ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_GLYPH_INDEX, &Cttf_parser_appDlg::OnDeltaposSpinGlyphIndex)
+  ON_EN_CHANGE(IDC_EDIT_GLYPH_INDEX, &CTTFParserAppDlg::OnEnChangeEditGlyphIndex)
+  ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_GLYPH_INDEX, &CTTFParserAppDlg::OnDeltaposSpinGlyphIndex)
 END_MESSAGE_MAP()
 
 // Cttf_parser_appDlg message handlers
-BOOL Cttf_parser_appDlg::OnInitDialog() {
+BOOL CTTFParserAppDlg::OnInitDialog() {
   CDialogEx::OnInitDialog();
 
   // Add "About..." menu item to system menu.
@@ -109,17 +109,17 @@ BOOL Cttf_parser_appDlg::OnInitDialog() {
   // ttf.load_path(str);
   // m_char.SetWindowText(_T("A"));
 
-  m_spin_glyph_index.SetBuddy(&m_edit_glyph_index);
-  render_point = false;                               // No glyph points are rendered by default
-  enable_controls(false);
+  m_spin_glyph_index_.SetBuddy(&m_edit_glyph_index_);
+  render_point_ = false;                               // No glyph points are rendered by default
+  EnableControls(false);
 
   HDC hdc = ::GetDC(m_hWnd);
-  charBmp = CreateCompatibleBitmap(hdc, 500, 500); // FIXME: need to DeleteObject(m_charBmp)
+  char_bmp_ = CreateCompatibleBitmap(hdc, 500, 500); // FIXME: need to DeleteObject(m_charBmp)
   ::ReleaseDC(m_hWnd, hdc);
   return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+void CTTFParserAppDlg::OnSysCommand(UINT nID, LPARAM lParam) {
   if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
     CAboutDlg dlgAbout;
     dlgAbout.DoModal();
@@ -131,7 +131,7 @@ void Cttf_parser_appDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
-void Cttf_parser_appDlg::OnPaint() {
+void CTTFParserAppDlg::OnPaint() {
   if (IsIconic()) { // Return TRUE if the dialog is minimized.
     CPaintDC dc(this); // device context for painting
 
@@ -151,7 +151,7 @@ void Cttf_parser_appDlg::OnPaint() {
     CDialogEx::OnPaint();
     HDC hdc = ::GetDC(m_hWnd);
     HDC memdc = CreateCompatibleDC(hdc);
-    HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, charBmp);
+    HBITMAP old_bmp = (HBITMAP)SelectObject(memdc, char_bmp_);
     BitBlt(hdc, 100, 100, 500, 500, memdc, 0, 0, SRCCOPY);
     SelectObject(memdc, old_bmp);
     DeleteObject(memdc);
@@ -161,63 +161,63 @@ void Cttf_parser_appDlg::OnPaint() {
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR Cttf_parser_appDlg::OnQueryDragIcon() {
+HCURSOR CTTFParserAppDlg::OnQueryDragIcon() {
   return static_cast<HCURSOR>(m_hIcon);
 }
 
-void Cttf_parser_appDlg::OnFileOpen() {
+void CTTFParserAppDlg::OnFileOpen() {
   CString path_name;
   CFileDialog dlg(TRUE); // TRUE for "open" dialog; FALSE for "save as" dialog.
   if(dlg.DoModal() == IDOK) {
     path_name = dlg.GetPathName();
-    m_text_file_name.SetWindowText(_T("File Name: ") + path_name);
-    ttf.~True_Type_Font();
-    ttf.load_path(path_name.GetBuffer(0));
-    enable_controls(true);
-    m_slider_glyph_index.SetRange(0, ttf.maxp.num_glyphs - 1);
-    m_spin_glyph_index.SetRange(0, ttf.maxp.num_glyphs - 1);
+    m_text_file_name_.SetWindowText(_T("File Name: ") + path_name);
+    ttf.~TrueTypeFont();
+    ttf.LoadPath(path_name.GetBuffer(0));
+    EnableControls(true);
+    m_slider_glyph_index_.SetRange(0, ttf.maxp_.num_glyphs_ - 1);
+    m_spin_glyph_index_.SetRange(0, ttf.maxp_.num_glyphs_ - 1);
   }
 }
 
-void Cttf_parser_appDlg::OnFileExit() {
+void CTTFParserAppDlg::OnFileExit() {
   EndDialog(0);
 }
 
-void Cttf_parser_appDlg::OnBnClickedView() {
+void CTTFParserAppDlg::OnBnClickedView() {
   CString char_string;
-  m_edit_char.GetWindowText(char_string);
-  if(!char_string.IsEmpty() && charBmp) {
-    glyph_index = ttf.cmap.get_glyph_index(ttf_dll::Windows, ttf_dll::Unicode_BMP, char_string[0]);
-    set_edit_glyph_index(m_edit_glyph_index, glyph_index);
+  m_edit_char_.GetWindowText(char_string);
+  if(!char_string.IsEmpty() && char_bmp_) {
+    glyph_index_ = ttf.cmap_.GetGlyphIndex(ttf_dll::kWindows, ttf_dll::kUnicodeBMP, char_string[0]);
+    SetEditGlyphIndex(m_edit_glyph_index_, glyph_index_);
   }
 }
 
-void Cttf_parser_appDlg::OnToolDumpXml() {
-  if(ttf.dump_ttf("info.xml")) {
+void CTTFParserAppDlg::OnToolDumpXml() {
+  if(ttf.DumpTTF("info.xml")) {
     MessageBox(_T("Dumped successfully!"), _T("Message"));
   } else {
     MessageBox(_T("Failed to dump info!"), _T("Message"));
   }
 }
 
-void Cttf_parser_appDlg::OnBnClickedShowPoint() {
+void CTTFParserAppDlg::OnBnClickedShowPoint() {
   // Renew the status of 'show point' and refresh glyph.
-  render_point = (IsDlgButtonChecked(IDC_CHECK_SHOW_POINT) == BST_CHECKED);
-  refresh_glyph();
+  render_point_ = (IsDlgButtonChecked(IDC_CHECK_SHOW_POINT) == BST_CHECKED);
+  RefreshGlyph();
 }
 
-void Cttf_parser_appDlg::refresh_glyph() {
+void CTTFParserAppDlg::RefreshGlyph() {
   HDC hdc = ::GetDC(m_hWnd);
-  ttf_dll::Glyph *glyph = ttf.get_glyph(glyph_index);
-  render_glyph(hdc, charBmp, glyph, 500, 500, render_point); // FIXME: test if ttf is loaded before render.
+  ttf_dll::Glyph *glyph = ttf.GetGlyph(glyph_index_);
+  RenderGlyph(hdc, char_bmp_, glyph, 500, 500, render_point_); // FIXME: test if ttf is loaded before render.
   Invalidate();
   TCHAR buf[300] = {0};
-  ttf.glyph_info(glyph, buf, 300);
+  ttf.GlyphInfo(glyph, buf, 300);
   GetDlgItem(IDC_TEXT_GLYPH_INFO)->SetWindowText(buf);
   ::ReleaseDC(m_hWnd, hdc);
 }
 
-BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg) {
+BOOL CTTFParserAppDlg::PreTranslateMessage(MSG* pMsg) {
   if(pMsg->message == WM_KEYDOWN) {
     switch(pMsg->wParam)  {
       case VK_RETURN:   // omit Enter
@@ -229,56 +229,59 @@ BOOL Cttf_parser_appDlg::PreTranslateMessage(MSG* pMsg) {
   return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-void Cttf_parser_appDlg::enable_controls(bool b) {
-  m_btn_view.EnableWindow(b);                                                   // button "View"
+void CTTFParserAppDlg::EnableControls(bool b) {
+  m_btn_view_.EnableWindow(b);                                                   // button "View"
   GetMenu()->EnableMenuItem(IDM_TOOL_DUMPXML, b ? MF_ENABLED : MF_DISABLED);    // menu button "Dump XML"
   GetDlgItem(IDC_CHECK_SHOW_POINT)->EnableWindow(b);                            // check box "show point"
-  m_slider_glyph_index.EnableWindow(b);                                         // slider "Glyph Index"
-  m_edit_glyph_index.EnableWindow(b);                                           // edit "Glyph Index"
-  glyph_index = 0;                                                              // glyph 0 is rendered by default.
-  m_edit_glyph_index.SetWindowText(_T("0"));
+  m_slider_glyph_index_.EnableWindow(b);                                         // slider "Glyph Index"
+  m_edit_glyph_index_.EnableWindow(b);                                           // edit "Glyph Index"
+  glyph_index_ = 0;                                                              // glyph 0 is rendered by default.
+  m_edit_glyph_index_.SetWindowText(_T("0"));
 }
 
-void Cttf_parser_appDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
-  int tmp = m_slider_glyph_index.GetPos();
-  if(tmp != glyph_index) {
-    glyph_index = (ttf_dll::GLYPH_ID)tmp;
-    set_edit_glyph_index(m_edit_glyph_index, glyph_index);
+void CTTFParserAppDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
+  int tmp = m_slider_glyph_index_.GetPos();
+  if(tmp != glyph_index_) {
+    glyph_index_ = (ttf_dll::GlyphID)tmp;
+    SetEditGlyphIndex(m_edit_glyph_index_, glyph_index_);
   }
   CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
-void Cttf_parser_appDlg::OnEnChangeEditGlyphIndex() {
-  if(ttf.maxp.num_glyphs == 0) return;
+void CTTFParserAppDlg::OnEnChangeEditGlyphIndex() {
+  if(ttf.maxp_.num_glyphs_ == 0) return;
   CString glyph_index_string;
-  m_edit_glyph_index.GetWindowText(glyph_index_string);
+  m_edit_glyph_index_.GetWindowText(glyph_index_string);
   int tmp = _ttoi(glyph_index_string);
-  if(tmp >= ttf.maxp.num_glyphs) {
-    glyph_index = ttf.maxp.num_glyphs - 1;
-    set_edit_glyph_index(m_edit_glyph_index, glyph_index);
+  if(tmp >= ttf.maxp_.num_glyphs_) {
+    glyph_index_ = ttf.maxp_.num_glyphs_ - 1;
+    SetEditGlyphIndex(m_edit_glyph_index_, glyph_index_);
   } else {
-    glyph_index = tmp;
-    m_slider_glyph_index.SetPos(glyph_index);
-    refresh_glyph();
+    glyph_index_ = tmp;
+    m_slider_glyph_index_.SetPos(glyph_index_);
+    RefreshGlyph();
   }
 }
 
 
-void Cttf_parser_appDlg::OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult) {
+void CTTFParserAppDlg::OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult) {
   LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-  if(pNMUpDown->iDelta == -1) {         // The down arrow is pressed.
-    if(glyph_index > 0) {
-      --glyph_index;
+  if(pNMUpDown->iDelta == -1) {
+    // The down arrow is pressed.
+    if(glyph_index_ > 0) {
+      --glyph_index_;
     }
-  } else if(pNMUpDown->iDelta == 1) {    // The up arrow is pressed.
-    if(glyph_index < ttf.maxp.num_glyphs - 1) {
-      ++glyph_index;
+  } else if(pNMUpDown->iDelta == 1) {
+    // The up arrow is pressed.
+    if(glyph_index_ < ttf.maxp_.num_glyphs_ - 1) {
+      ++glyph_index_;
     }
   }
   *pResult = 0;
 }
 
-static void set_edit_glyph_index(CEdit &edit, ttf_dll::GLYPH_ID glyph_index) {
+/****************************************************************************/
+static void SetEditGlyphIndex(CEdit &edit, ttf_dll::GlyphID glyph_index) {
   CString glyph_index_string;
   glyph_index_string.Format(_T("%u"), glyph_index);
   edit.SetWindowText(glyph_index_string);

@@ -15,54 +15,84 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Post_Script.cpp">
+    <ClCompile Include="character_to_glyph_mapping_table.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="font_header.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="True_Type_Font.cpp">
+    <ClCompile Include="glyph_data.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Character_To_Glyph_Mapping_Table.cpp">
+    <ClCompile Include="horizontal_header.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Font_Header.cpp">
+    <ClCompile Include="horizontal_metrics.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Glyph_Data.cpp">
+    <ClCompile Include="index_to_location.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Horizontal_Header.cpp">
+    <ClCompile Include="maximum_profile.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Horizontal_Metrics.cpp">
+    <ClCompile Include="mem_stream.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Index_To_Location.cpp">
+    <ClCompile Include="naming_table.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Maximum_Profile.cpp">
+    <ClCompile Include="os_2_and_windows_metrics.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Naming_Table.cpp">
+    <ClCompile Include="post_script.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OS_2_And_Windows_Metrics.cpp">
+    <ClCompile Include="stdafx.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TTF_Table.cpp">
+    <ClCompile Include="true_type_font.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mem_Stream.cpp">
+    <ClCompile Include="ttf_table.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XML_Logger.cpp">
+    <ClCompile Include="xml_logger.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Post_Script.h">
+    <ClInclude Include="character_to_glyph_mapping_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="font_header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glyph_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="horizontal_header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="horizontal_metrics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="index_to_location.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="maximum_profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mem_stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="naming_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="os_2_and_windows_metrics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="post_script.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -71,46 +101,16 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="True_Type_Font.h">
+    <ClInclude Include="true_type_font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Type.h">
+    <ClInclude Include="ttf_table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Character_To_Glyph_Mapping_Table.h">
+    <ClInclude Include="type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Font_Header.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Glyph_Data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Horizontal_Header.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Horizontal_Metrics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Index_To_Location.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Maximum_Profile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Naming_Table.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OS_2_And_Windows_Metrics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TTF_Table.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mem_Stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XML_Logger.h">
+    <ClInclude Include="xml_logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

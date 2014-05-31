@@ -23,10 +23,26 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ttf_parser_app.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ttf_parser_appDlg.h">
+    <ResourceCompile Include="ttf_parser_app.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ttf_parser_app.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ttf_parser_gdiplus.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ttf_parser_app_dlg.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -35,30 +51,14 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="ttf_parser_app.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ttf_parser_gdiplus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="ttf_parser_app.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ttf_parser_appDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ttf_parser_gdiplus.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ttf_parser_app.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClInclude Include="ttf_parser_app_dlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

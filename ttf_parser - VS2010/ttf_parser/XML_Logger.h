@@ -5,55 +5,58 @@
 
 namespace ttf_dll {
 
-class Xml_Logger {
+// The `XmlLogger` is bind with an output file and prints formatted data to
+// it. All the print functions will print indentation in front of the
+// formatted data.
+class XmlLogger {
  public:
   // Opens an output file whose path is specified by `out_path`.
-  Xml_Logger(const char *out_path);
+  XmlLogger(const char *out_path);
   // Closes the output file.
-  ~Xml_Logger();
+  ~XmlLogger();
   // Returns true if failed to open output file.
-  bool error() const { return err; }
+  bool Error() const { return error_; }
   // Increases the indentation level.
-  void inc_indent() { indent += 2; }
+  void IncreaseIndent() { indent_ += 2; }
   // Decreases the indentation level.
-  void dec_indent() { indent -= 2; }
+  void DecreaseIndent() { indent_ -= 2; }
   // Prints to file the formatted data.
-  void print(const char *format, ...) const;
+  void Print(const char *format, ...) const;
   // Prints to file the formatted data followed by line feed character '\n'.
-  void println(const char *format, ...) const;
+  void Println(const char *format, ...) const;
   // Prints to file the formatted data as a double-byte string.
-  void wprint(const wchar_t *format, ...) const;
+  void WPrint(const wchar_t *format, ...) const;
   // Prints to file the formatted data as a double-byte string followed by
   // line feed character '\n'.
-  void wprintln(const wchar_t *format, ...) const;
+  void WPrintln(const wchar_t *format, ...) const;
   // Prints to file the `array` whose length is specified by `len`. The
   // argument `format` specifies how each element in `array` is printed.
   template<typename T>
-  void print_array(void *array, size_t len, char *format) const {
-    print_indent();
+  void PrintArray(void *array, size_t len, char *format) const {
+    PrintIndent();
     T *ptr = (T*)array;
     for(size_t i = 0; i < len; ++i) {
-      fprintf(fp, format, *ptr++);
+      fprintf(fp_, format, *ptr++);
       if(i == len - 1) {            // end of array
-        fprintf(fp, "\n");
+        fprintf(fp_, "\n");
       } else if((i + 1) % 10) {     // in the middle of line
-        fprintf(fp, "  ");
+        fprintf(fp_, "  ");
       } else {                      // end of line
-        fprintf(fp, "\n");
-        print_indent();
+        fprintf(fp_, "\n");
+        PrintIndent();
       }
     }
   }
  private:
-
   // Prints spaces as indentation.
-  void print_indent() const;
+  void PrintIndent() const;
+
   // Indentation level.
-  unsigned  indent;
+  unsigned  indent_;
   // Pointer to output file.
-  FILE      *fp;
+  FILE      *fp_;
   // True if failed to open output file.
-  bool      err;
+  bool      error_;
 };
 
 } // namespace ttf_dll

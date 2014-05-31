@@ -1,7 +1,7 @@
 #ifndef TTF_TABLE_H
 #define TTF_TABLE_H
 
-#include "Type.h"
+#include "type.h"
 using namespace std;
 
 namespace ttf_dll {
@@ -10,73 +10,73 @@ namespace ttf_dll {
 // Entries in the Table Record must be sorted in ascending order by tag.
 // Offset values in the Table Record are measured from the start of the font
 // file.
-class DLL_API Table_Record_Entry {
+class DLL_API TableRecordEntry {
  public:
   // Reads the Table Record from the file stream.
-  void load_entry(ifstream &fin);
+  void LoadEntry(ifstream &fin);
 
   // 4 -byte identifier.
-  ULONG  tag;
+  ULong  tag_;
   // CheckSum for this table.
-  ULONG  checksum;
+  ULong  checksum_;
   // Offset from beginning of TrueType font file
-  ULONG  offset;
+  ULong  offset_;
   // Length of this table.
-  ULONG  length;
+  ULong  length_;
 };
 
 // The TrueType font starts with Offset Table.
-class DLL_API Offset_Table {
+class DLL_API OffsetTable {
  public:
   // Deallocates the Table Record entries during destruction.
-  ~Offset_Table() {
-    DEL_A(table_record_entries);
+  ~OffsetTable() {
+    DEL_A(table_record_entries_);
   }
   // Reads the Offset Table from the file stream.
-  void load_table(ifstream &fin);
+  void LoadTable(ifstream &fin);
   // Gets the Table Record entry whose tag is specified by `tag_str`.
-  Table_Record_Entry *get_table_entry(const char *tag_str) const;
+  TableRecordEntry *GetTableEntry(const char *tag_str) const;
   // Dumps out the information of this Offset Table to an XML file.
-  void dump_info(Xml_Logger &logger) const;
+  void DumpInfo(XmlLogger &logger) const;
 
   // 0x00010000 for version 1.0.
-  FIXED   sfnt_version;
+  Fixed   sfnt_version_;
   // Number of tables.
-  USHORT  num_tables;
+  UShort  num_tables_;
   // (Maximum power of 2 <= numTables) x 16.
-  USHORT  search_range;
+  UShort  search_range_;
   // Log2(maximum power of 2 <= numTables).
-  USHORT  entry_selector;
+  UShort  entry_selector_;
   // NumTables x 16-searchRange.
-  USHORT  range_shift;
+  UShort  range_shift_;
 
   // An array of Table Record entries.
-  Table_Record_Entry *table_record_entries;
+  TableRecordEntry *table_record_entries_;
 };
 /************************************************************************/
 /*                           OPTIONAL TABLES                            */
 /************************************************************************/
 /******************************* cvt ***********************************/
-class Control_Value_Table {
-  FWORD  list_of_values/*[n]*/;
+class ControlValueTable {
+  FWord  list_of_values_/*[n]*/;
 };
 
 /******************************* EBDT ***********************************/
-class Embedded_Bitmap_Data_Table {
-  FIXED  version;
+class EmbeddedBitmapDataTable {
+  Fixed  version_;
 };
 
 /******************************* EBLC ***********************************/
-class Embedded_Bitmap_Location_Table {
-  FIXED  version;
-  ULONG  num_sizes;
+class EmbeddedBitmapLocationTable {
+  Fixed  version_;
+  ULong  num_sizes_;
 };
 
 /******************************* EBSC ***********************************/
 
 /******************************* fpgm ***********************************/
-class Font_Program {
-  BYTE  instructions/*[n]*/;
+class FontProgram {
+  Byte  instructions_/*[n]*/;
 };
 /******************************* gasp ***********************************/
 //class Grid_Fitting_And_Scan_Conversion_Procedure{
@@ -93,20 +93,21 @@ class Font_Program {
 
 /******************************* kern ***********************************/
 class Kerning {
-  USHORT  version;
-  USHORT  n_tables;
+  UShort  version_;
+  UShort  n_tables_;
 };
-class Kerning_Subtable {
-  USHORT  version;
-  USHORT  length;
-  USHORT  coverage;
+
+class KerningSubtable {
+  UShort  version_;
+  UShort  length_;
+  UShort  coverage_;
 };
 
 /******************************* LTSH ***********************************/
 
 /******************************* prep ***********************************/
-class Control_Value_Program {
-  BYTE  set_of_instructions/*[n]*/;
+class ControlValueProgram {
+  Byte  set_of_instructions_/*[n]*/;
 };
 
 /******************************* PCLT ***********************************/

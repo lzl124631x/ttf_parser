@@ -1,5 +1,5 @@
 
-// ttf_parser_appDlg.h : header file
+// ttf_parser_appdlg.h : header file
 //
 
 #pragma once
@@ -16,43 +16,12 @@ class CMySliderCtrl : public CSliderCtrl {
   BOOL PreTranslateMessage(MSG* pMsg);
 };
 
-// Cttf_parser_appDlg dialog
-class Cttf_parser_appDlg : public CDialogEx {
-// Construction
+// CTTFParserAppDlg dialog
+class CTTFParserAppDlg : public CDialogEx {
  public:
-  Cttf_parser_appDlg(CWnd* pParent = NULL);	// standard constructor
-
-// Dialog Data
   enum { IDD = IDD_TTF_PARSER_APP_DIALOG };
 
- protected:
-  virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-
-
-// Implementation
- protected:
-  HICON m_hIcon;
-
-  // Generated message map functions
-  virtual BOOL OnInitDialog();
-  afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
-  afx_msg void OnPaint();
-  afx_msg HCURSOR OnQueryDragIcon();
-  DECLARE_MESSAGE_MAP()
- public:
-  CEdit m_edit_char;
-  CButton m_btn_view;
-  CStatic m_text_file_name;
-  CMySliderCtrl m_slider_glyph_index;
-  CEdit m_edit_glyph_index;
-  CSpinButtonCtrl m_spin_glyph_index;
-
-  ttf_dll::GLYPH_ID glyph_index;
-  bool render_point;
-  HBITMAP charBmp;
-
-  void refresh_glyph();
-  void enable_controls(bool b);
+  CTTFParserAppDlg(CWnd* pParent = NULL);	// standard constructor
   BOOL PreTranslateMessage(MSG* pMsg);
   afx_msg void OnFileOpen();
   afx_msg void OnFileExit();
@@ -64,4 +33,28 @@ class Cttf_parser_appDlg : public CDialogEx {
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg void OnEnChangeEditGlyphIndex();
   afx_msg void OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult);
+  void RefreshGlyph();
+  void EnableControls(bool b);
+
+  CEdit               m_edit_char_;
+  CButton             m_btn_view_;
+  CStatic             m_text_file_name_;
+  CMySliderCtrl       m_slider_glyph_index_;
+  CEdit               m_edit_glyph_index_;
+  CSpinButtonCtrl     m_spin_glyph_index_;
+
+  ttf_dll::GlyphID   glyph_index_;
+  bool                render_point_;
+  HBITMAP             char_bmp_;
+
+ protected:
+  virtual void DoDataExchange(CDataExchange* pDX);      // DDX/DDV support
+  // Generated message map functions
+  virtual BOOL OnInitDialog();
+  afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+  afx_msg void OnPaint();
+  afx_msg HCURSOR OnQueryDragIcon();
+  DECLARE_MESSAGE_MAP()
+
+  HICON m_hIcon;
 };

@@ -5,4 +5,4 @@
 
 #include "stdafx.h"
 
-ttf_dll::True_Type_Font ttf;
+ttf_dll::TrueTypeFont ttf;

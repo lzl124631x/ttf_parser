@@ -2,13 +2,13 @@
 
 namespace ttf_dll {
 
-void ifstream_read_big_endian(std::ifstream &fin, void *buf, unsigned size) {
+void IFStreamReadBigEndian(std::ifstream &fin, void *buf, unsigned size) {
   for(int i = size - 1; i >= 0; --i) {
     fin.read((char*)buf + i, sizeof(char));
   }
 }
 
-void ifstream_read_big_endian(std::ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num) {
+void IFStreamReadBigEndian(std::ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num) {
   for(unsigned i = 0; i < unit_num; ++i) {
     for(int j = unit_size - 1; j >= 0; --j) {
       fin.read((char*)buf + j, sizeof(char));

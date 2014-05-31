@@ -74,40 +74,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Character_To_Glyph_Mapping_Table.cpp" />
-    <ClCompile Include="Font_Header.cpp" />
-    <ClCompile Include="Glyph_Data.cpp" />
-    <ClCompile Include="Horizontal_Header.cpp" />
-    <ClCompile Include="Horizontal_Metrics.cpp" />
-    <ClCompile Include="Index_To_Location.cpp" />
-    <ClCompile Include="Maximum_Profile.cpp" />
-    <ClCompile Include="Mem_Stream.cpp" />
-    <ClCompile Include="Naming_Table.cpp" />
-    <ClCompile Include="OS_2_And_Windows_Metrics.cpp" />
-    <ClCompile Include="Post_Script.cpp" />
-    <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="True_Type_Font.cpp" />
-    <ClCompile Include="TTF_Table.cpp" />
-    <ClCompile Include="XML_Logger.cpp" />
+    <ClCompile Include="character_to_glyph_mapping_table.cc" />
+    <ClCompile Include="font_header.cc" />
+    <ClCompile Include="glyph_data.cc" />
+    <ClCompile Include="horizontal_header.cc" />
+    <ClCompile Include="horizontal_metrics.cc" />
+    <ClCompile Include="index_to_location.cc" />
+    <ClCompile Include="maximum_profile.cc" />
+    <ClCompile Include="mem_stream.cc" />
+    <ClCompile Include="naming_table.cc" />
+    <ClCompile Include="os_2_and_windows_metrics.cc" />
+    <ClCompile Include="post_script.cc" />
+    <ClCompile Include="stdafx.cc" />
+    <ClCompile Include="true_type_font.cc" />
+    <ClCompile Include="ttf_table.cc" />
+    <ClCompile Include="xml_logger.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Character_To_Glyph_Mapping_Table.h" />
-    <ClInclude Include="Font_Header.h" />
-    <ClInclude Include="Glyph_Data.h" />
-    <ClInclude Include="Horizontal_Header.h" />
-    <ClInclude Include="Horizontal_Metrics.h" />
-    <ClInclude Include="Index_To_Location.h" />
-    <ClInclude Include="Maximum_Profile.h" />
-    <ClInclude Include="Mem_Stream.h" />
-    <ClInclude Include="Naming_Table.h" />
-    <ClInclude Include="OS_2_And_Windows_Metrics.h" />
-    <ClInclude Include="Post_Script.h" />
+    <ClInclude Include="character_to_glyph_mapping_table.h" />
+    <ClInclude Include="font_header.h" />
+    <ClInclude Include="glyph_data.h" />
+    <ClInclude Include="horizontal_header.h" />
+    <ClInclude Include="horizontal_metrics.h" />
+    <ClInclude Include="index_to_location.h" />
+    <ClInclude Include="maximum_profile.h" />
+    <ClInclude Include="mem_stream.h" />
+    <ClInclude Include="naming_table.h" />
+    <ClInclude Include="os_2_and_windows_metrics.h" />
+    <ClInclude Include="post_script.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="True_Type_Font.h" />
-    <ClInclude Include="TTF_Table.h" />
-    <ClInclude Include="Type.h" />
-    <ClInclude Include="XML_Logger.h" />
+    <ClInclude Include="true_type_font.h" />
+    <ClInclude Include="ttf_table.h" />
+    <ClInclude Include="type.h" />
+    <ClInclude Include="xml_logger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

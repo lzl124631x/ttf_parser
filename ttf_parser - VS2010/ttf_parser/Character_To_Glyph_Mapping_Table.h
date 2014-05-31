@@ -1,85 +1,84 @@
 #ifndef CHARACTER_TO_GLYPH_MAPPING_TABLE_H
 #define CHARACTER_TO_GLYPH_MAPPING_TABLE_H
-#include "Type.h"
-#include "TTF_Table.h"
+#include "type.h"
+#include "ttf_table.h"
 /****************************************************************************/
 /*                cmap - Character To Glyph Index Mapping                   */
 /* Spec: https://www.microsoft.com/typography/otspec/cmap.htm               */
 /****************************************************************************/
 namespace ttf_dll {
-class DLL_API Encoding_Table {
+class DLL_API EncodingTable {
  public:
-  Encoding_Table(ifstream &fin);
-  virtual ~Encoding_Table() {}
-  virtual GLYPH_ID get_glyph_index(USHORT ch) = 0;
-  void dump_table_header(Xml_Logger &logger) const;
-  virtual void dump_info(Xml_Logger &logger) const = 0;
+  EncodingTable(ifstream &fin);
+  virtual ~EncodingTable() {}
+  virtual GlyphID GetGlyphIndex(UShort ch) = 0;
+  void DumpTableHeader(XmlLogger &logger) const;
+  virtual void DumpInfo(XmlLogger &logger) const = 0;
 
-  USHORT  format;
-  USHORT  length;
-  USHORT  language;
+  UShort  format_;
+  UShort  length_;
+  UShort  language_;
 };
 
-class DLL_API Encoding_Record {
+class DLL_API EncodingRecord {
  public:
-  Encoding_Record() { }
-  void load_entry(ifstream &fin);
-  void load_encoding_table(ifstream &fin, streampos base);
-  ~Encoding_Record() {
-    DEL(encoding_table);
+  ~EncodingRecord() {
+    DEL(encoding_table_);
   }
+  void LoadEntry(ifstream &fin);
+  void LoadEncodingTable(ifstream &fin, streampos base);
 
-  USHORT            platform_id;
-  USHORT            encoding_id;
+  UShort              platform_id_;
+  UShort              encoding_id_;
   // Byte offset from beginning of table to the subtable for this encoding.
-  ULONG             byte_offset;
+  ULong               byte_offset_;
   // Just a pointer to the corresponding encoding table; NOT an array.
-  Encoding_Table    *encoding_table;
+  EncodingTable       *encoding_table_;
 };
 
-class DLL_API Character_To_Glyph_Index_Mapping_Table {
+class DLL_API CharacterToGlyphIndexMappingTable {
  public:
-  ~Character_To_Glyph_Index_Mapping_Table() {
-    DEL_A(encoding_records);
+  ~CharacterToGlyphIndexMappingTable() {
+    DEL_A(encoding_records_);
   }
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
-  void load_table(Table_Record_Entry *entry, ifstream &fin);
+  void LoadTable(TableRecordEntry *entry, ifstream &fin);
   // Dumps the information of this table to an XML file.
-  void dump_info(Xml_Logger &logger) const;
-  GLYPH_ID get_glyph_index(USHORT platform_id, USHORT encoding_id, USHORT ch);
+  void DumpInfo(XmlLogger &logger) const;
+  GlyphID GetGlyphIndex(UShort platform_id, UShort encoding_id, UShort ch);
 
  private:
-  Encoding_Table *get_encoding_table(USHORT platform_id, USHORT encoding_id);
+  EncodingTable *GetEncodingTable(UShort platform_id, UShort encoding_id);
 
-  USHORT  table_version_number;
-  USHORT  num_encoding_tables;
-  Encoding_Record *encoding_records;
+  UShort              table_version_number_;
+  UShort              num_encoding_tables_;
+  EncodingRecord      *encoding_records_;
 };
 
 /**************************** Encoding Tables *******************************/
-enum Encoding_Table_Format {
-  BYTE_ENCODING_TABLE                       = 0,
-  HIGH_BYTE_MAPPING_THROUGH_TABLE           = 2,
-  SEGMENT_MAPPING_TO_DELTA_VALUES           = 4,
-  TRIMMED_TABLE_MAPPING                     = 6
+enum EncodingTableFormat {
+  kByteEncodingTable                        = 0,
+  kHighByteMappingThroughTable              = 2,
+  kSegmentMappingToDeltaValues              = 4,
+  kTrimmedTableMapping                      = 6
 };
 
-class DLL_API Byte_Encoding_Table: public Encoding_Table {
+class DLL_API ByteEncodingTable: public EncodingTable {
   // This is the Apple standard character to glyph index mapping table, a
   // simple 1 to 1 mapping of character codes to glyph indices. The glyph set
   // is limited to 256. Note that if this format is used to index into a
   // larger glyph set, only the first 256 glyphs will be accessible.
  public:
-  Byte_Encoding_Table(ifstream &fin);
-  ~Byte_Encoding_Table() { }
-  GLYPH_ID get_glyph_index(USHORT ch);
-  void dump_info(Xml_Logger &logger) const;
+  ByteEncodingTable(ifstream &fin);
+  ~ByteEncodingTable() { }
+  GlyphID GetGlyphIndex(UShort ch);
+  void DumpInfo(XmlLogger &logger) const;
 
-  BYTE  glyph_id_array[256];
+  Byte  glyph_id_array_[256];
 };
 
-class DLL_API High_Byte_Mapping_Through_Table: public Encoding_Table {
+class DLL_API HighByteMappingThroughTable: public EncodingTable {
   // This subtable is useful for the national character code standards used
   // for Japanese, Chinese, and Korean characters. These code standards use a
   // mixed 8/16-bit encoding, in which certain byte values signal the first
@@ -94,66 +93,66 @@ class DLL_API High_Byte_Mapping_Through_Table: public Encoding_Table {
   // is used, a second byte is not needed; the single byte value is mapped
   // through the subArray.
  public:
-  High_Byte_Mapping_Through_Table(ifstream &fin);
-  ~High_Byte_Mapping_Through_Table() {
-    DEL_A(subheaders);
+  HighByteMappingThroughTable(ifstream &fin);
+  ~HighByteMappingThroughTable() {
+    DEL_A(subheaders_);
   }
-  GLYPH_ID get_glyph_index(USHORT ch);
-  void dump_info(Xml_Logger &logger) const;
+  GlyphID GetGlyphIndex(UShort ch);
+  void DumpInfo(XmlLogger &logger) const;
 
-  USHORT    subheader_keys[256];
+  UShort    subheader_keys_[256];
   struct Subheader {
-    USHORT  first_code;
-    USHORT  entry_count;
-    SHORT   id_delta;
-    USHORT  id_range_offset;
+    UShort  first_code;
+    UShort  entry_count;
+    Short   id_delta;
+    UShort  id_range_offset;
   };
-  Subheader  *subheaders;
-  USHORT    glyph_id_array;
+  Subheader  *subheaders_;
+  UShort    glyph_id_array_;
 };
 
-class DLL_API Segment_Mapping_To_Delta_Values: public Encoding_Table {
+class DLL_API SegmentMappingToDeltaValues: public EncodingTable {
  public:
-  Segment_Mapping_To_Delta_Values(ifstream &fin);
-  ~Segment_Mapping_To_Delta_Values() {
-    DEL_A(end_count);
-    DEL_A(start_count);
-    DEL_A(id_delta);
-    DEL_A(id_range_offset);
-    DEL_A(glyph_id_array);
+  SegmentMappingToDeltaValues(ifstream &fin);
+  ~SegmentMappingToDeltaValues() {
+    DEL_A(end_count_);
+    DEL_A(start_count_);
+    DEL_A(id_delta_);
+    DEL_A(id_range_offset_);
+    DEL_A(glyph_id_array_);
   }
-  GLYPH_ID get_glyph_index(USHORT ch);
-  void dump_info(Xml_Logger &logger) const;
+  GlyphID GetGlyphIndex(UShort ch);
+  void DumpInfo(XmlLogger &logger) const;
 
-  USHORT  seg_countx2;
-  USHORT  search_range;
-  USHORT  entry_selector;
-  USHORT  range_shift;
-  USHORT  *end_count/*[seg_count]*/;
-  USHORT  reserved_pad;
-  USHORT  *start_count/*[seg_count]*/;
-  SHORT   *id_delta/*[seg_count]*/;
-  USHORT  *id_range_offset/*[seg_count]*/;
-  USHORT  *glyph_id_array/*[var_len]*/;
+  UShort  seg_countx2_;
+  UShort  search_range_;
+  UShort  entry_selector_;
+  UShort  range_shift_;
+  UShort  *end_count_/*[seg_count]*/;
+  UShort  reserved_pad_;
+  UShort  *start_count_/*[seg_count]*/;
+  Short   *id_delta_/*[seg_count]*/;
+  UShort  *id_range_offset_/*[seg_count]*/;
+  UShort  *glyph_id_array_/*[var_len]*/;
 };
 
-class DLL_API Trimmed_Table_Mapping: public Encoding_Table {
+class DLL_API TrimmedTableMapping: public EncodingTable {
   // The firstCode and entryCount values specify a subrange (beginning at
   // firstCode, length = entryCount) within the range of possible character
   // codes. Codes outside of this subrange are mapped to glyph index 0. The
   // offset of the code (from the first code) within this subrange is used as
   // index to the glyphIdArray, which provides the glyph index value.
  public:
-  Trimmed_Table_Mapping(ifstream &fin);
-  ~Trimmed_Table_Mapping() {
-    DEL_A(glyph_id_array);
+  TrimmedTableMapping(ifstream &fin);
+  ~TrimmedTableMapping() {
+    DEL_A(glyph_id_array_);
   }
-  GLYPH_ID get_glyph_index(USHORT ch);
-  void dump_info(Xml_Logger &logger) const;
+  GlyphID GetGlyphIndex(UShort ch);
+  void DumpInfo(XmlLogger &logger) const;
 
-  USHORT  first_code;
-  USHORT  entry_count;
-  USHORT  *glyph_id_array/*[entry_count]*/;
+  UShort  first_code_;
+  UShort  entry_count_;
+  UShort  *glyph_id_array_/*[entry_count]*/;
 };
 
 } // namespace ttf_dll

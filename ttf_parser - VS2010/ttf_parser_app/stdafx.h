@@ -53,5 +53,5 @@
 using namespace Gdiplus;
 #pragma comment(lib, "gdiplus.lib")
 
-#include "True_Type_Font.h"
-extern ttf_dll::True_Type_Font ttf;
+#include "true_type_font.h"
+extern ttf_dll::TrueTypeFont ttf;

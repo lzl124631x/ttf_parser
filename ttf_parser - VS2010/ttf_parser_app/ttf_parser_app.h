@@ -5,7 +5,7 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-#error "include 'stdafx.h' before including this file for PCH"
+#Error "include 'stdafx.h' before including this file for PCH"
 #endif
 
 #include "resource.h"		// main symbols
@@ -15,10 +15,10 @@
 // See ttf_parser_app.cpp for the implementation of this class
 //
 
-class Cttf_parser_appApp : public CWinApp
+class CTTFParserAppApp : public CWinApp
 {
  public:
-  Cttf_parser_appApp();
+  CTTFParserAppApp();
 
 // Overrides
  public:
@@ -31,4 +31,4 @@ class Cttf_parser_appApp : public CWinApp
   DECLARE_MESSAGE_MAP()
 };
 
-extern Cttf_parser_appApp theApp;
+extern CTTFParserAppApp theApp;

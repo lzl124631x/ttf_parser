@@ -1,71 +1,71 @@
 #ifndef NAMING_TABLE_H
 #define NAMING_TABLE_H
-#include "Type.h"
-#include "TTF_Table.h"
+#include "type.h"
+#include "ttf_table.h"
 /****************************************************************************/
 /*                         name - Naming Table                              */
 /* Spec: https://www.microsoft.com/typography/otspec/name.htm               */
 /****************************************************************************/
 namespace ttf_dll {
 
-enum Platform_ID {
-  Unicode         = 0,
-  Macintosh       = 1,
-  ISO             = 2,
-  Windows         = 3,
-  Custom          = 4
+enum PlatformID {
+  kUnicode          = 0,
+  kMacintosh        = 1,
+  kISO              = 2,
+  kWindows          = 3,
+  kCustom           = 4
 };
 
-enum Windows_Encoding_ID {
-  Symbol          = 0,
-  Unicode_BMP     = 1,
-  ShiftJIS        = 2,
-  PRC             = 3,
-  Big5            = 4,
-  Wansung         = 5,
-  Johab           = 6,
-  // 7-9 are reserved.
-  Unicode_UCS_4   = 10
+enum WindowsEncodingID {
+  kSymbol           = 0,
+  kUnicodeBMP       = 1,
+  kShiftJIS         = 2,
+  kPRC              = 3,
+  kBig5             = 4,
+  kWansung          = 5,
+  kJohab            = 6,
+  // Bits 7-9 are reserved.
+  kUnicodeUCS4      = 10
 };
 
 // Each string in the string storage is referenced by a name record.
-struct DLL_API Name_Record {
-  ~Name_Record() {
-    if(double_byte_string()) {
-      DEL_T(string, wchar_t);
+struct DLL_API NameRecord {
+  ~NameRecord() {
+    if(DoubleByteString()) {
+      DEL_T(string_, wchar_t);
     } else {
-      DEL_T(string, char);
+      DEL_T(string_, char);
     }
   }
   // Reads the Name Record from the file stream.
-  void load_record(ifstream &fin);
+  void LoadRecord(ifstream &fin);
   // Returns true if this is a double-byte string.
-  bool double_byte_string() const {
+  bool DoubleByteString() const {
     return
-      platform_id == Unicode ||
-      platform_id == Windows &&
-      encoding_id == Unicode_BMP;
+      platform_id_ == kUnicode ||
+      platform_id_ == kWindows &&
+      encoding_id_ == kUnicodeBMP;
   }
   // Dumps out the information of this Name Record to an XML file.
-  void dump_info(Xml_Logger &logger) const;
+  void DumpInfo(XmlLogger &logger) const;
   // Reads the string data to the `string` field.
-  void read_string(ifstream &fin);
+  void ReadString(ifstream &fin);
 
   // Platform ID.
-  USHORT  platform_id;
+  UShort  platform_id_;
   // Platform-specific encoding ID.
-  USHORT  encoding_id;
+  UShort  encoding_id_;
   // Language ID.
-  USHORT  language_id;
+  UShort  language_id_;
   // Name ID.
-  USHORT  name_id;
+  UShort  name_id_;
   // String length (in bytes).
-  USHORT  length;
+  UShort  length_;
   // String offset from start of storage area (in bytes).
-  USHORT  offset;
+  UShort  offset_;
 
   // Custom field: the corresponding string.
-  void    *string;
+  void    *string_;
 };
 
 // FIXME: There are two versions of naming table! The format 1 is not yet implemented.
@@ -75,22 +75,22 @@ class DLL_API Naming_Table {
  public:
   // Deallocates the Name Records on destruction.
   ~Naming_Table() {
-    DEL_A(name_records);
+    DEL_A(name_records_);
   }
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
-  void load_table(Table_Record_Entry *entry, ifstream &fin);
+  void LoadTable(TableRecordEntry *entry, ifstream &fin);
   // Dumps the information of this table to an XML file.
-  void dump_info(Xml_Logger &logger) const;
+  void DumpInfo(XmlLogger &logger) const;
 
   // Format Selector.
-  USHORT        format;
+  UShort        format_;
   // Number of name records.
-  USHORT        count;
+  UShort        count_;
   // Offset to start of string storage (from start of table).
-  USHORT        offset;
+  UShort        offset_;
   // The name records where `count` is the number of records.
-  Name_Record   *name_records/*[count]*/;
+  NameRecord   *name_records_/*[count]*/;
 };
 
 
@@ -100,11 +100,11 @@ class DLL_API Naming_Table {
 // specifies the language for name records using that language ID, regardless
 // of the platform. These can be used for any platform that supports this
 // language-tag mechanism.
-struct Language_Tag_Record {
+struct LanguageTagRecord {
   // Language-tag string length (in bytes)
-  USHORT  length;
+  UShort  length_;
   // Language-tag string offset from start of storage area (in bytes).
-  USHORT  offset;
+  UShort  offset_;
 };
 
 } // namespace ttf_dll

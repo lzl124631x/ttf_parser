@@ -1,11 +1,11 @@
 #include "stdafx.h"
 using namespace ttf_dll;
 
-void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t height, bool render_point) {
+void RenderGlyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t height, bool render_point) {
   if(!glyph) return;
 
-  FWORD glyph_width = ttf.head.x_max - ttf.head.x_min;
-  FWORD glyph_height = ttf.head.y_max - ttf.head.y_min;
+  FWord glyph_width = ttf.head_.x_max_ - ttf.head_.x_min_;
+  FWord glyph_height = ttf.head_.y_max_ - ttf.head_.y_min_;
   float x_ratio = 1.0f * width / glyph_width;
   float y_ratio = 1.0f * height / glyph_height;
 
@@ -14,19 +14,19 @@ void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t heigh
   Graphics g(memdc);
   g.Clear(Color::White);
   GraphicsPath path;
-  glyph->glyph_to_path(path);
+  glyph->GlyphToPath(path);
 
   // perform transformation according to the glyph metrics
   Matrix matrix(1, 0, 0, -1, 0, 0); // flip (x, y) to (x, -y)
-  matrix.Translate((float)-ttf.head.x_min, (float)ttf.head.y_max, MatrixOrderAppend); // translate with (-xMin, yMax)
+  matrix.Translate((float)-ttf.head_.x_min_, (float)ttf.head_.y_max_, MatrixOrderAppend); // translate with (-xMin, yMax)
   matrix.Scale(x_ratio, y_ratio, MatrixOrderAppend); // scale with (xRatio, yRatio)
   g.SetTransform(&matrix);
   // render bound
   // FIXME: ugly code!
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->header.x_min, (float)ttf.head.y_max, (float)glyph->header.x_min, (float)-(height / y_ratio - ttf.head.y_max));
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->header.x_max, (float)ttf.head.y_max, (float)glyph->header.x_max, (float)-(height / y_ratio - ttf.head.y_max));
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->header.y_min, (float)width / x_ratio + ttf.head.x_min, (float)glyph->header.y_min);
-  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head.x_min, (float)glyph->header.y_max, (float)width / x_ratio + ttf.head.x_min, (float)glyph->header.y_max);
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->header_.x_min_, (float)ttf.head_.y_max_, (float)glyph->header_.x_min_, (float)-(height / y_ratio - ttf.head_.y_max_));
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)glyph->header_.x_max_, (float)ttf.head_.y_max_, (float)glyph->header_.x_max_, (float)-(height / y_ratio - ttf.head_.y_max_));
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head_.x_min_, (float)glyph->header_.y_min_, (float)width / x_ratio + ttf.head_.x_min_, (float)glyph->header_.y_min_);
+  g.DrawLine(&Pen(Color(50, 0, 0, 0), 1), (float)ttf.head_.x_min_, (float)glyph->header_.y_max_, (float)width / x_ratio + ttf.head_.x_min_, (float)glyph->header_.y_max_);
   // render glyph
   g.SetSmoothingMode(SmoothingModeHighQuality);
   g.FillPath(&SolidBrush(Color::Black), &path);
@@ -41,10 +41,10 @@ void render_glyph(HDC hdc, HBITMAP bmp, Glyph *glyph, size_t width, size_t heigh
     Pen off_pen(Color(200, 0, 0, 255), pen_width);
 
     int all_pt_num = 0, off_pt_num = 0;
-    glyph->count_pt_num(all_pt_num, off_pt_num);
+    glyph->CountPointNum(all_pt_num, off_pt_num);
     PointF *all_pt = new PointF[all_pt_num];
     int *off_pt = new int[off_pt_num];
-    glyph->output_pts(all_pt, off_pt);
+    glyph->OutputPoints(all_pt, off_pt);
     PointF *pt = all_pt;
     for(int i = 0, j = 0; i < all_pt_num; ++i, ++pt) {
       if(i == off_pt[j]) {  // render off-curve point

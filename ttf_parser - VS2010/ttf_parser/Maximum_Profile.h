@@ -1,53 +1,53 @@
 #ifndef MAXIMUM_PROFILE_H
 #define MAXIMUM_PROFILE_H
-#include "Type.h"
-#include "TTF_Table.h"
+#include "type.h"
+#include "ttf_table.h"
 /****************************************************************************/
 /*                         maxp - Maximum Profile                           */
 /* Spec: https://www.microsoft.com/typography/otspec/maxp.htm               */
 /****************************************************************************/
 namespace ttf_dll {
 
-class DLL_API Maximum_Profile {
+class DLL_API MaximumProfile {
  public:
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
-  void load_table(Table_Record_Entry *entry, ifstream &fin);
+  void LoadTable(TableRecordEntry *entry, ifstream &fin);
   // Dumps the information of this table to an XML file.
-  void dump_info(Xml_Logger &logger) const;
+  void DumpInfo(XmlLogger &logger) const;
 
   // 0x00010000 for version 1.0.
-  FIXED   table_version_number;
+  Fixed   table_version_number_;
   // The number of glyphs in the font.
-  USHORT  num_glyphs;
+  UShort  num_glyphs_;
   // Maximum points in a non-composite glyph.
-  USHORT  max_points;
+  UShort  max_points_;
   // Maximum contours in a non-composite glyph.
-  USHORT  max_contours;
+  UShort  max_contours_;
   // Maximum points in a composite glyph.
-  USHORT  max_composite_points;
+  UShort  max_composite_points_;
   // Maximum contours in a composite glyph.
-  USHORT  max_composite_contours;
+  UShort  max_composite_contours_;
   // 1 if instructions do not use the twilight zone (Z0), or 2 if instructions
   // do use Z0; should be set to 2 in most cases.
-  USHORT  max_zones;
+  UShort  max_zones_;
   // Maximum points used in Z0.
-  USHORT  max_twilight_points;
+  UShort  max_twilight_points_;
   // Number of Storage Area locations.
-  USHORT  max_storage;
+  UShort  max_storage_;
   // Number of FDEFs.
-  USHORT  max_function_defs;
+  UShort  max_function_defs_;
   // Number of IDEFs.
-  USHORT  max_instruction_defs;
+  UShort  max_instruction_defs_;
   // Maximum stack depth2.
-  USHORT  max_stack_elements;
+  UShort  max_stack_elements_;
   // Maximum byte count for glyph instructions.
-  USHORT  max_size_of_instructions;
+  UShort  max_size_of_instructions_;
   // Maximum number of components referenced at "top level" for any composite
   // glyph.
-  USHORT  max_component_elements;
+  UShort  max_component_elements_;
   // Maximum levels of recursion; 1 for simple components.
-  USHORT  max_component_depth;
+  UShort  max_component_depth_;
 };
 
 } // namespace ttf_dll

@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "ttf_parser_app.h"
-#include "ttf_parser_appDlg.h"
+#include "ttf_parser_app_dlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -13,14 +13,14 @@
 
 // Cttf_parser_appApp
 
-BEGIN_MESSAGE_MAP(Cttf_parser_appApp, CWinApp)
+BEGIN_MESSAGE_MAP(CTTFParserAppApp, CWinApp)
   ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
 // Cttf_parser_appApp construction
 
-Cttf_parser_appApp::Cttf_parser_appApp()
+CTTFParserAppApp::CTTFParserAppApp()
 {
   // support Restart Manager
   m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -32,12 +32,12 @@ Cttf_parser_appApp::Cttf_parser_appApp()
 
 // The one and only Cttf_parser_appApp object
 
-Cttf_parser_appApp theApp;
+CTTFParserAppApp theApp;
 
 
 // Cttf_parser_appApp initialization
 
-BOOL Cttf_parser_appApp::InitInstance()
+BOOL CTTFParserAppApp::InitInstance()
 {
   // InitCommonControlsEx() is required on Windows XP if an application
   // manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -70,7 +70,7 @@ BOOL Cttf_parser_appApp::InitInstance()
   // GDI+
   GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);
 
-  Cttf_parser_appDlg dlg;
+  CTTFParserAppDlg dlg;
   m_pMainWnd = &dlg;
   INT_PTR nResponse = dlg.DoModal();
   if (nResponse == IDOK)
