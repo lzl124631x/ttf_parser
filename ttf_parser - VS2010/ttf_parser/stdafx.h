@@ -11,11 +11,10 @@
 
 namespace ttf_dll {
 
-#define BIT(b)  (1 << b)
+#define BIT(b)  (1 << (b))
 
 // All OpenType/TrueType fonts use Motorola-style byte ordering (Big Endian).
-void IFStreamReadBigEndian(std::ifstream &fin, void *buf, unsigned size);
-void IFStreamReadBigEndian(std::ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num);
+void IFStreamReadBigEndian(std::ifstream &fin, void *buf, unsigned unit_size, unsigned unit_num = 1);
 #define FREAD(f, b) IFStreamReadBigEndian((f), (b), sizeof(*(b)))
 #define FREAD_N(f, b, n) IFStreamReadBigEndian((f), (b), sizeof(*(b)), (n))
 

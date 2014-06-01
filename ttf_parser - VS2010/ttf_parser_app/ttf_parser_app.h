@@ -10,15 +10,10 @@
 
 #include "resource.h"		// main symbols
 
-
-// Cttf_parser_appApp:
-// See ttf_parser_app.cpp for the implementation of this class
-//
-
-class CTTFParserAppApp : public CWinApp
+class CTtfParserAppApp : public CWinApp
 {
  public:
-  CTTFParserAppApp();
+  CTtfParserAppApp();
 
 // Overrides
  public:
@@ -31,4 +26,4 @@ class CTTFParserAppApp : public CWinApp
   DECLARE_MESSAGE_MAP()
 };
 
-extern CTTFParserAppApp theApp;
+extern CTtfParserAppApp theApp;

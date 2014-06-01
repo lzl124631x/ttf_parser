@@ -131,7 +131,7 @@ GlyphData::~GlyphData() {
   glyph.Destroy();
 }
 
-Glyph *GlyphData::LoadGlyph(const GlyphID glyph_index) {
+Glyph *GlyphData::LoadGlyph(const GlyphId glyph_index) {
   glyph.Reset();
   GlyphLoader loader(glyph);
   loader.LoadGlyph(glyph_index);
@@ -149,7 +149,7 @@ void GlyphData::DumpInfo(XmlLogger &logger) const {
 /************************************************************************/
 /*                           Glyph Loader                               */
 /************************************************************************/
-void GlyphLoader::LoadGlyph(GlyphID glyph_index, const Matrix &mtx) {
+void GlyphLoader::LoadGlyph(GlyphId glyph_index, const Matrix &mtx) {
   ULong offset = g_ttf->GlyphIndexToOffset(glyph_index);
   MemStream msm(glyf->data_, glyf->length_);
   msm.Seek(offset);
@@ -244,7 +244,7 @@ void GlyphLoader::LoadSimpleGlyph(MemStream &msm) {
 
 void GlyphLoader::LoadCompositeGlyph(MemStream &msm) {
   UShort      flags;                  // component flag
-  GlyphID    glyph_index;            // glyph index of component
+  GlyphId    glyph_index;            // glyph index of component
   Short       arg1, arg2;             // x/y-offset for component or point number; type depends on bits 0 and 1 in component flags
   Short       x, y;                   // The translate part of matrix transformation
   F2Dot14     xx, xy, yx, yy;         // The linear part of matrix transformation

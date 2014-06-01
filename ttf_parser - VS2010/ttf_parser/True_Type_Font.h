@@ -24,10 +24,10 @@ class DLL_API TrueTypeFont {
   bool ValidChecksum(const char *tag);
   void GetGlyphOutline(const UShort ch);
   bool DumpTTF(const char *path) const;
-  Glyph *GetGlyph(const GlyphID glyph_index) {
+  Glyph *GetGlyph(const GlyphId glyph_index) {
     return glyf_.LoadGlyph(glyph_index);
   }
-  ULong GlyphIndexToOffset(const GlyphID glyph_index) const {
+  ULong GlyphIndexToOffset(const GlyphId glyph_index) const {
     return loca_.GlyphIndexToOffset(glyph_index);
   }
   void GlyphInfo(Glyph *glyph, TCHAR *buf, size_t buf_len);
@@ -40,7 +40,7 @@ class DLL_API TrueTypeFont {
   HorizontalHeader hhea_;
   HorizontalMetrics hmtx_;
   Naming_Table name_;
-  OS2AndWindowsMetrics os_2_;
+  Os2AndWindowsMetrics os_2_;
   GlyphData glyf_;
 };
 

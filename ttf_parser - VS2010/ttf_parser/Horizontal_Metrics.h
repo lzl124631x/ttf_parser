@@ -29,9 +29,9 @@ class DLL_API HorizontalMetrics {
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the lsb of the glyph labeled by `glyph_index`.
-  FWord GetLeftSideBearing(const GlyphID glyph_index) const;
+  FWord GetLeftSideBearing(const GlyphId glyph_index) const;
   // Gets the advance width of the glyph labeled by `glyph_index`.
-  UFword GetAdvanceWidth(const GlyphID glyph_index) const;
+  UFword GetAdvanceWidth(const GlyphId glyph_index) const;
 
   // Paired advance width and left side bearing values for each glyph. The
   // value numOfHMetrics comes from the 'hhea' table. If the font is

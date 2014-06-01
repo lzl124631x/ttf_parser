@@ -36,7 +36,7 @@ void IndexToLocation::DumpInfo(XmlLogger &logger) const {
   logger.Println("</loca>");
 }
 
-ULong IndexToLocation::GlyphIndexToOffset(GlyphID glyph_index) const {
+ULong IndexToLocation::GlyphIndexToOffset(GlyphId glyph_index) const {
   if(glyph_index >= num_glyphs_) {
     // ERROR: Invalid parameter!
     return 0;

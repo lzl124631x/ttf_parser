@@ -10,18 +10,13 @@
 #define new DEBUG_NEW
 #endif
 
-
-// Cttf_parser_appApp
-
-BEGIN_MESSAGE_MAP(CTTFParserAppApp, CWinApp)
+BEGIN_MESSAGE_MAP(CTtfParserAppApp, CWinApp)
   ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
 // Cttf_parser_appApp construction
-
-CTTFParserAppApp::CTTFParserAppApp()
-{
+CTtfParserAppApp::CTtfParserAppApp() {
   // support Restart Manager
   m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
@@ -31,14 +26,11 @@ CTTFParserAppApp::CTTFParserAppApp()
 
 
 // The one and only Cttf_parser_appApp object
-
-CTTFParserAppApp theApp;
+CTtfParserAppApp theApp;
 
 
 // Cttf_parser_appApp initialization
-
-BOOL CTTFParserAppApp::InitInstance()
-{
+BOOL CTtfParserAppApp::InitInstance() {
   // InitCommonControlsEx() is required on Windows XP if an application
   // manifest specifies use of ComCtl32.dll version 6 or later to enable
   // visual styles.  Otherwise, any window creation will fail.
@@ -70,23 +62,19 @@ BOOL CTTFParserAppApp::InitInstance()
   // GDI+
   GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);
 
-  CTTFParserAppDlg dlg;
+  CTtfParserAppDlg dlg;
   m_pMainWnd = &dlg;
   INT_PTR nResponse = dlg.DoModal();
-  if (nResponse == IDOK)
-  {
+  if (nResponse == IDOK) {
     // TODO: Place code here to handle when the dialog is
     //  dismissed with OK
-  }
-  else if (nResponse == IDCANCEL)
-  {
+  } else if (nResponse == IDCANCEL) {
     // TODO: Place code here to handle when the dialog is
     //  dismissed with Cancel
   }
 
   // Delete the shell manager created above.
-  if (pShellManager != NULL)
-  {
+  if (pShellManager != NULL) {
     delete pShellManager;
   }
 

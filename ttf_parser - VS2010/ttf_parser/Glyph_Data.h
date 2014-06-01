@@ -25,7 +25,7 @@ class DLL_API GlyphData {
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Loads the glyph labeled by `glyph_index`.
-  Glyph *LoadGlyph(const GlyphID glyph_index);
+  Glyph *LoadGlyph(const GlyphId glyph_index);
 
   // The whole chunk of data in glyph data table.
   void      *data_;
@@ -65,7 +65,7 @@ class DLL_API Glyph {
 
   GlyphHeader     header_;
   bool            root_;
-  GlyphID         glyph_index_;
+  GlyphId         glyph_index_;
 
   UShort          *end_contours_;        // Array of last points of each contour; its length is the number of contours.
   UShort          num_instructions_;
@@ -93,7 +93,7 @@ class DLL_API GlyphLoader {
     coordinates_ = glyph.coordinates_;
     pt_num_ = 0;
   }
-  void LoadGlyph(GlyphID glyph_index, const Matrix &mtx = Matrix());
+  void LoadGlyph(GlyphId glyph_index, const Matrix &mtx = Matrix());
   void LoadSimpleGlyph(MemStream &msm);
   void LoadCompositeGlyph(MemStream &msm);
 

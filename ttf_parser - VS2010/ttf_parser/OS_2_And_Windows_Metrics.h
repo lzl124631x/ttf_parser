@@ -12,7 +12,7 @@ namespace ttf_dll {
 // version 2: OpenType rev 1.2
 // version 3: OpenType rev 1.4
 // version 4: OpenType rev 1.6
-class DLL_API OS2AndWindowsMetrics { // version 4
+class DLL_API Os2AndWindowsMetrics { // version 4
   // FIXME: This table varies in different version. Always using version 4 is wrong.
  public:
   // Reads the table from the file stream. The `entry` provides some

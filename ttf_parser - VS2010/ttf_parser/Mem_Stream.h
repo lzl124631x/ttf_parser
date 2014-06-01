@@ -13,7 +13,7 @@ class DLL_API MemStream {
   void Read(void *buf, unsigned size);
   void Seek(int offset);
   int Tell();
-  void *cursor() {
+  void *cursor() const {
     return cursor_;
   }
   void ReadBigEndian(void *buf, unsigned size);

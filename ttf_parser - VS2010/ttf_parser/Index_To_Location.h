@@ -39,7 +39,7 @@ class DLL_API IndexToLocation {
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the offset of the glyph labeled by `glyph_index`.
-  ULong GlyphIndexToOffset(const GlyphID glyph_index) const;
+  ULong GlyphIndexToOffset(const GlyphId glyph_index) const;
 
   // Short Version: USHORT.   The actual local offset divided by 2 is stored.
   // Long Version: ULONG.     The actual local offset is stored.

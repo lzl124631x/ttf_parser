@@ -27,7 +27,7 @@ const float kFontWidthExpanded              = 125;
 const float kFontWidthExtraExpanded         = 150;
 const float kFontWidthUltraExpanded         = 200;
 
-void OS2AndWindowsMetrics::LoadTable(TableRecordEntry *entry, ifstream &fin) {
+void Os2AndWindowsMetrics::LoadTable(TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset_, ios::beg);
   FREAD(fin, &version_);
   FREAD(fin, &x_avg_char_width_);
@@ -68,7 +68,7 @@ void OS2AndWindowsMetrics::LoadTable(TableRecordEntry *entry, ifstream &fin) {
   FREAD(fin, &us_max_coutext_);
 }
 
-void OS2AndWindowsMetrics::DumpInfo(XmlLogger &logger) const {
+void Os2AndWindowsMetrics::DumpInfo(XmlLogger &logger) const {
   logger.Println("<OS_2>");
   logger.IncreaseIndent();
   logger.Println("<version value=\"%u\"/>", version_);

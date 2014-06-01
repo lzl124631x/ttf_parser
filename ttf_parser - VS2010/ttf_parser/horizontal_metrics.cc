@@ -9,7 +9,7 @@ void LongHorMetric::LoadMetric(ifstream &fin) {
   FREAD(fin, &left_side_bearing_);
 }
 
-FWord HorizontalMetrics::GetLeftSideBearing(const GlyphID glyph_index) const {
+FWord HorizontalMetrics::GetLeftSideBearing(const GlyphId glyph_index) const {
   if(glyph_index < num_hmtx_) {
     return hmetrics[glyph_index].left_side_bearing_;
   } else if(glyph_index < num_glyphs_) {
@@ -20,7 +20,7 @@ FWord HorizontalMetrics::GetLeftSideBearing(const GlyphID glyph_index) const {
   }
 }
 
-UFword HorizontalMetrics::GetAdvanceWidth(const GlyphID glyph_index) const {
+UFword HorizontalMetrics::GetAdvanceWidth(const GlyphId glyph_index) const {
   if(glyph_index < num_hmtx_) {
     return hmetrics[glyph_index].advance_width_;
   } else if(glyph_index < num_glyphs_) {

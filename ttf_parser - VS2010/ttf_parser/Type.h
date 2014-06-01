@@ -38,7 +38,7 @@ typedef UShort    UFword;         // Unsigned 16-bit integer (USHORT) that descr
 typedef UInt16    F2Dot14;        // 16-bit signed fixed number with the low 14 bits of fraction (2.14).
 typedef Int64     LongDateTime;   // Date represented in number of seconds since 12:00 midnight, January 1, 1904.
 // The value is represented as a signed 64-bit integer.
-typedef UInt16    GlyphID;	      // Glyph index number, same as uint16 (length = 16 bits)
+typedef UInt16    GlyphId;	      // Glyph index number, same as uint16 (length = 16 bits)
 typedef UInt16    Offset;         // Offset to a table, same as uint16 (length = 16 bits), NULL offset = 0x0000
 
 } // namespace ttf_dll

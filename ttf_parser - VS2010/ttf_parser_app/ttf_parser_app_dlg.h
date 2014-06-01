@@ -16,12 +16,12 @@ class CMySliderCtrl : public CSliderCtrl {
   BOOL PreTranslateMessage(MSG* pMsg);
 };
 
-// CTTFParserAppDlg dialog
-class CTTFParserAppDlg : public CDialogEx {
+// CTtfParserAppDlg dialog
+class CTtfParserAppDlg : public CDialogEx {
  public:
   enum { IDD = IDD_TTF_PARSER_APP_DIALOG };
 
-  CTTFParserAppDlg(CWnd* pParent = NULL);	// standard constructor
+  CTtfParserAppDlg(CWnd* pParent = NULL);	// standard constructor
   BOOL PreTranslateMessage(MSG* pMsg);
   afx_msg void OnFileOpen();
   afx_msg void OnFileExit();
@@ -33,19 +33,7 @@ class CTTFParserAppDlg : public CDialogEx {
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg void OnEnChangeEditGlyphIndex();
   afx_msg void OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult);
-  void RefreshGlyph();
-  void EnableControls(bool b);
-
-  CEdit               m_edit_char_;
-  CButton             m_btn_view_;
-  CStatic             m_text_file_name_;
-  CMySliderCtrl       m_slider_glyph_index_;
-  CEdit               m_edit_glyph_index_;
-  CSpinButtonCtrl     m_spin_glyph_index_;
-
-  ttf_dll::GlyphID   glyph_index_;
-  bool                render_point_;
-  HBITMAP             char_bmp_;
+  afx_msg void OnDropFiles(HDROP hDropInfo);
 
  protected:
   virtual void DoDataExchange(CDataExchange* pDX);      // DDX/DDV support
@@ -57,4 +45,22 @@ class CTTFParserAppDlg : public CDialogEx {
   DECLARE_MESSAGE_MAP()
 
   HICON m_hIcon;
+ private:
+  void OpenTtf(LPCTSTR path);
+  void RefreshGlyph();
+  void EnableControls(bool b);
+  void TraverseFolder(LPCTSTR dir);
+
+  CEdit               cedit_char_;
+  CButton             cbtn_view_;
+  CMySliderCtrl       cslider_glyph_index_;
+  CEdit               cedit_glyph_index_;
+  CSpinButtonCtrl     cspin_glyph_index_;
+
+  ttf_dll::GlyphId    glyph_index_;
+  bool                render_point_;
+  HBITMAP             char_bmp_;
+public:
+  afx_msg void OnStnClickedTextFileName();
+  afx_msg void OnStnClickedTextFileNameTitle();
 };
