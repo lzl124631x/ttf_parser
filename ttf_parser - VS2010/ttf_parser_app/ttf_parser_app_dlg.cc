@@ -50,7 +50,8 @@ END_MESSAGE_MAP()
 
 // CTTFParserAppDlg dialog
 CTtfParserAppDlg::CTtfParserAppDlg(CWnd* pParent /*=NULL*/)
-  : CDialogEx(CTtfParserAppDlg::IDD, pParent) {
+  : CDialogEx(CTtfParserAppDlg::IDD, pParent)
+{
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -74,7 +75,6 @@ BEGIN_MESSAGE_MAP(CTtfParserAppDlg, CDialogEx)
   ON_BN_CLICKED(IDC_CHECK_SHOW_POINT, &CTtfParserAppDlg::OnBnClickedShowPoint)
   ON_WM_HSCROLL()
   ON_EN_CHANGE(IDC_EDIT_GLYPH_INDEX, &CTtfParserAppDlg::OnEnChangeEditGlyphIndex)
-  ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_GLYPH_INDEX, &CTtfParserAppDlg::OnDeltaposSpinGlyphIndex)
   ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
@@ -103,7 +103,7 @@ BOOL CTtfParserAppDlg::OnInitDialog() {
   // Set the icon for this dialog.  The framework does this automatically
   //  when the application's main window is not a dialog
   SetIcon(m_hIcon, TRUE);      // Set big icon
-  SetIcon(m_hIcon, FALSE);    // Set small icon
+  SetIcon(m_hIcon, FALSE);     // Set small icon
 
   // TEST: Following lines are for test.
   // std::string str("C:\\Fonts\\Mathematica6.ttf");
@@ -119,7 +119,7 @@ BOOL CTtfParserAppDlg::OnInitDialog() {
   ::ReleaseDC(m_hWnd, hdc);
 
   // TEST
-  TraverseFolder(_T("D:/fonts"));
+  // TraverseFolder(_T("D:/fonts"));
 
   return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -190,7 +190,8 @@ void CTtfParserAppDlg::OpenTtf(LPCTSTR path) {
   ttf.LoadPath(path);
   EnableControls(true);
   cslider_glyph_index_.SetRange(0, ttf.maxp_.num_glyphs_ - 1);
-  cspin_glyph_index_.SetRange(0, ttf.maxp_.num_glyphs_ - 1);
+  // Must use `SetRange32` otherwise overflow might occur.
+  cspin_glyph_index_.SetRange32(0, ttf.maxp_.num_glyphs_ - 1);
 }
 
 void CTtfParserAppDlg::OnFileExit() {
@@ -283,23 +284,6 @@ void CTtfParserAppDlg::OnEnChangeEditGlyphIndex() {
   }
 }
 
-
-void CTtfParserAppDlg::OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult) {
-  LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-  if(pNMUpDown->iDelta == -1) {
-    // The down arrow is pressed.
-    if(glyph_index_ > 0) {
-      --glyph_index_;
-    }
-  } else if(pNMUpDown->iDelta == 1) {
-    // The up arrow is pressed.
-    if(glyph_index_ < ttf.maxp_.num_glyphs_ - 1) {
-      ++glyph_index_;
-    }
-  }
-  *pResult = 0;
-}
-
 void CTtfParserAppDlg::TraverseFolder(LPCTSTR dir) {
   _tfinddata_t file_info;
   _tchdir(dir);
@@ -310,9 +294,9 @@ void CTtfParserAppDlg::TraverseFolder(LPCTSTR dir) {
   }
   TCHAR file_name[MAX_PATH] = {0};
   do {
-    _tcscpy(file_name, dir);
-    _tcscat(file_name, _T("/"));
-    _tcscat(file_name, file_info.name);
+    _tcscpy_s(file_name, dir);
+    _tcscat_s(file_name, _T("/"));
+    _tcscat_s(file_name, file_info.name);
     OpenTtf(file_name);
   } while(_tfindnext(handle, &file_info) == 0);
   MessageBox(_T("Traversal done!"), _T("Message"));

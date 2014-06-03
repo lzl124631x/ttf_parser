@@ -296,6 +296,10 @@ void GlyphLoader::LoadCompositeGlyph(MemStream &msm) {
 }
 
 void Glyph::GlyphToPath(GraphicsPath &path) {
+  // Set the fill mode as `FillModeWinding` to prevent white spots from
+  // appearing at the overlaps of glyph contours.
+  path.SetFillMode(FillModeWinding);
+
   PointF start_point, prev_point, cur_point;
   Byte flag = 0;
   bool new_contour = true;
@@ -314,16 +318,21 @@ void Glyph::GlyphToPath(GraphicsPath &path) {
       // <0, 1>: prev_point = cur_point
       // <1, *>: prev_point = last_point
       last = end_contours_[j];
-      if(flags_[last] & kOnCurve) { // If the last point is on-curve, it'll be the prev_point of the first point.
+      if(flags_[last] & kOnCurve) {
+        // If the last point is on-curve, it'll be the prev_point of the first
+        // point.
         prev_point = coordinates_[last];
-      } else { // If the last point is off-curve...
-        if(flag & kOnCurve) { // if the first point is on-curve, no need to draw anything.
+      } else {
+        // If the last point is off-curve...
+        if(flag & kOnCurve) {
+          // and if the first point is on-curve, no need to draw anything.
           prev_point = cur_point;
-        } else { // Otherwise, the prev_point is the mid-point between the first and the last point (both off-curve).
+        } else {
+          // Otherwise, the prev_point is the mid-point between the first and
+          // the last point (both off-curve).
           prev_point = PointF(
-                         (cur_point.X + coordinates_[last].X) / 2.0f,
-                         (cur_point.Y + coordinates_[last].Y) / 2.0f
-                       );
+                           (cur_point.X + coordinates_[last].X) / 2.0f,
+                           (cur_point.Y + coordinates_[last].Y) / 2.0f);
         }
       }
       start_point = prev_point; // start_point is not simply the first point.

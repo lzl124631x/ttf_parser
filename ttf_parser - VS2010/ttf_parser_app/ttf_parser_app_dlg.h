@@ -32,7 +32,6 @@ class CTtfParserAppDlg : public CDialogEx {
   afx_msg void OnNMCustomdrawSliderGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult);
   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
   afx_msg void OnEnChangeEditGlyphIndex();
-  afx_msg void OnDeltaposSpinGlyphIndex(NMHDR *pNMHDR, LRESULT *pResult);
   afx_msg void OnDropFiles(HDROP hDropInfo);
 
  protected:
@@ -60,7 +59,4 @@ class CTtfParserAppDlg : public CDialogEx {
   ttf_dll::GlyphId    glyph_index_;
   bool                render_point_;
   HBITMAP             char_bmp_;
-public:
-  afx_msg void OnStnClickedTextFileName();
-  afx_msg void OnStnClickedTextFileNameTitle();
 };

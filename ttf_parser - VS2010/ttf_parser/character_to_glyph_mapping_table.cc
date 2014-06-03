@@ -165,11 +165,13 @@ SegmentMappingToDeltaValues::SegmentMappingToDeltaValues(ifstream &fin)
   FREAD_N(fin, start_count_, seg_count);
   id_delta_ = new Short[seg_count];
   FREAD_N(fin, id_delta_, seg_count);
-  id_range_offset_ = new UShort[seg_count];
-  FREAD_N(fin, id_range_offset_, seg_count);
-  UShort var_len = length_ - sizeof(UShort) * (8 + (seg_countx2_ << 1));
-  glyph_id_array_ = new UShort[var_len];
-  FREAD_N(fin, glyph_id_array_, var_len);
+  // The 8 UShort data are composed of:
+  // * 3 UShort data in the general cmap header.
+  // * 4 UShort data in this format 4 cmap header.
+  // * 1 Ushort for reserved pad.
+  UShort var_len = seg_count + (length_ - sizeof(UShort) * (8 + (seg_countx2_ << 1)));
+  id_range_offset_ = new UShort[var_len];
+  FREAD_N(fin, id_range_offset_, var_len);
 }
 
 GlyphId SegmentMappingToDeltaValues::GetGlyphIndex(const UShort ch) const {
@@ -180,11 +182,30 @@ GlyphId SegmentMappingToDeltaValues::GetGlyphIndex(const UShort ch) const {
   GlyphId glyph_index = 0;
   if (start_count_[i] <= ch) {
     if (id_range_offset_[i]) {
-      glyph_index = *(glyph_id_array_ + (id_range_offset_[i] >> 1)
-                    + (ch - start_count_[i])
-                    - (&id_range_offset_[seg_countx2_ >> 1]
-                    - &id_range_offset_[i]));
+      // If the `idRangeOffset` value for the segment is not 0, the mapping of
+      // character codes relies on `glyphIdArray`. The character code offset 
+      // from `startCode` is added to the `idRangeOffset` value. This sum is
+      // used as an offset from the current location within `idRangeOffset`
+      // itself to index out the correct `glyphIdArray` value. This obscure
+      // indexing trick works because `glyphIdArray` immediately follows
+      // `idRangeOffset` in the font file. The C expression that yields the
+      // glyph index is:
+      //   *(idRangeOffset[i]/2
+      //     + (c - startCount[i])
+      //     + &idRangeOffset[i])
+      // The value `c` is the character code in question, and `i` is the
+      // segment index in which `c` appears. If the value obtained from the
+      // indexing operation is not 0 (which indicates missingGlyph),
+      // `idDelta[i]` is added to it to get the glyph index. The `idDelta`
+      // arithmetic is modulo 65536.
+      glyph_index = *((id_range_offset_[i] >> 1)
+                      + (ch - start_count_[i])
+                      + &id_range_offset_[i]);
     } else {
+      // If the `idRangeOffset` is 0, the `idDelta` value is added directly to
+      // the character code offset (i.e. `idDelta[i] + c`) to get the
+      // corresponding glyph index. Again, the `idDelta` arithmetic is modulo
+      // 65536.
       glyph_index = id_delta_[i] + ch;
     }
   }
@@ -202,7 +223,8 @@ TrimmedTableMapping::TrimmedTableMapping(ifstream &fin) : EncodingTable(fin) {
 }
 
 GlyphId TrimmedTableMapping::GetGlyphIndex(const UShort ch) const {
-  return 0; // FIXME: not finished
+  UShort index = ch - first_code_;
+  return (index >= 0 && index < entry_count_) ? glyph_id_array_[index] : 0;
 }
 
 /****************************************************************************/
@@ -221,6 +243,28 @@ void CharacterToGlyphIndexMappingTable::DumpInfo(XmlLogger &logger) const {
   }
   logger.DecreaseIndent();
   logger.Println("</cmap>");
+}
+
+void ByteEncodingTable::DumpInfo(XmlLogger &logger) const {
+  logger.Println("<cmap_format_0>");
+  logger.IncreaseIndent();
+  DumpTableHeader(logger);
+  logger.Println("<glyphIdArray>");
+  logger.PrintArray<Byte>((void*)glyph_id_array_, 256, "%8u");
+  // FIXME: why have to add (void*)
+  logger.Println("</glyphIdArray>");
+  logger.DecreaseIndent();
+  logger.Println("</cmap_format_0>");
+}
+
+void HighByteMappingThroughTable::DumpInfo(XmlLogger &logger) const {
+  logger.Println("<cmap_format_2>");
+  logger.IncreaseIndent();
+  DumpTableHeader(logger);
+  logger.PrintArray<UShort>((void*)subheader_keys_, 256, "%8u");
+  // FIXME: why have to add (void*)
+  logger.DecreaseIndent();
+  logger.Println("</cmap_format_2>");
 }
 
 void SegmentMappingToDeltaValues::DumpInfo(XmlLogger &logger) const {
@@ -251,34 +295,11 @@ void SegmentMappingToDeltaValues::DumpInfo(XmlLogger &logger) const {
   logger.Println("</idRangeOffset>");
 
   logger.Println("<glyphIdArray>");
-  logger.PrintArray<UShort>(glyph_id_array_, (seg_countx2_ >> 1), "%8u");
-  //FIXME: the glyph_id_array is not dumped out with the right length.
+  //FIXME: the glyph_id_array is not dumped out.
   logger.Println("</glyphIdArray>");
 
   logger.DecreaseIndent();
   logger.Println("</cmap_format_4>");
-}
-
-void ByteEncodingTable::DumpInfo(XmlLogger &logger) const {
-  logger.Println("<cmap_format_0>");
-  logger.IncreaseIndent();
-  DumpTableHeader(logger);
-  logger.Println("<glyphIdArray>");
-  logger.PrintArray<Byte>((void*)glyph_id_array_, 256, "%8u");
-  // FIXME: why have to add (void*)
-  logger.Println("</glyphIdArray>");
-  logger.DecreaseIndent();
-  logger.Println("</cmap_format_0>");
-}
-
-void HighByteMappingThroughTable::DumpInfo(XmlLogger &logger) const {
-  logger.Println("<cmap_format_2>");
-  logger.IncreaseIndent();
-  DumpTableHeader(logger);
-  logger.PrintArray<UShort>((void*)subheader_keys_, 256, "%8u");
-  // FIXME: why have to add (void*)
-  logger.DecreaseIndent();
-  logger.Println("</cmap_format_2>");
 }
 
 void TrimmedTableMapping::DumpInfo(XmlLogger &logger) const {

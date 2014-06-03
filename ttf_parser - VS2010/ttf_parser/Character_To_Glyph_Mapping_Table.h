@@ -176,14 +176,35 @@ class DLL_API HighByteMappingThroughTable: public EncodingTable {
   void DumpInfo(XmlLogger &logger) const;
 
  private:
+  // Array that maps high bytes to subHeaders: value is subHeader index * 8.
   UShort    subheader_keys_[256];
+  // Variable-length array of subHeader structures.
   struct Subheader {
+    // First valid low byte for this subHeader.
     UShort  first_code;
+    // Number of valid low bytes for this subHeader.
     UShort  entry_count;
     Short   id_delta;
     UShort  id_range_offset;
+    // The `firstCode` and `entryCount` values specify a subrange that begins
+    // at `firstCode` and has a length equal to the value of `entryCount`.
+    // This subrange stays within the 0-255 range of the byte being mapped.
+    // Bytes outside of this subrange are mapped to glyph index 0 (missing
+    // glyph). The offset of the byte within this subrange is then used as
+    // index into a corresponding subarray of glyphIndexArray. This subarray
+    // is also of length `entryCount`. The value of the `idRangeOffset` is the
+    // number of bytes past the actual location of the `idRangeOffset` word
+    // where the glyphIndexArray element corresponding to `firstCode` appears.
+    //
+    // Finally, if the value obtained from the subarray is not 0 (which
+    // indicates the missing glyph), you should add `idDelta` to it in order
+    // to get the glyphIndex. The value `idDelta` permits the same subarray
+    // to be used for several different subheaders. The `idDelta` arithmetic
+    // is modulo 65536.
   };
   Subheader  *subheaders_;
+  // Variable-length array containing subarrays used for mapping the low byte
+  // of 2-byte characters.
   UShort    glyph_id_array_;
 };
 
@@ -197,6 +218,18 @@ class DLL_API HighByteMappingThroughTable: public EncodingTable {
 /* supports the UCS-4 characters) a subtable in this format with a platform */
 /* specific encoding ID 1 is yet needed, in addition to a subtable in       */
 /* format 12 with a platform specific encoding ID 10.                       */
+/*                                                                          */
+/* This format is used when the character codes for the characters          */
+/* represented by a font fall into several contiguous ranges, possibly with */
+/* holes in some or all of the ranges (that is, some of the codes in a      */
+/* range may not have a representation in the font). The format-dependent   */
+/* data is divided into three parts, which must occur in the following      */
+/* order:                                                                   */
+/* 1. A four-word header gives parameters for an optimized search of the    */
+/* segment list;                                                            */
+/* 2. Four parallel arrays describe the segments (one segment for each      */
+/* contiguous range of codes);                                              */
+/* 3. A variable-length array of glyph IDs (unsigned words).                */
 /****************************************************************************/
 class DLL_API SegmentMappingToDeltaValues: public EncodingTable {
  public:
@@ -206,7 +239,6 @@ class DLL_API SegmentMappingToDeltaValues: public EncodingTable {
     DEL_A(start_count_);
     DEL_A(id_delta_);
     DEL_A(id_range_offset_);
-    DEL_A(glyph_id_array_);
   }
   // Gets the glyph index of the character specified by `ch`.
   GlyphId GetGlyphIndex(const UShort ch) const;
@@ -230,17 +262,19 @@ class DLL_API SegmentMappingToDeltaValues: public EncodingTable {
   UShort  *start_count_/*[segCount]*/;
   // Delta for all character codes in segment.
   Short   *id_delta_/*[segCount]*/;
-  // Offsets into glyphIdArray or 0.
-  UShort  *id_range_offset_/*[segCount]*/;
-  // Glyph index array (arbitrary length)
-  UShort  *glyph_id_array_/*[varLen]*/;
+  // Offsets (in byte) into glyphIdArray or 0.
+  UShort  *id_range_offset_/*[segCount + varLength]*/;
+  // Glyph index array (arbitrary length) is appended to `id_range_offset`.
+
+  // NOTE: It's easier to calculate the glyph index if the `glyphIndexArray`
+  // directly follows `idRangeOffset`. 
 };
 
 /****************************************************************************/
 /*                    Format 6: Trimmed Table Mapping                       */
 /* ------------------------------------------------------------------------ */
 /* The firstCode and entryCount values specify a subrange (beginning at     */
-/* firstCode,length = entryCount) within the range of possible character    */
+/* firstCode, length = entryCount) within the range of possible character   */
 /* codes. Codes outside of this subrange are mapped to glyph index 0. The   */
 /* offset of the code (from the first code) within this subrange is used as */
 /* index to the glyphIdArray, which provides the glyph index value.         */
