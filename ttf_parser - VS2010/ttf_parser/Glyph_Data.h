@@ -66,20 +66,23 @@ class DLL_API Glyph {
   GlyphHeader     header_;
   bool            root_;
   GlyphId         glyph_index_;
-
-  UShort          *end_contours_;        // Array of last points of each contour; its length is the number of contours.
+  // Array of last points of each contour; its length is the number of
+  // contours.
+  UShort          *end_contours_;
   UShort          num_instructions_;
   Byte            *instructions_;
   Byte            *flags_/*[number_of_points]*/;
-  // Actually the type of coordinates is either BYTE or SHORT.
-  // Each coordinate might has different type according to the corresponding flag.
-  // Here I choose to store all the coordinates in a SHORT array.
+  // Actually the type of coordinates is either BYTE or SHORT. Each
+  // coordinate might has different type according to its corresponding flag.
+  // Here I choose to store all the coordinates in a SHORT array for
+  // simplicity.
   PointF          *coordinates_/*[number_of_points]*/;
 
-  // the number of points in this glyph
+  // The number of points in this glyph.
   UShort          pt_num_;
-  // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
-  // The last contour's end point has the largest index which equals pt_num - 1.
+  // Points are indexed from 0. end_pts_of_contours stores the index of each
+  // contour's end point. The last contour's end point has the largest index
+  // which equals pt_num - 1.
 };
 
 class DLL_API GlyphLoader {
@@ -93,19 +96,23 @@ class DLL_API GlyphLoader {
     coordinates_ = glyph.coordinates_;
     pt_num_ = 0;
   }
-  void LoadGlyph(GlyphId glyph_index, const Matrix &mtx = Matrix());
+  void LoadGlyph(const GlyphId glyph_index, const Matrix &mtx = Matrix());
   void LoadSimpleGlyph(MemStream &msm);
   void LoadCompositeGlyph(MemStream &msm);
 
   GlyphHeader   header_;
-  UShort        *end_contours_;       // Array of last points of each contour; its length is the number of contours.
+  // Array of last points of each contour; its length is the number of
+  // contours.
+  UShort        *end_contours_;
   UShort        num_instructions_;
   Byte          *instructions_;
   Byte          *flags_/*[number_of_points]*/;
   PointF        *coordinates_/*[number_of_points]*/;
-  UShort        pt_num_;                     // the number of points in this glyph
-  // Points are indexed from 0. end_pts_of_contours stores the index of each contour's end point.
-  // The last contour's end point has the largest index which equals pt_num - 1.
+  // The number of points in this glyph.
+  UShort        pt_num_;
+  // Points are indexed from 0. end_pts_of_contours stores the index of each
+  // contour's end point. The last contour's end point has the largest index
+  // which equals pt_num - 1.
  private:
   void ReadFlags(MemStream &msm);
   void ReadCoordinates(MemStream &msm, PointF *ptr, bool read_x);

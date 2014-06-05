@@ -27,9 +27,6 @@ class DLL_API TrueTypeFont {
   Glyph *GetGlyph(const GlyphId glyph_index) {
     return glyf_.LoadGlyph(glyph_index);
   }
-  ULong GlyphIndexToOffset(const GlyphId glyph_index) const {
-    return loca_.GlyphIndexToOffset(glyph_index);
-  }
   void GlyphInfo(Glyph *glyph, TCHAR *buf, size_t buf_len);
 
   OffsetTable offset_table_;

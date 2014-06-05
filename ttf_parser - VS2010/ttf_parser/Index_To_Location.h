@@ -27,7 +27,7 @@ class DLL_API IndexToLocation {
   // The offsets must be in ascending order with loca[n] <= loca[n+1].
  public:
   ~IndexToLocation() {
-    if(loca_format_) { // 1 for ULONG
+    if (loca_format_) { // 1 for ULONG
       DEL_T(offsets_, ULong);
     } else {           // 0 for USHORT
       DEL_T(offsets_, UShort);
@@ -35,16 +35,17 @@ class DLL_API IndexToLocation {
   }
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
-  void LoadTable(TableRecordEntry *entry, ifstream &fin);
+  void LoadTable(const TableRecordEntry *entry, ifstream &fin);
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
-  // Gets the offset of the glyph labeled by `glyph_index`.
-  ULong GlyphIndexToOffset(const GlyphId glyph_index) const;
+  // Gets the offset and length of the glyph labeled by `glyph_index`.
+  // `offset` and `length` are output arguments. They should not be `NULL`.
+  void GetGlyphOffsetAndLength(const GlyphId glyph_index,
+                               ULong *offset, ULong *length) const;
 
   // Short Version: USHORT.   The actual local offset divided by 2 is stored.
   // Long Version: ULONG.     The actual local offset is stored.
-  void    *offsets_/*[num_glyphs]*/;
-  // FIXME: This table should allocate 'num_glyphs + 1' unites!
+  void    *offsets_/*[numGlyphs + 1]*/;
   
   // A copy of the `num_glyphs` field of `maxp` table.
   UShort  num_glyphs_;

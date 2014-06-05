@@ -4,16 +4,20 @@
 
 namespace ttf_dll {
 
-void IndexToLocation::LoadTable(TableRecordEntry *entry, ifstream &fin) {
+void IndexToLocation::LoadTable(const TableRecordEntry *entry,
+                                ifstream &fin) {
   num_glyphs_ = g_ttf->maxp_.num_glyphs_;
   loca_format_ = g_ttf->head_.loca_format_;
   fin.seekg(entry->offset_, ios::beg);
-  if(loca_format_) {
-    offsets_ = new ULong[num_glyphs_];      // 1 for ULONG
-    FREAD_N(fin, (ULong*)offsets_, num_glyphs_);
+  UShort len = num_glyphs_ + 1;
+  if (loca_format_) {
+    // 1 for ULONG
+    offsets_ = new ULong[len];
+    FREAD_N(fin, (ULong*)offsets_, len);
   } else {
-    offsets_ = new UShort[num_glyphs_];     // 0 for USHORT
-    FREAD_N(fin, (UShort*)offsets_, num_glyphs_);
+    // 0 for USHORT
+    offsets_ = new UShort[len];
+    FREAD_N(fin, (UShort*)offsets_, len);
   }
 }
 
@@ -22,7 +26,7 @@ void IndexToLocation::DumpInfo(XmlLogger &logger) const {
   logger.IncreaseIndent();
   logger.Println("<offsets>");
   logger.IncreaseIndent();
-  if(loca_format_) {
+  if (loca_format_) {
     logger.PrintArray<ULong>(offsets_, num_glyphs_, "%8u");
   } else {
     logger.Println(
@@ -36,20 +40,28 @@ void IndexToLocation::DumpInfo(XmlLogger &logger) const {
   logger.Println("</loca>");
 }
 
-ULong IndexToLocation::GlyphIndexToOffset(GlyphId glyph_index) const {
-  if(glyph_index >= num_glyphs_) {
+void IndexToLocation::GetGlyphOffsetAndLength(
+    const GlyphId glyph_index,
+    ULong *offset,
+    ULong *length) const {
+  if (glyph_index >= num_glyphs_ || !offset || !length) {
     // ERROR: Invalid parameter!
-    return 0;
+    return;
   }
-  ULong offset = 0;
-  if(loca_format_) {
-    offset = *((ULong*)offsets_ + glyph_index);      // 1 for ULONG
+  if (loca_format_) {
+    // 1 for ULONG
+    ULong *long_offsets = (ULong*)offsets_;
+    *offset = long_offsets[glyph_index];
+    *length = long_offsets[glyph_index + 1] - *offset;
   } else {
-    offset = *((UShort*)offsets_ + glyph_index);     // 0 for USHORT
-    // ATTENTION: The SHORT version 'loca' stores the actual local offset divided by 2!
-    offset <<= 1;
+    // 0 for USHORT
+    USHORT *short_offsets = (USHORT*)offsets_;
+    *offset = short_offsets[glyph_index];
+    // ATTENTION: The SHORT version 'loca' stores the actual local offset
+    // divided by 2!
+    *offset <<= 1;
+    *length = short_offsets[glyph_index + 1] - *offset;
   }
-  return offset;
 }
 
 } // namespace ttf_dll

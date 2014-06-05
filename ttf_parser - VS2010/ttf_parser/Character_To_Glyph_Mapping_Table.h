@@ -12,7 +12,7 @@ namespace ttf_dll {
 class DLL_API EncodingTable {
  public:
   explicit EncodingTable(ifstream &fin);
-  virtual ~EncodingTable() {}
+  virtual ~EncodingTable() { }
   // Gets the glyph index of the character specified by `ch`.
   virtual GlyphId GetGlyphIndex(const UShort ch) const = 0;
   // Dumps the information of this table header to an XML file.
@@ -168,7 +168,7 @@ class DLL_API HighByteMappingThroughTable: public EncodingTable {
  public:
   explicit HighByteMappingThroughTable(ifstream &fin);
   ~HighByteMappingThroughTable() {
-    DEL_A(subheaders_);
+    DEL_A(subheaders_and_glyph_id_array);
   }
   // Gets the glyph index of the character specified by `ch`.
   GlyphId GetGlyphIndex(const UShort ch) const;
@@ -178,7 +178,6 @@ class DLL_API HighByteMappingThroughTable: public EncodingTable {
  private:
   // Array that maps high bytes to subHeaders: value is subHeader index * 8.
   UShort    subheader_keys_[256];
-  // Variable-length array of subHeader structures.
   struct Subheader {
     // First valid low byte for this subHeader.
     UShort  first_code;
@@ -202,10 +201,10 @@ class DLL_API HighByteMappingThroughTable: public EncodingTable {
     // to be used for several different subheaders. The `idDelta` arithmetic
     // is modulo 65536.
   };
-  Subheader  *subheaders_;
-  // Variable-length array containing subarrays used for mapping the low byte
-  // of 2-byte characters.
-  UShort    glyph_id_array_;
+  // subHeaders[]: Variable-length array of subHeader structures.
+  // glyphIndexArray[]: Variable-length array containing subarrays used for
+  // mapping the low byte of 2-byte characters.
+  UShort    *subheaders_and_glyph_id_array;
 };
 
 /****************************************************************************/
@@ -238,7 +237,7 @@ class DLL_API SegmentMappingToDeltaValues: public EncodingTable {
     DEL_A(end_count_);
     DEL_A(start_count_);
     DEL_A(id_delta_);
-    DEL_A(id_range_offset_);
+    DEL_A(id_range_offset_and_glyph_id_array_);
   }
   // Gets the glyph index of the character specified by `ch`.
   GlyphId GetGlyphIndex(const UShort ch) const;
@@ -262,12 +261,15 @@ class DLL_API SegmentMappingToDeltaValues: public EncodingTable {
   UShort  *start_count_/*[segCount]*/;
   // Delta for all character codes in segment.
   Short   *id_delta_/*[segCount]*/;
-  // Offsets (in byte) into glyphIdArray or 0.
-  UShort  *id_range_offset_/*[segCount + varLength]*/;
-  // Glyph index array (arbitrary length) is appended to `id_range_offset`.
+  // idRangeOffset[segCount]: Offsets (in byte) into `glyphIdArray` or 0.
+  // glyphIdArray[]: Glyph index array (arbitrary length).
+  UShort  *id_range_offset_and_glyph_id_array_/*[segCount + varLength]*/;
 
   // NOTE: It's easier to calculate the glyph index if the `glyphIndexArray`
-  // directly follows `idRangeOffset`. 
+  // directly follows `idRangeOffset`.
+
+  // The length of glyphIdArray.
+  UShort  glyph_id_array_len;
 };
 
 /****************************************************************************/
@@ -298,8 +300,6 @@ class DLL_API TrimmedTableMapping: public EncodingTable {
   // Array of glyph index values for character codes in the range.
   UShort  *glyph_id_array_/*[entryCount]*/;
 };
-
-// 
 
 } // namespace ttf_dll
 

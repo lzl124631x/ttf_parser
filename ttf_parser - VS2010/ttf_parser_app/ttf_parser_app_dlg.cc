@@ -285,8 +285,13 @@ void CTtfParserAppDlg::OnEnChangeEditGlyphIndex() {
 }
 
 void CTtfParserAppDlg::TraverseFolder(LPCTSTR dir) {
-  _tfinddata_t file_info;
+  TCHAR old_dir[MAX_PATH] = {0};
+  if (!_tgetcwd(old_dir, MAX_PATH)) {
+    MessageBox(_T("Failed to locate current folder!"), _T("Message"));
+    return;
+  }
   _tchdir(dir);
+  _tfinddata_t file_info;
   long handle = _tfindfirst(_T("*.ttf"), &file_info);
   if (handle == -1L) {
     MessageBox(_T("Failed to open the folder!"), _T("Message"));
@@ -298,7 +303,10 @@ void CTtfParserAppDlg::TraverseFolder(LPCTSTR dir) {
     _tcscat_s(file_name, _T("/"));
     _tcscat_s(file_name, file_info.name);
     OpenTtf(file_name);
+    // `_tfindnext` returns 0 if successful.
   } while(_tfindnext(handle, &file_info) == 0);
+  _findclose(handle);
+  _tchdir(old_dir);
   MessageBox(_T("Traversal done!"), _T("Message"));
 }
 

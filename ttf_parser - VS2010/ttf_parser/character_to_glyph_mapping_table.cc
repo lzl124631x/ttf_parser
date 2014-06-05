@@ -96,7 +96,7 @@ void CharacterToGlyphIndexMappingTable::LoadTable(TableRecordEntry *entry,
   // decline.
 }
 
-// FIXME: This Function uses sequential search. Maybe it can be more efficient.
+// FIXME: This function uses sequential search. Maybe it can be more efficient.
 EncodingTable* CharacterToGlyphIndexMappingTable::GetEncodingTable(
     const UShort platform_id,
     const UShort encoding_id) const {
@@ -137,15 +137,45 @@ GlyphId ByteEncodingTable::GetGlyphIndex(const UShort ch) const {
 /****************************************************************************/
 /*                       HighByteMappingThroughTable                        */
 /****************************************************************************/
+
 HighByteMappingThroughTable::HighByteMappingThroughTable(ifstream &fin)
   : EncodingTable(fin) {
   FREAD_N(fin, subheader_keys_, 256);
-  //FIXME: not finished
+  // The 259 UShort data are composed of:
+  // * 3 UShort data in the general cmap header.
+  // * 256 UShort data in the `subHeaderKeys` array.
+  UShort var_len = (length_ >> 1) - 259;
+  subheaders_and_glyph_id_array = new UShort[var_len];
+  FREAD_N(fin, subheaders_and_glyph_id_array, var_len);
 }
 
+#define HIBYTE(w) ((Byte)((w) >> 8))
+#define LOBYTE(w) ((Byte)(w))
 GlyphId HighByteMappingThroughTable::GetGlyphIndex(const UShort ch) const {
-  return 0; // FIXME: not finished
+  Byte high_byte = HIBYTE(ch), low_byte = LOBYTE(ch);
+  // FIXME: not finished. This subtable is designed for parsing mixed 8/16-bit
+  // string, hence the signature of this function is not proper.
+  Subheader *subheader_ptr = (Subheader*)(subheaders_and_glyph_id_array
+                                           + subheader_keys_[high_byte]);
+  // If the subheader key is 0, the character is single-byte or invalid.
+  bool single_byte_char = (subheader_keys_[high_byte] == 0);
+  // If the character is single-byte, the single byte is used for indexing;
+  // otherwise the second byte is used.
+  UShort index = (single_byte_char ? high_byte : low_byte)
+                   - subheader_ptr->first_code;
+  if (index >= 0 && index < subheader_ptr->entry_count) {
+    UShort glyph_index = *(&subheader_ptr->id_range_offset
+                             + (subheader_ptr->id_range_offset >> 1) + index);
+    // If the value obtained from the subarray is not 0, `idDelta` should be
+    // added to it in order to get the `glyphIndex`. The idDelta arithmetic
+    // is modulo 65536.
+    return glyph_index ? (glyph_index + subheader_ptr->id_delta) % 65536 : 0;
+  }
+  // Return 0 for out-of-range character.
+  return 0;
 }
+#undef HIBYTE
+#undef LOBYTE
 
 /****************************************************************************/
 /*                       SegmentMappingToDeltaValues                        */
@@ -169,9 +199,9 @@ SegmentMappingToDeltaValues::SegmentMappingToDeltaValues(ifstream &fin)
   // * 3 UShort data in the general cmap header.
   // * 4 UShort data in this format 4 cmap header.
   // * 1 Ushort for reserved pad.
-  UShort var_len = seg_count + (length_ - sizeof(UShort) * (8 + (seg_countx2_ << 1)));
-  id_range_offset_ = new UShort[var_len];
-  FREAD_N(fin, id_range_offset_, var_len);
+  UShort var_len = seg_count + ((length_ >> 1) - (8 + (seg_countx2_ << 1)));
+  id_range_offset_and_glyph_id_array_ = new UShort[var_len];
+  FREAD_N(fin, id_range_offset_and_glyph_id_array_, var_len);
 }
 
 GlyphId SegmentMappingToDeltaValues::GetGlyphIndex(const UShort ch) const {
@@ -181,7 +211,7 @@ GlyphId SegmentMappingToDeltaValues::GetGlyphIndex(const UShort ch) const {
   }
   GlyphId glyph_index = 0;
   if (start_count_[i] <= ch) {
-    if (id_range_offset_[i]) {
+    if (id_range_offset_and_glyph_id_array_[i]) {
       // If the `idRangeOffset` value for the segment is not 0, the mapping of
       // character codes relies on `glyphIdArray`. The character code offset 
       // from `startCode` is added to the `idRangeOffset` value. This sum is
@@ -198,15 +228,15 @@ GlyphId SegmentMappingToDeltaValues::GetGlyphIndex(const UShort ch) const {
       // indexing operation is not 0 (which indicates missingGlyph),
       // `idDelta[i]` is added to it to get the glyph index. The `idDelta`
       // arithmetic is modulo 65536.
-      glyph_index = *((id_range_offset_[i] >> 1)
+      glyph_index = *((id_range_offset_and_glyph_id_array_[i] >> 1)
                       + (ch - start_count_[i])
-                      + &id_range_offset_[i]);
+                      + &id_range_offset_and_glyph_id_array_[i]);
     } else {
       // If the `idRangeOffset` is 0, the `idDelta` value is added directly to
       // the character code offset (i.e. `idDelta[i] + c`) to get the
       // corresponding glyph index. Again, the `idDelta` arithmetic is modulo
       // 65536.
-      glyph_index = id_delta_[i] + ch;
+      glyph_index = (id_delta_[i] + ch) % 65536;
     }
   }
   return glyph_index;
@@ -291,7 +321,8 @@ void SegmentMappingToDeltaValues::DumpInfo(XmlLogger &logger) const {
   logger.Println("</idDelta>");
 
   logger.Println("<idRangeOffset>");
-  logger.PrintArray<UShort>(id_range_offset_, (seg_countx2_ >> 1), "%8u");
+  logger.PrintArray<UShort>(id_range_offset_and_glyph_id_array_,
+                            (seg_countx2_ >> 1), "%8u");
   logger.Println("</idRangeOffset>");
 
   logger.Println("<glyphIdArray>");
