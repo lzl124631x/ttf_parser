@@ -21,7 +21,7 @@ namespace ttf_dll {
 TrueTypeFont *g_ttf;
 
 bool TrueTypeFont::LoadPath(const TCHAR *path) {
-  ifstream fin(path, ios::in | ios::binary); // FIXME: think twice about the parameter!
+  ifstream fin(path, ios::in | ios::binary);
   if(!fin.is_open()) {
     cout << "Error reading file " << path << "!" << endl;
     return false;
@@ -43,9 +43,20 @@ bool TrueTypeFont::LoadPath(const TCHAR *path) {
   return true;
 }
 
-TrueTypeFont::~TrueTypeFont() {}
+void TrueTypeFont::Destroy() {
+  offset_table_.Destroy();
+  cmap_.Destroy();
+  head_.Destroy();
+  maxp_.Destroy();
+  loca_.Destroy();
+  hhea_.Destroy();
+  hmtx_.Destroy();
+  name_.Destroy();
+  os_2_.Destroy();
+  glyf_.Destroy();
+}
 
-void TrueTypeFont::GetGlyphOutline(const UShort ch) {
+//void TrueTypeFont::GetGlyphOutline(const UShort ch) {
   //USHORT glyph_index = cmap.get_glyph_index(Windows, Unicode_BMP, ch);
   ////ULONG location = loca.find_location(glyph_index);
   //wstring name = L"C:/msyh/";
@@ -57,9 +68,9 @@ void TrueTypeFont::GetGlyphOutline(const UShort ch) {
   //  glyf.dump_svg_outline(fp);
   //  fclose(fp);
   //}
-}
+//}
 
-bool TrueTypeFont::DumpTTF(const char *path) const {
+bool TrueTypeFont::DumpTtf(const char *path) const {
   XmlLogger logger(path);
   if(logger.Error()) return false;
   logger.Println("<ttFont>");
@@ -79,8 +90,10 @@ bool TrueTypeFont::DumpTTF(const char *path) const {
 }
 
 #define SNTPRINTFS(buf, buf_len, len, format_, ...)\
-  (len) += _sntprintf_s((buf) + (len), (buf_len) - (len), _TRUNCATE, (format_), __VA_ARGS__)
-void TrueTypeFont::GlyphInfo(Glyph *glyph, TCHAR *buf, size_t buf_len) {
+  (len) += _sntprintf_s((buf) + (len), (buf_len) - (len), \
+                        _TRUNCATE, (format_), __VA_ARGS__)
+void TrueTypeFont::GlyphInfo(const Glyph *glyph, TCHAR *buf,
+                             const size_t buf_len) const {
   if(!buf || buf_len == 0) return;
   if(!glyph) {
     buf[0] = _T('\0');
@@ -91,9 +104,12 @@ void TrueTypeFont::GlyphInfo(Glyph *glyph, TCHAR *buf, size_t buf_len) {
   SNTPRINTFS(buf, buf_len, len, _T("xMax: %d\n"), glyph->header_.x_max_);
   SNTPRINTFS(buf, buf_len, len, _T("yMin: %d\n"), glyph->header_.y_min_);
   SNTPRINTFS(buf, buf_len, len, _T("yMax: %d\n"), glyph->header_.y_max_);
-  SNTPRINTFS(buf, buf_len, len, _T("numberOfContours: %d\n"), glyph->header_.num_contours_);
-  SNTPRINTFS(buf, buf_len, len, _T("leftSideBearing: %d\n"), g_ttf->hmtx_.GetLeftSideBearing(glyph->glyph_index_));
-  SNTPRINTFS(buf, buf_len, len, _T("advanceWidth: %d\n"), g_ttf->hmtx_.GetAdvanceWidth(glyph->glyph_index_));
+  SNTPRINTFS(buf, buf_len, len, _T("numberOfContours: %d\n"),
+             glyph->header_.num_contours_);
+  SNTPRINTFS(buf, buf_len, len, _T("leftSideBearing: %d\n"),
+             g_ttf->hmtx_.GetLeftSideBearing(glyph->glyph_index_));
+  SNTPRINTFS(buf, buf_len, len, _T("advanceWidth: %d\n"),
+             g_ttf->hmtx_.GetAdvanceWidth(glyph->glyph_index_));
 }
 
 } // namespace ttf_dll

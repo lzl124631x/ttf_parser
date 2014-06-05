@@ -12,12 +12,13 @@ namespace ttf_dll {
 class DLL_API EncodingTable {
  public:
   explicit EncodingTable(ifstream &fin);
-  virtual ~EncodingTable() { }
+  virtual ~EncodingTable() {}
   // Gets the glyph index of the character specified by `ch`.
   virtual GlyphId GetGlyphIndex(const UShort ch) const = 0;
   // Dumps the information of this table header to an XML file.
   void DumpTableHeader(XmlLogger &logger) const;
-  // Dumps the information of a specific format 'cmap' subtable to an XML file.
+  // Dumps the information of a specific format 'cmap' subtable to an XML
+  // file.
   virtual void DumpInfo(XmlLogger &logger) const = 0;
 
  protected:
@@ -79,12 +80,13 @@ class DLL_API EncodingRecord {
 // values used in the font.
 class DLL_API CharacterToGlyphIndexMappingTable {
  public:
-  ~CharacterToGlyphIndexMappingTable() {
-    DEL_A(encoding_records_);
-  }
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
   void LoadTable(TableRecordEntry *entry, ifstream &fin);
+  // Deallocates the memory allocated in `LoadTable`, if any.
+  void Destroy() {
+    DEL_A(encoding_records_);
+  }
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the glyph index of the character specified by `ch`. The arguments
@@ -135,7 +137,7 @@ enum EncodingTableFormat {
 class DLL_API ByteEncodingTable: public EncodingTable {
  public:
   explicit ByteEncodingTable(ifstream &fin);
-  ~ByteEncodingTable() { }
+  ~ByteEncodingTable() {}
   // Gets the glyph index of the character specified by `ch`. Glyph ID 0 will
   // be returned if `ch` is greater than or equal to 256.
   GlyphId GetGlyphIndex(const UShort ch) const;

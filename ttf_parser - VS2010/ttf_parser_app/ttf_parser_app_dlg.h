@@ -23,6 +23,7 @@ class CTtfParserAppDlg : public CDialogEx {
 
   CTtfParserAppDlg(CWnd* pParent = NULL);	// standard constructor
   BOOL PreTranslateMessage(MSG* pMsg);
+  BOOL DestroyWindow();
   afx_msg void OnFileOpen();
   afx_msg void OnFileExit();
   afx_msg void OnBnClickedView();

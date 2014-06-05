@@ -18,6 +18,8 @@ class DLL_API Os2AndWindowsMetrics { // version 4
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
   void LoadTable(TableRecordEntry *entry, ifstream &fin);
+  // Deallocates the memory allocated in `LoadTable`, if any.
+  void Destroy() {}
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
 

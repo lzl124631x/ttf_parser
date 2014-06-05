@@ -105,23 +105,20 @@ BOOL CTtfParserAppDlg::OnInitDialog() {
   SetIcon(m_hIcon, TRUE);      // Set big icon
   SetIcon(m_hIcon, FALSE);     // Set small icon
 
-  // TEST: Following lines are for test.
-  // std::string str("C:\\Fonts\\Mathematica6.ttf");
-  // ttf.load_path(str);
-  // m_char.SetWindowText(_T("A"));
-
   cspin_glyph_index_.SetBuddy(&cedit_glyph_index_);
-  render_point_ = false;                               // No glyph points are rendered by default
+  // No glyph points are rendered by default.
+  render_point_ = false;
   EnableControls(false);
 
   HDC hdc = ::GetDC(m_hWnd);
-  char_bmp_ = CreateCompatibleBitmap(hdc, 500, 500); // FIXME: need to DeleteObject(m_charBmp)
+  // `char_bmp_` will be deleted in `CTtfParserAppDlg::DestroyWindow`.
+  char_bmp_ = CreateCompatibleBitmap(hdc, 500, 500);
   ::ReleaseDC(m_hWnd, hdc);
 
-  // TEST
+  // TEST:
   // TraverseFolder(_T("D:/fonts"));
 
-  return TRUE;  // return TRUE  unless you set the focus to a control
+  return TRUE;
 }
 
 void CTtfParserAppDlg::OnSysCommand(UINT nID, LPARAM lParam) {
@@ -186,7 +183,7 @@ void CTtfParserAppDlg::OnDropFiles(HDROP hDropInfo) {
 
 void CTtfParserAppDlg::OpenTtf(LPCTSTR path) {
   GetDlgItem(IDC_TEXT_FILE_NAME)->SetWindowText(path);
-  ttf.~TrueTypeFont();
+  ttf.Destroy();
   ttf.LoadPath(path);
   EnableControls(true);
   cslider_glyph_index_.SetRange(0, ttf.maxp_.num_glyphs_ - 1);
@@ -208,7 +205,7 @@ void CTtfParserAppDlg::OnBnClickedView() {
 }
 
 void CTtfParserAppDlg::OnToolDumpXml() {
-  if(ttf.DumpTTF("info.xml")) {
+  if(ttf.DumpTtf("info.xml")) {
     MessageBox(_T("Dumped successfully!"), _T("Message"));
   } else {
     MessageBox(_T("Failed to dump info!"), _T("Message"));
@@ -235,9 +232,11 @@ void CTtfParserAppDlg::RefreshGlyph() {
 BOOL CTtfParserAppDlg::PreTranslateMessage(MSG* pMsg) {
   if(pMsg->message == WM_KEYDOWN) {
     switch(pMsg->wParam)  {
-      case VK_RETURN:   // omit Enter
+      case VK_RETURN:
+        // omit Enter
         return true;
-      case VK_ESCAPE:   // omit Esc
+      case VK_ESCAPE:
+        // omit Esc
         return true;
     }
   }
@@ -308,6 +307,12 @@ void CTtfParserAppDlg::TraverseFolder(LPCTSTR dir) {
   _findclose(handle);
   _tchdir(old_dir);
   MessageBox(_T("Traversal done!"), _T("Message"));
+}
+
+BOOL CTtfParserAppDlg::DestroyWindow() {
+  ttf.Destroy();
+  DeleteObject(char_bmp_);
+  return CDialogEx::DestroyWindow();
 }
 
 /****************************************************************************/

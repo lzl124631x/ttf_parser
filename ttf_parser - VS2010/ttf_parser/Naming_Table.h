@@ -73,13 +73,13 @@ struct DLL_API NameRecord {
 // OpenType font file. 
 class DLL_API Naming_Table {
  public:
-  // Deallocates the Name Records on destruction.
-  ~Naming_Table() {
-    DEL_A(name_records_);
-  }
   // Reads the table from the file stream. The `entry` provides some
   // information needed for loading.
   void LoadTable(TableRecordEntry *entry, ifstream &fin);
+  // Deallocates the memory allocated in `LoadTable`, if any.
+  void Destroy() {
+    DEL_A(name_records_);
+  }
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
 

@@ -28,12 +28,12 @@ class DLL_API TableRecordEntry {
 // The TrueType font starts with Offset Table.
 class DLL_API OffsetTable {
  public:
-  // Deallocates the Table Record entries during destruction.
-  ~OffsetTable() {
-    DEL_A(table_record_entries_);
-  }
   // Reads the Offset Table from the file stream.
   void LoadTable(ifstream &fin);
+  // Deallocates the Table Record entries.
+  void Destroy() {
+    DEL_A(table_record_entries_);
+  }
   // Gets the Table Record entry whose tag is specified by `tag_str`.
   TableRecordEntry *GetTableEntry(const char *tag_str) const;
   // Dumps out the information of this Offset Table to an XML file.

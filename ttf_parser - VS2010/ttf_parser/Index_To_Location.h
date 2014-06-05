@@ -26,16 +26,17 @@ class DLL_API IndexToLocation {
   // length of the glyph data ('glyf') table.
   // The offsets must be in ascending order with loca[n] <= loca[n+1].
  public:
-  ~IndexToLocation() {
+  // Reads the table from the file stream. The `entry` provides some
+  // information needed for loading.
+  void LoadTable(const TableRecordEntry *entry, ifstream &fin);
+  // Deallocates the memory allocated in `LoadTable`, if any.
+  void Destroy() {
     if (loca_format_) { // 1 for ULONG
       DEL_T(offsets_, ULong);
     } else {           // 0 for USHORT
       DEL_T(offsets_, UShort);
     }
   }
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, ifstream &fin);
   // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the offset and length of the glyph labeled by `glyph_index`.

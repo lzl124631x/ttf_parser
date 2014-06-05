@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "glyph_data.h"
 #include "true_type_font.h"
+using namespace Gdiplus;
 
 namespace ttf_dll {
 
@@ -71,13 +72,47 @@ enum CompositeGlyphDescriptionFlag {
 // start, control and end point of the quadratic Bezier respectively.
 static void AddQuadraticBezier(GraphicsPath &path,const PointF &q0,
                                const PointF &q1, const PointF &q2);
-// Return true if the `num_contours` belongs to simple glyph.
-static bool IsSimpleGlyph(Short num_contours);
-// Return true if the `num_contours` belongs to composite glyph.
-static bool IsCompositeGlyph(Short num_contours);
+// Returns true if the `num_contours` belongs to simple glyph.
+static inline bool IsSimpleGlyph(const Short num_contours);
+// Returns true if the `num_contours` belongs to composite glyph.
+static inline bool IsCompositeGlyph(const Short num_contours);
 
 static GlyphData *glyf;  // FIXME: Do I really need this pointer?
 static Glyph glyph;
+/****************************************************************************/
+/*                               Glyph Data                                 */
+/****************************************************************************/
+void GlyphData::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
+  data_ = NULL;
+  fin.seekg(entry->offset_, ios::beg);
+  length_ = entry->length_;
+  data_ = new Byte[length_];
+  fin.read((char*)data_, length_);
+  glyph.Prepare();
+  glyf = this;
+}
+
+void GlyphData::Destroy() {
+  DEL_A(data_);
+  glyph.Destroy();
+}
+
+Glyph *GlyphData::LoadGlyph(const GlyphId glyph_index) {
+  glyph.Reset();
+  GlyphLoader loader(glyph);
+  loader.LoadGlyph(glyph_index);
+  return &glyph;
+}
+
+void GlyphData::DumpInfo(XmlLogger &logger) const {
+  logger.Println("<glyf>");
+  // FIXME: not finished.
+  //for (int i = 0; i < maxp.num_glyphs; ++i){
+  //Glyph *glyph = create_glyph()
+  //glyph_data_array[i]->dump_info(fp, indent + 1);
+  //}
+  logger.Println("</glyf>");
+}
 /****************************************************************************/
 /*                               GlyphLoader                                */
 /****************************************************************************/
@@ -165,39 +200,6 @@ void GlyphLoader::ReadCoordinates(MemStream &msm, PointF *ptr, bool read_x) {
     last = val;
   }
 }
-/****************************************************************************/
-/*                               Glyph Data                                 */
-/****************************************************************************/
-void GlyphData::LoadTable(TableRecordEntry *entry, ifstream &fin) {
-  data_ = NULL;
-  fin.seekg(entry->offset_, ios::beg);
-  length_ = entry->length_;
-  data_ = new Byte[length_];
-  fin.read((char*)data_, length_);
-  glyph.Prepare();
-  glyf = this;
-}
-
-GlyphData::~GlyphData() {
-  DEL_A(data_);
-  glyph.Destroy();
-}
-
-Glyph *GlyphData::LoadGlyph(const GlyphId glyph_index) {
-  glyph.Reset();
-  GlyphLoader loader(glyph);
-  loader.LoadGlyph(glyph_index);
-  return &glyph;
-}
-
-void GlyphData::DumpInfo(XmlLogger &logger) const {
-  logger.Println("<glyf>");
-  //for (int i = 0; i < maxp.num_glyphs; ++i){
-  //Glyph *glyph = create_glyph()
-  //glyph_data_array[i]->dump_info(fp, indent + 1);
-  //}
-  logger.Println("</glyf>");
-}
 /************************************************************************/
 /*                              Glyph                                   */
 /************************************************************************/
@@ -224,6 +226,7 @@ void Glyph::Prepare() {
   flags_ = new Byte[max_pts];
   coordinates_ = new PointF[max_pts];
 }
+#undef MAX
 
 void Glyph::Destroy() {
   DEL_A(end_contours_);
@@ -491,11 +494,11 @@ static void AddQuadraticBezier(GraphicsPath &path, const PointF &q0, const Point
   path.AddBezier(q0, c1, c2, q2);
 }
 
-static bool IsSimpleGlyph(Short num_contours) {
+static bool IsSimpleGlyph(const Short num_contours) {
   return num_contours > 0;
 }
 
-static bool IsCompositeGlyph(Short num_contours) {
+static bool IsCompositeGlyph(const Short num_contours) {
   return num_contours == -1;
 }
 
