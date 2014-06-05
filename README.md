@@ -1,10 +1,6 @@
-TTF Parser
-=========
+##![](https://raw.githubusercontent.com/lzl124631x/ttf_parser/master/ttf_parser%20-%20VS2010/ttf_parser_app/res/ttf_parser_app.ico)  TrueType Font Parser
 
-"TTF Parser" is aiming at extracting font data from TTF files and save them as SVG files.
-Currently "TTF Parser" is able to parse the following tables in TTF files:
+*TTF Parser* can load TrueType fonts, display glyphs and dump out glyph data to XML files.  
 
-1. cmap
-2. glyf
-3. head
-4. loca
+
+![ttf_parser screenshot](https://raw.githubusercontent.com/lzl124631x/ttf_parser/master/screenshot.jpg "ttf_parser screenshot")
