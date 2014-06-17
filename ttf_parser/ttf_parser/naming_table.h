@@ -29,7 +29,8 @@ enum WindowsEncodingID {
 };
 
 // Each string in the string storage is referenced by a name record.
-struct DLL_API NameRecord {
+class DLL_API NameRecord {
+ public:
   ~NameRecord() {
     if(DoubleByteString()) {
       DEL_T(string_, wchar_t);
@@ -72,16 +73,14 @@ struct DLL_API NameRecord {
 // FIXME: There are two versions of naming table! The format 1 is not yet implemented.
 // The naming table allows multilingual strings to be associated with the
 // OpenType font file. 
-class DLL_API Naming_Table {
+class DLL_API Naming_Table : public TtfSubtable {
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
+  explicit Naming_Table(const TrueTypeFont &ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void Destroy() {
     DEL_A(name_records_);
   }
-  // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
 
  private:

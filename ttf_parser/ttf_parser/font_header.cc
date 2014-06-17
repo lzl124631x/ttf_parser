@@ -8,7 +8,27 @@ namespace ttf_dll {
 static void LongDateTimeToString(char *buf, size_t buf_size,
                                  LongDateTime time);
 
-void FontHeader::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
+FontHeader::FontHeader(const TrueTypeFont &ttf)
+    : TtfSubtable(ttf),
+      table_version_number_(0),
+      font_revision_(0),
+      checksum_adjustment_(0),
+      magic_number_(0),
+      flags_(0),
+      units_per_em_(0),
+      created_(0),
+      modified_(0),
+      x_min_(0),
+      y_min_(0),
+      x_max_(0),
+      y_max_(0),
+      mac_style_(0),
+      lowest_rec_ppem_(0),
+      font_direction_hint_(0),
+      loca_format_(0),
+      glyph_data_format_(0) {}
+
+void FontHeader::Init(const TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   FREAD(fin, &table_version_number_);
   FREAD(fin, &font_revision_);
@@ -26,7 +46,7 @@ void FontHeader::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
   FREAD(fin, &lowest_rec_ppem_);
   FREAD(fin, &font_direction_hint_);
   FREAD(fin, &loca_format_);
-  FREAD(fin, &glygh_data_format_);
+  FREAD(fin, &glyph_data_format_);
 }
 
 void FontHeader::DumpInfo(XmlLogger &logger) const {
@@ -52,7 +72,7 @@ void FontHeader::DumpInfo(XmlLogger &logger) const {
   logger.Println("<lowestRecPPEM value=\"%u\"/>", lowest_rec_ppem_);
   logger.Println("<fontDirectionHint value=\"%d\"/>", font_direction_hint_);
   logger.Println("<indexToLocFormat value=\"%d\"/>", loca_format_);
-  logger.Println("<glyphDataFormat value=\"%d\"/>", glygh_data_format_);
+  logger.Println("<glyphDataFormat value=\"%d\"/>", glyph_data_format_);
   logger.DecreaseIndent();
   logger.Println("</head>");
 }

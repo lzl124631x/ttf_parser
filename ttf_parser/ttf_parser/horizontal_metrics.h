@@ -17,17 +17,15 @@ struct DLL_API LongHorMetric {
   Short     left_side_bearing_;
 };
 
-class DLL_API HorizontalMetrics {
+class DLL_API HorizontalMetrics : public TtfSubtable {
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
+  explicit HorizontalMetrics(const TrueTypeFont &ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void Destroy() {
     DEL_A(hmetrics);
     DEL_A(left_side_bearings_);
   }
-  // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the lsb of the glyph labeled by `glyph_index`.
   FWord GetLeftSideBearing(GlyphId glyph_index) const;

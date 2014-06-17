@@ -14,15 +14,12 @@ namespace ttf_dll {
 // version 2: OpenType rev 1.2
 // version 3: OpenType rev 1.4
 // version 4: OpenType rev 1.6
-class DLL_API Os2AndWindowsMetrics { // version 4
+class DLL_API Os2AndWindowsMetrics : public TtfSubtable { // version 4
   // FIXME: This table varies in different version. Always using version 4 is wrong.
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
-  void Destroy() {}
-  // Dumps the information of this table to an XML file.
+  explicit Os2AndWindowsMetrics(const TrueTypeFont &ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void DumpInfo(XmlLogger &logger) const;
 
  private:

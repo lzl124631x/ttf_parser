@@ -4,6 +4,13 @@ using namespace std;
 
 namespace ttf_dll {
 
+Naming_Table::Naming_Table(const TrueTypeFont &ttf)
+    : TtfSubtable(ttf),
+      format_(0),
+      count_(0),
+      offset_(0),
+      name_records_(NULL) {}
+
 void NameRecord::LoadRecord(ifstream &fin) {
   FREAD(fin, &platform_id_);
   FREAD(fin, &encoding_id_);
@@ -29,7 +36,7 @@ void NameRecord::ReadString(ifstream &fin) {
   }
 }
 
-void Naming_Table::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
+void Naming_Table::Init(const TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   FREAD(fin, &format_);
   FREAD(fin, &count_);

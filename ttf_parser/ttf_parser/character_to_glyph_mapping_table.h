@@ -78,16 +78,14 @@ class DLL_API EncodingRecord {
 
 // This table defines the mapping of character codes to the glyph index
 // values used in the font.
-class DLL_API CharacterToGlyphIndexMappingTable {
+class DLL_API CharacterToGlyphIndexMappingTable : public TtfSubtable {
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
+  explicit CharacterToGlyphIndexMappingTable(const TrueTypeFont& ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void Destroy() {
     DEL_A(encoding_records_);
   }
-  // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the glyph index of the character specified by `ch`. The arguments
   // `platform_id` and `encoding_id` specify which Encoding Table should be

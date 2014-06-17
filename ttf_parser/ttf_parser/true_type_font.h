@@ -17,6 +17,7 @@ namespace ttf_dll {
 
 class DLL_API TrueTypeFont {
  public:
+  TrueTypeFont();
   // Loads the TrueType font from the file specified by `path`. Memory
   // allocation will occur in this function. Hence, you must invoke
   // `TrueTypeFont::Close` to deallocate the memory.
@@ -28,12 +29,12 @@ class DLL_API TrueTypeFont {
   // Dumps this TrueType font to an XML file specified by `path`.
   bool DumpTtf(const TCHAR *path) const;
   // Gets the pointer to glyph labeled by `glyph_index`.
-  Glyph *GetGlyph(const GlyphId glyph_index) {
+  const Glyph &GetGlyph(const GlyphId glyph_index) {
     return glyf_.LoadGlyph(glyph_index);
   }
   // Outputs some data of the `glyph` to a sized buffer. The buffer is
   // pointed by `buf` and its size is given by `buf_len`.
-  void GlyphInfo(const Glyph *glyph, TCHAR *buf, size_t buf_len) const;
+  void GlyphInfo(const Glyph &glyph, TCHAR *buf, size_t buf_len) const;
   // Accessors
   const CharacterToGlyphIndexMappingTable &cmap() const { return cmap_; }
   const FontHeader &head() const { return head_; }
@@ -58,9 +59,6 @@ class DLL_API TrueTypeFont {
   GlyphData glyf_;
 };
 
-// A global pointer to the ttf. Subtables of ttf use this pointer to access
-// other subtables.
-extern TrueTypeFont *g_ttf;
 } // namespace ttf_dll
 
 #endif

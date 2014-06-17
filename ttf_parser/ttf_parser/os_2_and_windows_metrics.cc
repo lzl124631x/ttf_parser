@@ -2,6 +2,10 @@
 #include "os_2_and_windows_metrics.h"
 using namespace std;
 
+// Disable warning C4351: new behavior: elements of array will be default
+// initialized.
+#pragma warning(disable: 4351)
+
 namespace ttf_dll {
 
 // us_weight_class
@@ -28,8 +32,50 @@ const float kFontWidthExpanded              = 125;
 const float kFontWidthExtraExpanded         = 150;
 const float kFontWidthUltraExpanded         = 200;
 
-void Os2AndWindowsMetrics::LoadTable(const TableRecordEntry *entry,
-                                     ifstream &fin) {
+Os2AndWindowsMetrics::Os2AndWindowsMetrics(const TrueTypeFont &ttf)
+    : TtfSubtable(ttf),
+      version_(0),
+      x_avg_char_width_(0),
+      us_weight_class_(0),
+      us_width_class_(0),
+      fs_type_(0),
+      y_subscript_x_size_(0),
+      y_subscript_y_size_(0),
+      y_subscript_x_offset_(0),
+      y_subscript_y_offset_(0),
+      y_superscript_x_size_(0),
+      y_superscript_y_size_(0),
+      y_superscript_x_offset_(0),
+      y_superscript_y_offset_(0),
+      y_strike_out_size_(0),
+      y_strike_out_position_(0),
+      s_family_class_(0),
+      // Default initialization. In this case, fields are set to zero.
+      panose_(),
+      ul_unicode_range_1_(0),
+      ul_unicode_range_2_(0),
+      ul_unicode_range_3_(0),
+      ul_unicode_range_4_(0),
+      // Default initialization. In this case, each element is set to zero.
+      ach_vend_id_(),
+      fs_selection_(0),
+      us_first_char_index_(0),
+      us_last_char_index_(0),
+      s_typo_ascender_(0),
+      s_typo_descender_(0),
+      s_typo_line_cap_(0),
+      us_win_ascent_(0),
+      us_win_descent_(0),
+      ul_code_page_range_1_(0),
+      ul_code_page_range_2_(0),
+      sx_height_(0),
+      s_cap_height_(0),
+      us_default_char_(0),
+      us_break_char_(0),
+      us_max_coutext_(0) {}
+
+void Os2AndWindowsMetrics::Init(const TableRecordEntry *entry,
+                                ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   FREAD(fin, &version_);
   FREAD(fin, &x_avg_char_width_);

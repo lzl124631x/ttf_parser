@@ -7,14 +7,11 @@
 // https://www.microsoft.com/typography/otspec/head.htm
 namespace ttf_dll {
   
-class DLL_API FontHeader {
+class DLL_API FontHeader : public TtfSubtable {
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
-  void Destroy() {}
-  // Dumps the information of this table to an XML file.
+  explicit FontHeader(const TrueTypeFont &ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void DumpInfo(XmlLogger &logger) const;
   // Accessors
   FWord x_min() const { return x_min_; }
@@ -52,7 +49,7 @@ class DLL_API FontHeader {
   // This field specifies the version of the 'loca' table. 0 for short
   // offsets, 1 for long.
   Short             loca_format_;
-  Short             glygh_data_format_;
+  Short             glyph_data_format_;
 };
 
 } // namespace ttf_dll

@@ -4,11 +4,16 @@
 using namespace std; // For `ifstream`
 
 namespace ttf_dll {
+IndexToLocation::IndexToLocation(const TrueTypeFont &ttf)
+    : TtfSubtable(ttf),
+      offsets_(NULL),
+      num_glyphs_(0),
+      loca_format_(0) {}
 
-void IndexToLocation::LoadTable(const TableRecordEntry *entry,
-                                ifstream &fin) {
-  num_glyphs_ = g_ttf->maxp().num_glyphs();
-  loca_format_ = g_ttf->head().loca_format();
+void IndexToLocation::Init(const TableRecordEntry *entry,
+                           ifstream &fin) {
+  num_glyphs_ = ttf_.maxp().num_glyphs();
+  loca_format_ = ttf_.head().loca_format();
   fin.seekg(entry->offset(), ios::beg);
   UShort len = num_glyphs_ + 1;
   if (loca_format_) {
@@ -55,11 +60,10 @@ void IndexToLocation::GetGlyphOffsetAndLength(
   } else {
     // 0 for USHORT
     USHORT *short_offsets = (USHORT*)offsets_;
-    *offset = short_offsets[glyph_index];
     // ATTENTION: The SHORT version 'loca' stores the actual local offset
     // divided by 2!
-    *offset <<= 1;
-    *length = short_offsets[glyph_index + 1] - *offset;
+    *offset = (short_offsets[glyph_index] << 1);
+    *length = (short_offsets[glyph_index + 1] << 1) - *offset;
   }
 }
 

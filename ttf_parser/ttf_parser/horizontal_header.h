@@ -13,14 +13,11 @@ namespace ttf_dll {
 // using only glyphs that have contours. Glyphs with no contours should be
 // ignored for the purposes of these calculations. All reserved areas must be
 // set to 0.
-class DLL_API HorizontalHeader {
+class DLL_API HorizontalHeader : public TtfSubtable {
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
-  void Destroy() {}
-  // Dumps the information of this table to an XML file.
+  explicit HorizontalHeader(const TrueTypeFont &ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void DumpInfo(XmlLogger &logger) const;
   // Accessors
   UShort num_hmetrics() const { return num_hmetrics_; }

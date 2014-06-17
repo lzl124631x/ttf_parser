@@ -8,14 +8,11 @@
 /****************************************************************************/
 namespace ttf_dll {
 
-class DLL_API MaximumProfile {
+class DLL_API MaximumProfile : public TtfSubtable {
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
-  void Destroy() {}
-  // Dumps the information of this table to an XML file.
+  explicit MaximumProfile(const TrueTypeFont& ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void DumpInfo(XmlLogger &logger) const;
   // Accessors
   UShort num_glyphs() const { return num_glyphs_; }
@@ -23,7 +20,10 @@ class DLL_API MaximumProfile {
   UShort max_contours() const { return max_contours_; }
   UShort max_composite_points() const { return max_composite_points_; }
   UShort max_composite_contours() const { return max_composite_contours_; }
-  UShort max_size_of_instructions() const { return max_size_of_instructions_; }
+  UShort max_size_of_instructions() const {
+    return max_size_of_instructions_;
+  }
+  UShort max_component_depth() const { return max_component_depth_; }
 
  private:
   // 0x00010000 for version 1.0.

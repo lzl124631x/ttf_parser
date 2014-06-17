@@ -3,6 +3,9 @@
 using namespace std; // For `ifstream`
 #include "xml_logger.h"
 
+// Disable warning C4355: 'this' : used in base member initializer list.
+#pragma warning(disable: 4355)
+
 namespace ttf_dll {
 // FIXME : Calculate the checksums!
 //ULONG calc_table_checksum(ULONG *table, ULONG num_of_bytes){
@@ -18,7 +21,17 @@ namespace ttf_dll {
 //  Table_Directory_Entry *entry = offset_table.get_table_entry(tag);
 //  return entry->checksum == calc_table_checksum(get_table(entry), entry->length);
 //}
-TrueTypeFont *g_ttf;
+
+TrueTypeFont::TrueTypeFont() :
+  cmap_(*this),
+  head_(*this),
+  maxp_(*this),
+  loca_(*this),
+  hhea_(*this),
+  hmtx_(*this),
+  name_(*this),
+  os_2_(*this),
+  glyf_(*this) {}
 
 bool TrueTypeFont::Open(const TCHAR *path) {
   ifstream fin(path, ios::in | ios::binary);
@@ -27,17 +40,16 @@ bool TrueTypeFont::Open(const TCHAR *path) {
     return false;
   }
 
-  g_ttf = this;
   offset_table_.LoadTable(fin);
-  cmap_.LoadTable(offset_table_.GetTableEntry("cmap"), fin);
-  head_.LoadTable(offset_table_.GetTableEntry("head"), fin);
-  maxp_.LoadTable(offset_table_.GetTableEntry("maxp"), fin);
-  loca_.LoadTable(offset_table_.GetTableEntry("loca"), fin);
-  hhea_.LoadTable(offset_table_.GetTableEntry("hhea"), fin);
-  hmtx_.LoadTable(offset_table_.GetTableEntry("hmtx"), fin);
-  name_.LoadTable(offset_table_.GetTableEntry("name"), fin);
-  os_2_.LoadTable(offset_table_.GetTableEntry("OS/2"), fin);
-  glyf_.LoadTable(offset_table_.GetTableEntry("glyf"), fin);
+  cmap_.Init(offset_table_.GetTableEntry("cmap"), fin);
+  head_.Init(offset_table_.GetTableEntry("head"), fin);
+  maxp_.Init(offset_table_.GetTableEntry("maxp"), fin);
+  loca_.Init(offset_table_.GetTableEntry("loca"), fin);
+  hhea_.Init(offset_table_.GetTableEntry("hhea"), fin);
+  hmtx_.Init(offset_table_.GetTableEntry("hmtx"), fin);
+  name_.Init(offset_table_.GetTableEntry("name"), fin);
+  os_2_.Init(offset_table_.GetTableEntry("OS/2"), fin);
+  glyf_.Init(offset_table_.GetTableEntry("glyf"), fin);
 
   fin.close();
   return true;
@@ -93,24 +105,20 @@ bool TrueTypeFont::DumpTtf(const TCHAR *path) const {
 #define SNTPRINTFS(buf, buf_len, len, format_, ...)\
   (len) += _sntprintf_s((buf) + (len), (buf_len) - (len), \
                         _TRUNCATE, (format_), __VA_ARGS__)
-void TrueTypeFont::GlyphInfo(const Glyph *glyph, TCHAR *buf,
+void TrueTypeFont::GlyphInfo(const Glyph &glyph, TCHAR *buf,
                              size_t buf_len) const {
   if (!buf || buf_len == 0) return;
-  if (!glyph) {
-    buf[0] = _T('\0');
-    return;
-  }
   int len = 0;
-  SNTPRINTFS(buf, buf_len, len, _T("xMin: %d\n"), glyph->header().x_min());
-  SNTPRINTFS(buf, buf_len, len, _T("xMax: %d\n"), glyph->header().x_max());
-  SNTPRINTFS(buf, buf_len, len, _T("yMin: %d\n"), glyph->header().y_min());
-  SNTPRINTFS(buf, buf_len, len, _T("yMax: %d\n"), glyph->header().y_max());
+  SNTPRINTFS(buf, buf_len, len, _T("xMin: %d\n"), glyph.x_min());
+  SNTPRINTFS(buf, buf_len, len, _T("xMax: %d\n"), glyph.x_max());
+  SNTPRINTFS(buf, buf_len, len, _T("yMin: %d\n"), glyph.y_min());
+  SNTPRINTFS(buf, buf_len, len, _T("yMax: %d\n"), glyph.y_max());
   SNTPRINTFS(buf, buf_len, len, _T("numberOfContours: %d\n"),
-             glyph->header().num_contours());
+             glyph.num_contours());
   SNTPRINTFS(buf, buf_len, len, _T("leftSideBearing: %d\n"),
-             g_ttf->hmtx().GetLeftSideBearing(glyph->glyph_index()));
+             hmtx_.GetLeftSideBearing(glyph.glyph_index()));
   SNTPRINTFS(buf, buf_len, len, _T("advanceWidth: %d\n"),
-             g_ttf->hmtx().GetAdvanceWidth(glyph->glyph_index()));
+             hmtx_.GetAdvanceWidth(glyph.glyph_index()));
 }
 
 } // namespace ttf_dll

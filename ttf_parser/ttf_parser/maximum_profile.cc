@@ -3,8 +3,24 @@
 using namespace std;
 
 namespace ttf_dll {
+MaximumProfile::MaximumProfile(const TrueTypeFont& ttf)
+    : TtfSubtable(ttf),
+      table_version_number_(0),
+      num_glyphs_(0),
+      max_points_(0),
+      max_contours_(0),
+      max_composite_points_(0),
+      max_composite_contours_(0),
+      max_zones_(0),
+      max_twilight_points_(0),
+      max_storage_(0),
+      max_function_defs_(0),
+      max_stack_elements_(0),
+      max_size_of_instructions_(0),
+      max_component_elements_(0),
+      max_component_depth_(0) {}
 
-void MaximumProfile::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
+void MaximumProfile::Init(const TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   FREAD(fin, &table_version_number_);
   FREAD(fin, &num_glyphs_);

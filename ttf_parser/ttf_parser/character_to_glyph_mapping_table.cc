@@ -73,7 +73,14 @@ void EncodingRecord::LoadEncodingTable(ifstream &fin, const streampos base) {
 /****************************************************************************/
 /*                   CharacterToGlyphIndexMappingTable                      */
 /****************************************************************************/
-void CharacterToGlyphIndexMappingTable::LoadTable(
+CharacterToGlyphIndexMappingTable::CharacterToGlyphIndexMappingTable(
+    const TrueTypeFont& ttf)
+    : TtfSubtable(ttf),
+      version_(0),
+      num_tables_(0),
+      encoding_records_(NULL) {}
+  
+void CharacterToGlyphIndexMappingTable::Init(
     const TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   streampos base = fin.tellg();

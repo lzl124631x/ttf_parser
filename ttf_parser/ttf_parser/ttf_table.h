@@ -59,6 +59,25 @@ class DLL_API OffsetTable {
   // An array of Table Record entries.
   TableRecordEntry *table_record_entries_;
 };
+
+class TrueTypeFont;
+// The base class of subtables of TrueType font.
+class DLL_API TtfSubtable {
+ public:
+  // Binds this subtable with the TrueType font on construction.
+  explicit TtfSubtable(const TrueTypeFont &ttf) : ttf_(ttf) {};
+  // Reads this subtable from the file stream. The `entry` provides some
+  // information needed for loading.
+  virtual void Init(const TableRecordEntry *entry,
+                    std::ifstream &fin) = 0;
+  // Deallocates the memory allocated in `Init`, if any.
+  virtual void Destroy() {};
+  // Dumps the information of this subtable to an XML file.
+  virtual void DumpInfo(XmlLogger &logger) const = 0;
+
+ protected:
+  const TrueTypeFont &ttf_;
+};
 /************************************************************************/
 /*                           OPTIONAL TABLES                            */
 /************************************************************************/

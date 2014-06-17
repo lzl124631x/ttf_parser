@@ -222,7 +222,7 @@ void CTtfParserAppDlg::OnBnClickedShowPoint() {
 
 void CTtfParserAppDlg::RefreshGlyph() {
   HDC hdc = ::GetDC(m_hWnd);
-  ttf_dll::Glyph *glyph = ttf.GetGlyph(glyph_index_);
+  const ttf_dll::Glyph &glyph = ttf.GetGlyph(glyph_index_);
   RenderGlyph(hdc, char_bmp_, glyph, 500, 500, render_point_);
   // FIXME: test if ttf is loaded before render.
   Invalidate();

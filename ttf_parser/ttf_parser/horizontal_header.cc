@@ -4,7 +4,23 @@ using namespace std;
 
 namespace ttf_dll {
 
-void HorizontalHeader::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
+HorizontalHeader::HorizontalHeader(const TrueTypeFont &ttf)
+    : TtfSubtable(ttf),
+      table_version_number_(0),
+      ascender_(0),
+      descender_(0),
+      line_gap_(0),
+      advance_width_max_(0),
+      min_left_side_bearing_(0),
+      min_right_side_bearing_(0),
+      x_max_extent_(0),
+      caret_slope_rise_(0),
+      caret_slope_run_(0),
+      caret_offset_(0),
+      metric_data_format_(0),
+      num_hmetrics_(0) {}
+
+void HorizontalHeader::Init(const TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   FREAD(fin, &table_version_number_);
   FREAD(fin, &ascender_);

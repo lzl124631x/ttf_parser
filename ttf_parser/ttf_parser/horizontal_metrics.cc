@@ -10,32 +10,17 @@ void LongHorMetric::LoadMetric(ifstream &fin) {
   FREAD(fin, &left_side_bearing_);
 }
 
-FWord HorizontalMetrics::GetLeftSideBearing(GlyphId glyph_index) const {
-  if(glyph_index < num_hmtx_) {
-    return hmetrics[glyph_index].left_side_bearing_;
-  } else if(glyph_index < num_glyphs_) {
-    return left_side_bearings_[glyph_index - num_hmtx_];
-  } else {
-    // ERROR: Invalid glyph index!
-    return 0;
-  }
-}
+HorizontalMetrics::HorizontalMetrics(const TrueTypeFont &ttf) 
+    : TtfSubtable(ttf),
+      hmetrics(NULL),
+      left_side_bearings_(NULL),
+      num_hmtx_(0),
+      num_glyphs_(0) {}
 
-UFword HorizontalMetrics::GetAdvanceWidth(GlyphId glyph_index) const {
-  if(glyph_index < num_hmtx_) {
-    return hmetrics[glyph_index].advance_width_;
-  } else if(glyph_index < num_glyphs_) {
-    return hmetrics[num_hmtx_ - 1].advance_width_;
-  } else {
-    // ERROR: Invalid glyph index!
-    return 0;
-  }
-}
-
-void HorizontalMetrics::LoadTable(const TableRecordEntry *entry,
+void HorizontalMetrics::Init(const TableRecordEntry *entry,
                                   ifstream &fin) {
-  num_hmtx_ = g_ttf->hhea().num_hmetrics();
-  num_glyphs_ = g_ttf->maxp().num_glyphs();
+  num_hmtx_ = ttf_.hhea().num_hmetrics();
+  num_glyphs_ = ttf_.maxp().num_glyphs();
   fin.seekg(entry->offset(), ios::beg);
   hmetrics = new LongHorMetric[num_hmtx_];
   for(int i = 0; i < num_hmtx_; ++i) {
@@ -63,6 +48,28 @@ void HorizontalMetrics::DumpInfo(XmlLogger &logger) const {
   }
   logger.DecreaseIndent();
   logger.Println("</hmtx>");
+}
+
+FWord HorizontalMetrics::GetLeftSideBearing(GlyphId glyph_index) const {
+  if(glyph_index < num_hmtx_) {
+    return hmetrics[glyph_index].left_side_bearing_;
+  } else if(glyph_index < num_glyphs_) {
+    return left_side_bearings_[glyph_index - num_hmtx_];
+  } else {
+    // ERROR: Invalid glyph index!
+    return 0;
+  }
+}
+
+UFword HorizontalMetrics::GetAdvanceWidth(GlyphId glyph_index) const {
+  if(glyph_index < num_hmtx_) {
+    return hmetrics[glyph_index].advance_width_;
+  } else if(glyph_index < num_glyphs_) {
+    return hmetrics[num_hmtx_ - 1].advance_width_;
+  } else {
+    // ERROR: Invalid glyph index!
+    return 0;
+  }
 }
 
 } // namespace ttf_dll

@@ -11,7 +11,7 @@ namespace ttf_dll {
 // The indexToLoc table stores the offsets to the locations of the glyphs in
 // the font, relative to the beginning of the glyphData table.
 // NOTE: This table must be loaded after 'maxp' and 'head' are loaded.
-class DLL_API IndexToLocation {
+class DLL_API IndexToLocation : public TtfSubtable {
   // In order to compute the length of the last glyph element, there is an
   // extra entry after the last valid index. By definition, index zero points
   // to the "missing character," which is the character that appears if a
@@ -26,10 +26,9 @@ class DLL_API IndexToLocation {
   // length of the glyph data ('glyf') table.
   // The offsets must be in ascending order with loca[n] <= loca[n+1].
  public:
-  // Reads the table from the file stream. The `entry` provides some
-  // information needed for loading.
-  void LoadTable(const TableRecordEntry *entry, std::ifstream &fin);
-  // Deallocates the memory allocated in `LoadTable`, if any.
+  explicit IndexToLocation(const TrueTypeFont &ttf);
+  // Overrides
+  void Init(const TableRecordEntry *entry, std::ifstream &fin);
   void Destroy() {
     if (loca_format_) { // 1 for ULONG
       DEL_T(offsets_, ULong);
@@ -37,7 +36,6 @@ class DLL_API IndexToLocation {
       DEL_T(offsets_, UShort);
     }
   }
-  // Dumps the information of this table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
   // Gets the offset and length of the glyph labeled by `glyph_index`.
   // `offset` and `length` are output parameters.

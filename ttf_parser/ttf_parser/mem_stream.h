@@ -5,8 +5,8 @@ namespace ttf_dll {
 
 class DLL_API MemStream {
  public:
-  MemStream(void *m, size_t size)
-    : start_((char*)m), cursor_((char*)m), end_((char*)m + size) {}
+  MemStream(const void *m, size_t size)
+      : start_((char*)m), cursor_((char*)m), end_((char*)m + size) {}
   ~MemStream() {
     start_ = cursor_ = end_ = NULL;
   }
@@ -23,8 +23,8 @@ class DLL_API MemStream {
   char *end_;
 };
 
-#define MREAD(s, b) s.ReadBigEndian((b), sizeof(*(b)))
-#define MREAD_N(s, b, n) s.ReadBigEndian((b), sizeof(*(b)), (n))
+#define MREAD(s, b) ((s).ReadBigEndian((b), sizeof(*(b))))
+#define MREAD_N(s, b, n) ((s).ReadBigEndian((b), sizeof(*(b)), (n)))
 
 } // namespace ttf_dll
 #endif

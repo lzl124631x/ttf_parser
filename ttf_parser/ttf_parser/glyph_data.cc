@@ -8,7 +8,6 @@ namespace ttf_dll {
 
 // Bit Order of Simply Glyph Description Flag
 enum SimpleGlyphDescriptionFlag {
-// FIXME: This enum should be defined in the declaration of class.
   // If set, the point is on the curve; otherwise, it is off the curve.
   kOnCurve              = BIT(0),
   // If set, the corresponding x-coordinate is 1 byte long.
@@ -71,38 +70,43 @@ enum CompositeGlyphDescriptionFlag {
 
 // Adds a quadratic Bezier to the `path`. `q0`, `q1` and `q2` stand for the
 // start, control and end point of the quadratic Bezier respectively.
-static void AddQuadraticBezier(GraphicsPath &path, PointF &q0,
-                               PointF &q1, PointF &q2);
-// Returns true if the `num_contours` belongs to simple glyph.
-static inline bool IsSimpleGlyph(Short num_contours);
-// Returns true if the `num_contours` belongs to composite glyph.
-static inline bool IsCompositeGlyph(Short num_contours);
-
-static GlyphData *glyf;  // FIXME: Do I really need this pointer?
-static Glyph glyph;
+static void AddQuadraticBezier(const PointF &q0, const PointF &q1,
+                               const PointF &q2, GraphicsPath &path);
 /****************************************************************************/
 /*                               Glyph Data                                 */
 /****************************************************************************/
-void GlyphData::LoadTable(const TableRecordEntry *entry, ifstream &fin) {
-  data_ = NULL;
+GlyphData::GlyphData(const TrueTypeFont &ttf)
+    : TtfSubtable (ttf),
+      data_(NULL),
+      length_(0),
+      root_(true) {}
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+void GlyphData::Init(const TableRecordEntry *entry, ifstream &fin) {
   fin.seekg(entry->offset(), ios::beg);
   length_ = entry->length();
   data_ = new Byte[length_];
   fin.read((char*)data_, length_);
-  glyph.Prepare();
-  glyf = this;
+
+  const MaximumProfile &maxp = ttf_.maxp();
+  glyph_.Init(
+      MAX(maxp.max_contours(), maxp.max_composite_contours()),
+      maxp.max_size_of_instructions(),
+      MAX(maxp.max_points(), maxp.max_composite_points()));
 }
+#undef MAX
 
 void GlyphData::Destroy() {
   DEL_A(data_);
-  glyph.Destroy();
+  glyph_.Destroy();
 }
 
-Glyph *GlyphData::LoadGlyph(GlyphId glyph_index) {
-  glyph.Reset();
-  GlyphLoader loader(glyph);
-  loader.LoadGlyph(glyph_index);
-  return &glyph;
+const Glyph &GlyphData::LoadGlyph(GlyphId glyph_index) {
+  glyph_.Reset();
+  subglyph_ = glyph_;
+  root_ = true;
+  LoadSubglyph(glyph_index);
+  return glyph_;
 }
 
 void GlyphData::DumpInfo(XmlLogger &logger) const {
@@ -114,173 +118,85 @@ void GlyphData::DumpInfo(XmlLogger &logger) const {
   //}
   logger.Println("</glyf>");
 }
-/****************************************************************************/
-/*                               GlyphLoader                                */
-/****************************************************************************/
-GlyphLoader::GlyphLoader(Glyph &glyph) {
-  header_.Reset();
-  end_contours_ = glyph.end_contours();
-  num_instructions_ = 0;
-  instructions_ = glyph.instructions();
-  flags_ = glyph.flags();
-  coordinates_ = glyph.coordinates();
-  pt_num_ = 0;
-}
 
-void GlyphLoader::LoadGlyph(GlyphId glyph_index, const Matrix &mtx) {
+void GlyphData::LoadSubglyph(GlyphId glyph_index, const Matrix &mtx,
+                             UShort depth) {
   ULong offset = 0, length = 0;
-  g_ttf->loca().GetGlyphOffsetAndLength(glyph_index, &offset, &length);
+  ttf_.loca().GetGlyphOffsetAndLength(glyph_index, &offset, &length);
   if (!length) {
-    // This glyph does not have outline.
-    glyph.set_pt_num(0);
+    // This glyph doesn't have outline.
     return;
   }
-  // FIXME: The bound in the following line could be more tight.
-  MemStream msm(glyf->data(), glyf->length());
-  msm.Seek(offset);
-  if (!header_.LoadGlyphHeader(msm)) {
-    // Invalid header. Return directly.
+
+  MemStream msm((char*)data_ + offset, length);
+
+  // Load glyph header.
+  MREAD(msm, &subglyph_.num_contours_);
+  if (subglyph_.IsSimpleGlyph()
+      && subglyph_.num_contours_ > ttf_.maxp().max_contours()
+      || subglyph_.IsCompositeGlyph()
+      && subglyph_.num_contours_ > ttf_.maxp().max_composite_contours()) {
+    // ERROR: The contour number of this glyph is out-of-bound.
+    // FIXME: This error should be indicated to user.
     return;
   }
-  if (glyph.root() == true) {
-    // If this is the root node of current glyph...
-    glyph.set_root(false);
-    glyph.set_glyph_index(glyph_index);
-    glyph.set_header(header_);
+  MREAD(msm, &subglyph_.x_min_);
+  MREAD(msm, &subglyph_.y_min_);
+  MREAD(msm, &subglyph_.x_max_);
+  MREAD(msm, &subglyph_.y_max_);
+
+  if (root_) {
+    // If this is the root subglyph of current glyph...
+    root_ = false;
+    glyph_.glyph_index_ = glyph_index;
     // Clear 'num_contours', increase this field after each subglyph is
     // parsed.
-    glyph.SetNumContours(0);
+    glyph_.num_contours_ = 0;
+    glyph_.x_min_ = subglyph_.x_min_;
+    glyph_.y_min_ = subglyph_.y_min_;
+    glyph_.x_max_ = subglyph_.x_max_;
+    glyph_.y_max_ = subglyph_.y_max_;
   }
-  if (IsSimpleGlyph(header_.num_contours())) {
+
+  if (subglyph_.IsSimpleGlyph()) {
     LoadSimpleGlyph(msm);
-    // Shift the end_contours with the pt_num.
-    for (int i = 0; i < header_.num_contours(); ++i) {
-      end_contours_[i] += glyph.pt_num();
+    // Shift the `subglyph_.end_contours` with `glyph_.num_points_`.
+    for (int i = 0; i < subglyph_.num_contours_; ++i) {
+      subglyph_.end_contours_[i] += glyph_.num_points_;
     }
     // Transform the points.
-    mtx.TransformPoints(coordinates_, pt_num_);
-    // Forward the pointers.
-    end_contours_ += header_.num_contours();
-    instructions_ += num_instructions_;
-    flags_ += pt_num_;
-    coordinates_ += pt_num_;
-    // Update the fields in glyph.
-    glyph.set_pt_num(glyph.pt_num() + pt_num_);
-    glyph.SetNumContours(glyph.header().num_contours()
-                         + header_.num_contours());
-  } else if (IsCompositeGlyph(header_.num_contours())) {
-    LoadCompositeGlyph(msm);
+    mtx.TransformPoints(subglyph_.coordinates_, subglyph_.num_points_);
+    // Forward the pointers in `subglyph_`.
+    subglyph_.end_contours_ += subglyph_.num_contours_;
+    subglyph_.instructions_ += subglyph_.num_instructions_;
+    subglyph_.flags_ += subglyph_.num_points_;
+    subglyph_.coordinates_ += subglyph_.num_points_;
+    // Update the fields in `glyph_`.
+    glyph_.num_points_ += subglyph_.num_points_;
+    glyph_.num_contours_ += subglyph_.num_contours_;
+  } else if (subglyph_.IsCompositeGlyph()
+             && depth + 1 <= ttf_.maxp().max_component_depth()) {
+    // FIXME: what if depth exceeds?
+    LoadCompositeGlyph(msm, depth + 1);
   }
 }
 
-void GlyphLoader::ReadFlags(MemStream &msm) {
-  Byte flag = 0;
-  for (int i = 0; i < pt_num_;) {
-    MREAD(msm, &flag);
-    flags_[i++] = flag;
-    if (flag & kRepeat) {
-      Byte repeat_num = 0;
-      MREAD(msm, &repeat_num);
-      while (repeat_num-- > 0) {
-        flags_[i++] = flag;
-      }
-    }
-  }
-}
-
-void GlyphLoader::ReadCoordinates(MemStream &msm, PointF *ptr, bool read_x) {
-  Byte flag = 0;
-  Byte SHORT_VECTOR = kXShortVector << (read_x ? 0: 1);
-  Byte IS_SAME = kThisXIsSame << (read_x ? 0: 1);
-  Short val = 0, last = 0;
-  for (int i = 0; i < pt_num_; ++i, ++ptr) {
-    flag = flags_[i];
-    val = 0;
-    if (flag & SHORT_VECTOR) {
-      // ATTENTION: DO NOT omit `(BYTE*)`!
-      MREAD(msm, (Byte*)&val);
-      if (~flag & IS_SAME) {
-        val = -val;
-      }
-    } else {
-      if (~flag & IS_SAME) {
-        // ATTENTION: Though `(SHORT*)` is dispensable here, remember the
-        // coordinates are of either `BYTE` or `SHORT`!
-        MREAD(msm, (Short*)&val);
-      }
-    }
-    val += last;
-    (read_x ? ptr->X : ptr->Y) = (float)val;
-    last = val;
-  }
-}
-/************************************************************************/
-/*                              Glyph                                   */
-/************************************************************************/
-void GlyphHeader::Reset() {
-  num_contours_ = 0;
-  x_min_ = y_min_ = x_max_ = y_max_ = 0;
-}
-
-void Glyph::Reset() {
-  header_.Reset();
-  glyph_index_ = 0;
-  num_instructions_ = 0;
-  pt_num_ = 0;
-  root_ = true;
-}
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-void Glyph::Prepare() {
-  const MaximumProfile &maxp = g_ttf->maxp();
-  end_contours_ = new UShort[MAX(maxp.max_contours(),
-                                 maxp.max_composite_contours())];
-  instructions_ = new Byte[maxp.max_size_of_instructions()];
-  UShort max_pts = MAX(maxp.max_points(),
-                       maxp.max_composite_points());
-  flags_ = new Byte[max_pts];
-  coordinates_ = new PointF[max_pts];
-}
-#undef MAX
-
-void Glyph::Destroy() {
-  DEL_A(end_contours_);
-  DEL_A(instructions_);
-  DEL_A(flags_);
-  DEL_A(coordinates_);
-}
-
-bool GlyphHeader::LoadGlyphHeader(MemStream &msm) {
-  MREAD(msm, &num_contours_);
-  if (IsSimpleGlyph(num_contours_)
-      && num_contours_ > g_ttf->maxp().max_contours()
-      || IsCompositeGlyph(num_contours())
-      && num_contours_ > g_ttf->maxp().max_composite_contours()) {
-    // ERROR: The contour number of this glyph is out-of-bound.
-    return false;
-  }
-  MREAD(msm, &x_min_);
-  MREAD(msm, &y_min_);
-  MREAD(msm, &x_max_);
-  MREAD(msm, &y_max_);
-  return true;
-}
-
-void GlyphLoader::LoadSimpleGlyph(MemStream &msm) {
-  MREAD_N(msm, end_contours_, header_.num_contours());
-  MREAD(msm, &num_instructions_);
-  if (num_instructions_ > g_ttf->maxp().max_size_of_instructions()) {
+void GlyphData::LoadSimpleGlyph(MemStream &msm) {
+  MREAD_N(msm, subglyph_.end_contours_, subglyph_.num_contours_);
+  MREAD(msm, &subglyph_.num_instructions_);
+  if (subglyph_.num_instructions_ > ttf_.maxp().max_size_of_instructions()) {
+    // FIXME: treat this error.
     return;
   }
   //MREAD_N(msm, instructions, instruction_length);
-  msm.Seek(sizeof(Byte) * num_instructions_); // FIXME: skip instructions
-  pt_num_ = end_contours_[header_.num_contours() - 1] + 1;
+  msm.Seek(sizeof(Byte) * subglyph_.num_instructions_); // FIXME: skip instructions
+  subglyph_.num_points_ = subglyph_.end_contours_[subglyph_.num_contours_ - 1] + 1;
   ReadFlags(msm);
-  ReadCoordinates(msm, coordinates_, true);
-  ReadCoordinates(msm, coordinates_, false);
+  ReadCoordinates(msm, subglyph_.coordinates_, true);
+  ReadCoordinates(msm, subglyph_.coordinates_, false);
 }
 
-void GlyphLoader::LoadCompositeGlyph(MemStream &msm) {
+void GlyphData::LoadCompositeGlyph(MemStream &msm, UShort depth) {
   // component flag
   UShort      flags;
   // glyph index of component
@@ -312,7 +228,6 @@ void GlyphLoader::LoadCompositeGlyph(MemStream &msm) {
       MREAD(msm, (Byte*)&arg1);
       MREAD(msm, (Byte*)&arg2);
     }
-    Matrix mtx;
     if (flags & kArgsAreXyValues) {
       // Translate the points
       x = arg1;
@@ -330,13 +245,94 @@ void GlyphLoader::LoadCompositeGlyph(MemStream &msm) {
       MREAD(msm, &yx);
       MREAD(msm, &yy);
     }
-    mtx.SetElements(xx, xy, yx, yy, x, y);
-    LoadGlyph(glyph_index, mtx);
+    Matrix mtx(xx, xy, yx, yy, x, y);
+    LoadSubglyph(glyph_index, mtx, depth);
   } while (flags & kMoreComponents);
   if (flags & kWeHaveInstructions) {
-    MREAD(msm, &num_instructions_);
-    MREAD_N(msm, instructions_, num_instructions_);
+    MREAD(msm, &subglyph_.num_instructions_);
+    MREAD_N(msm, subglyph_.instructions_, subglyph_.num_instructions_);
   }
+}
+
+void GlyphData::ReadFlags(MemStream &msm) {
+  Byte flag = 0;
+  for (int i = 0; i < subglyph_.num_points_;) {
+    MREAD(msm, &flag);
+    subglyph_.flags_[i++] = flag;
+    if (flag & kRepeat) {
+      Byte repeat_num = 0;
+      MREAD(msm, &repeat_num);
+      while (repeat_num-- > 0) {
+        subglyph_.flags_[i++] = flag;
+      }
+    }
+  }
+}
+
+void GlyphData::ReadCoordinates(MemStream &msm, PointF *ptr, bool read_x) {
+  Byte flag = 0;
+  Byte SHORT_VECTOR = kXShortVector << (read_x ? 0: 1);
+  Byte IS_SAME = kThisXIsSame << (read_x ? 0: 1);
+  Short val = 0, last = 0;
+  for (int i = 0; i < subglyph_.num_points_; ++i, ++ptr) {
+    flag = subglyph_.flags_[i];
+    val = 0;
+    if (flag & SHORT_VECTOR) {
+      // ATTENTION: DO NOT omit `(BYTE*)`!
+      MREAD(msm, (Byte*)&val);
+      if (~flag & IS_SAME) {
+        val = -val;
+      }
+    } else {
+      if (~flag & IS_SAME) {
+        // ATTENTION: Though `(SHORT*)` is dispensable here, remember the
+        // coordinates are of either `BYTE` or `SHORT`!
+        MREAD(msm, (Short*)&val);
+      }
+    }
+    val += last;
+    (read_x ? ptr->X : ptr->Y) = (float)val;
+    last = val;
+  }
+}
+/************************************************************************/
+/*                              Glyph                                   */
+/************************************************************************/
+void Glyph::Reset() {
+  glyph_index_ = 0;
+  num_contours_ = 0;
+  x_min_ = y_min_ = x_max_ = y_max_ = 0;
+  num_instructions_ = 0;
+  num_points_ = 0;
+}
+
+Glyph::Glyph()
+    : glyph_index_(0),
+      num_contours_(0),
+      x_min_(0),
+      y_min_(0),
+      x_max_(0),
+      y_max_(0),
+      end_contours_(NULL),
+      num_instructions_(0),
+      instructions_(NULL),
+      flags_(NULL),
+      coordinates_(NULL),
+      num_points_(0) {}
+
+void Glyph::Init(UShort num_contours, UShort num_instructions,
+                 UShort num_points) {
+  end_contours_ = new UShort[num_contours];
+  instructions_ = new Byte[num_instructions];
+  flags_ = new Byte[num_points];
+  coordinates_ = new PointF[num_points];
+}
+
+void Glyph::Destroy() {
+  DEL_A(end_contours_);
+  DEL_A(instructions_);
+  DEL_A(flags_);
+  DEL_A(coordinates_);
 }
 
 void Glyph::GlyphToPath(GraphicsPath &path) const {
@@ -349,7 +345,7 @@ void Glyph::GlyphToPath(GraphicsPath &path) const {
   bool new_contour = true;
   // The index of the last point of the jth contour.
   int last = 0;
-  for (int i = 0, j = 0; i < pt_num_; ++i) {
+  for (int i = 0, j = 0; i < num_points_; ++i) {
     // `i` stands for the index of `cur_point`, while `j` stands for the
     // index of current contour.
     flag = flags_[i];
@@ -383,7 +379,7 @@ void Glyph::GlyphToPath(GraphicsPath &path) const {
       }
       start_point = prev_point; // start_point is not simply the first point.
     }
-    if (cur_point.X < header_.x_min()) {
+    if (cur_point.X < x_min_) {
       flag = flag;
     }
     // Draw something.
@@ -416,7 +412,7 @@ void Glyph::GlyphToPath(GraphicsPath &path) const {
                        );
         }
       }
-      AddQuadraticBezier(path, prev_point, cur_point, next_point);
+      AddQuadraticBezier(prev_point, cur_point, next_point, path);
       prev_point = next_point;
     }
     if (i == last) {
@@ -433,7 +429,7 @@ void Glyph::CountPointNum(int *all_pt_num, int *off_pt_num) const {
   bool new_contour = true;
   Byte flag = 0, prev_flag = 0;
   int last = 0;
-  for (int i = 0, j = 0; i < pt_num_; ++i, ++all) {
+  for (int i = 0, j = 0; i < num_points_; ++i, ++all) {
     flag = flags_[i] & kOnCurve;
     if (new_contour) {
       // If this is the first point of jth contour.
@@ -467,7 +463,7 @@ void Glyph::OutputPoints(PointF *all_pt, int *off_pt) const {
   Byte prev_flag = 0, flag = 0;
   bool new_contour = true;
   int last = 0;
-  for (int i = 0, j = 0; i < pt_num_; ++i) {
+  for (int i = 0, j = 0; i < num_points_; ++i) {
     // i stands for the index of cur_point, while j stands for the index of current contour.
     flag = flags_[i] & kOnCurve;
     cur_point = coordinates_[i];
@@ -501,8 +497,8 @@ void Glyph::OutputPoints(PointF *all_pt, int *off_pt) const {
 }
 
 /****************************************************************************/
-static void AddQuadraticBezier(GraphicsPath &path, PointF &q0,
-                               PointF &q1, PointF &q2) {
+static void AddQuadraticBezier(const PointF &q0, const PointF &q1,
+                               const PointF &q2, GraphicsPath &path) {
   PointF c1, c2;
   // first control point of cubic bezier:
   // c1 = (q0 + 2 * q1)/3 = q0 + 2 * (q1 - q0)/3
@@ -515,14 +511,6 @@ static void AddQuadraticBezier(GraphicsPath &path, PointF &q0,
   c2.Y = (2 * q1.Y + q2.Y) / 3.0f;
 
   path.AddBezier(q0, c1, c2, q2);
-}
-
-static bool IsSimpleGlyph(Short num_contours) {
-  return num_contours > 0;
-}
-
-static bool IsCompositeGlyph(Short num_contours) {
-  return num_contours == -1;
 }
 
 } // namespace ttf_dll
