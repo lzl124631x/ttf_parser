@@ -177,7 +177,7 @@ void GlyphData::LoadSubglyph(GlyphId glyph_index, const Matrix &mtx,
   } else if (subglyph_.IsCompositeGlyph()
              && depth + 1 <= ttf_.maxp().max_component_depth()) {
     // FIXME: what if depth exceeds?
-    LoadCompositeGlyph(msm, depth + 1);
+    LoadCompositeGlyph(msm, mtx, depth + 1);
   }
 }
 
@@ -196,7 +196,8 @@ void GlyphData::LoadSimpleGlyph(MemStream &msm) {
   ReadCoordinates(msm, subglyph_.coordinates_, false);
 }
 
-void GlyphData::LoadCompositeGlyph(MemStream &msm, UShort depth) {
+void GlyphData::LoadCompositeGlyph(MemStream &msm, const Gdiplus::Matrix &mtx,
+                                   UShort depth) {
   // component flag
   UShort      flags;
   // glyph index of component
@@ -216,7 +217,8 @@ void GlyphData::LoadCompositeGlyph(MemStream &msm, UShort depth) {
   //                          | .------.   |           | .--------.   |
   do {
     x = y = 0;
-    xx = yy = 1;
+    // 0x4000(F2Dot14) = 1(decimal)
+    xx = yy = 0x4000;
     xy = yx = 0;
     MREAD(msm, &flags);
     MREAD(msm, &glyph_index);
@@ -225,8 +227,11 @@ void GlyphData::LoadCompositeGlyph(MemStream &msm, UShort depth) {
       MREAD(msm, &arg1);
       MREAD(msm, &arg2);
     } else {
-      MREAD(msm, (Byte*)&arg1);
-      MREAD(msm, (Byte*)&arg2);
+      // (arg1 << 8) | arg2
+      UShort arg1and2 = 0;
+      MREAD(msm, &arg1and2);
+      arg1 = static_cast<Char>(arg1and2 >> 8);
+      arg2 = static_cast<Char>(arg1and2);
     }
     if (flags & kArgsAreXyValues) {
       // Translate the points
@@ -237,7 +242,7 @@ void GlyphData::LoadCompositeGlyph(MemStream &msm, UShort depth) {
       MREAD(msm, &xx);
       yy = xx;
     } else if (flags & kWeHaveAnXAndYScale) {
-      MREAD(msm, &xy);
+      MREAD(msm, &xx);
       MREAD(msm, &yy);
     } else if (flags & kWeHaveATwoByTwo) {
       MREAD(msm, &xx);
@@ -245,8 +250,14 @@ void GlyphData::LoadCompositeGlyph(MemStream &msm, UShort depth) {
       MREAD(msm, &yx);
       MREAD(msm, &yy);
     }
-    Matrix mtx(xx, xy, yx, yy, x, y);
-    LoadSubglyph(glyph_index, mtx, depth);
+    Matrix trans(
+              F2Dot14ToFloat(xx),
+              F2Dot14ToFloat(xy),
+              F2Dot14ToFloat(yx),
+              F2Dot14ToFloat(yy),
+              x, y);
+    trans.Multiply(&mtx);
+    LoadSubglyph(glyph_index, trans, depth);
   } while (flags & kMoreComponents);
   if (flags & kWeHaveInstructions) {
     MREAD(msm, &subglyph_.num_instructions_);
@@ -463,6 +474,7 @@ void Glyph::OutputPoints(PointF *all_pt, int *off_pt) const {
   Byte prev_flag = 0, flag = 0;
   bool new_contour = true;
   int last = 0;
+  PointF *pt = all_pt;
   for (int i = 0, j = 0; i < num_points_; ++i) {
     // i stands for the index of cur_point, while j stands for the index of current contour.
     flag = flags_[i] & kOnCurve;
@@ -477,16 +489,16 @@ void Glyph::OutputPoints(PointF *all_pt, int *off_pt) const {
 
     if (!prev_flag && !flag) {
       // If the previous and current point are both OFF-curve, add the implicit on-curve point.
-      *all_pt++ = PointF(
+      *pt++ = PointF(
                 (prev_point.X + cur_point.X) / 2.0f,
                 (prev_point.Y + cur_point.Y) / 2.0f
               );
     }
     if (!flag) {
       // record the index of the off-curve point
-      *off_pt++ = all_pt - all_pt;
+      *off_pt++ = pt - all_pt;
     }
-    *all_pt++ = prev_point = cur_point;
+    *pt++ = prev_point = cur_point;
     prev_flag = flag;
     if (i == last) {
       // If the last point is visited, start a new contour.

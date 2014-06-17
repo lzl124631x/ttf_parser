@@ -42,6 +42,12 @@ typedef Int64     LongDateTime;   // Date represented in number of seconds since
 typedef UInt16    GlyphId;	      // Glyph index number, same as uint16 (length = 16 bits)
 typedef UInt16    Offset;         // Offset to a table, same as uint16 (length = 16 bits), NULL offset = 0x0000
 
+inline float F2Dot14ToFloat(F2Dot14 val) {
+  Short mantissa = static_cast<Short>(val) >> 14;
+  float fraction = static_cast<float>(val & 16383) / 16384;
+  return mantissa + fraction;
+}
+
 } // namespace ttf_dll
 
 #endif

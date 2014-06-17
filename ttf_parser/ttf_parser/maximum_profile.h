@@ -57,6 +57,7 @@ class DLL_API MaximumProfile : public TtfSubtable {
   // glyph.
   UShort  max_component_elements_;
   // Maximum levels of recursion; 1 for simple components.
+  // TIP: If the font only has simple glyphs, this field equals 0.
   UShort  max_component_depth_;
 };
 

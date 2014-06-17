@@ -21,17 +21,12 @@ class DLL_API Glyph {
 public:
   Glyph();
   // Allocates memory (end_contours, instructions, flags and coordinates)
-  // for holding data of glyphs. This function is called only when a new ttf
-  // is loaded, i.e., when `GlyphData::LoadTable` is called.
+  // for holding data of glyphs.
   void Init(UShort num_contours, UShort num_instructions, UShort num_points);
   // Deallocates the memory allocated by `Init`.
   void Destroy();
   // Reset fields of this glyph.
   void Reset();
-  // Returns true if this is a simple glyph.
-  bool IsSimpleGlyph() const { return num_contours_ > 0; }
-  // Returns true if this is a composite glyph.
-  bool IsCompositeGlyph() const { return num_contours_ == -1; }
   // Turns the outline of this glyph into a `GraphicsPath`.
   void GlyphToPath(Gdiplus::GraphicsPath &path) const;
   // Counts the point number needed to render glyph points.
@@ -50,6 +45,11 @@ public:
   FWord y_max() const { return y_max_; };
 
 private:
+  // Returns true if this is a simple glyph.
+  bool IsSimpleGlyph() const { return num_contours_ > 0; }
+  // Returns true if this is a composite glyph.
+  bool IsCompositeGlyph() const { return num_contours_ == -1; }
+  
   // The glyph index of this glyph.
   GlyphId           glyph_index_;
   // If the `numberOfContours` is greater than zero, this is a single glyph;
@@ -97,9 +97,10 @@ class DLL_API GlyphData : public TtfSubtable {
  private:
   void LoadSubglyph(GlyphId glyph_index,
                     const Gdiplus::Matrix &mtx = Gdiplus::Matrix(),
-                    UShort depth = 1);
+                    UShort depth = 0);
   void LoadSimpleGlyph(MemStream &msm);
-  void LoadCompositeGlyph(MemStream &msm, UShort depth);
+  void LoadCompositeGlyph(MemStream &msm, const Gdiplus::Matrix &mtx,
+                          UShort depth);
   void ReadFlags(MemStream &msm);
   void ReadCoordinates(MemStream &msm, Gdiplus::PointF *ptr, bool read_x);
   // The whole chunk of data in glyph data table.
