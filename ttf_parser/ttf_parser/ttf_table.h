@@ -11,6 +11,7 @@ namespace ttf_dll {
 // file.
 class DLL_API TableRecordEntry {
  public:
+  TableRecordEntry();
   // Reads the Table Record from the file stream.
   void LoadEntry(std::ifstream &fin);
   // Accessors
@@ -20,7 +21,7 @@ class DLL_API TableRecordEntry {
   ULong length() const { return length_; }
 
  private:
-  // 4 -byte identifier.
+  // 4-byte identifier.
   ULong  tag_;
   // CheckSum for this table.
   ULong  checksum_;
@@ -40,9 +41,11 @@ class DLL_API OffsetTable {
     DEL_A(table_record_entries_);
   }
   // Gets the Table Record entry whose tag is specified by `tag_str`.
-  TableRecordEntry *GetTableEntry(const char *tag_str) const;
+  const TableRecordEntry *GetTableEntry(const char *tag_str) const;
   // Dumps out the information of this Offset Table to an XML file.
   void DumpInfo(XmlLogger &logger) const;
+  // Accessors
+  Fixed sfnt_version() const { return sfnt_version_; }
 
  private:
   // 0x00010000 for version 1.0.

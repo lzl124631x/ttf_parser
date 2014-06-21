@@ -10,7 +10,8 @@ int _tmain(int argc, TCHAR *argv[]) {
   // The trailing arguments shall be paths of ttf files.
   for (int i = 1; i < argc; ++i) {
     TCHAR *path_name = argv[i];
-    if (ttf.Open(argv[i])) {
+    ttf.Open(argv[i]);
+    if (ttf.is_open()) {
       _tcscpy_s(xml_path, path_name);
       _tcscat_s(xml_path, _T(".xml"));
       ttf.DumpTtf(xml_path);

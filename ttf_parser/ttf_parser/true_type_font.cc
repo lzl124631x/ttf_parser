@@ -7,40 +7,83 @@ using namespace std; // For `ifstream`
 #pragma warning(disable: 4355)
 
 namespace ttf_dll {
-// FIXME : Calculate the checksums!
-//ULONG calc_table_checksum(ULONG *table, ULONG num_of_bytes){
-//  ULONG sum = 0L;
-//  ULONG *end = table + ((num_of_bytes + 3) & ~3) / sizeof(ULONG);
-//  while(table < end){
-//    sum += *table++;
-//  }
-//  return sum;
-//}
 
-//bool True_Type_Font::valid_checksum(char* tag){
-//  Table_Directory_Entry *entry = offset_table.get_table_entry(tag);
-//  return entry->checksum == calc_table_checksum(get_table(entry), entry->length);
-//}
+// Swaps the 32-bit unit between little-endian and big-endian.
+static inline ULong SwapULong(ULong x);
+// Calculate the checksum of the `num_byte`-byte-long buffer pointed by
+// `begin`.
+static ULong CalculateChecksum(const ULong *begin, ULong num_byte);
+/****************************************************************************/
+bool TrueTypeFont::TableChecksum(const char *data, const char *tag) const {
+  const TableRecordEntry *entry = offset_table_.GetTableEntry(tag);
+  bool valid = (entry->checksum() ==
+                CalculateChecksum(
+                    reinterpret_cast<const ULong*>(data + entry->offset()),
+                    entry->length()));
+  return valid;
+}
 
-TrueTypeFont::TrueTypeFont() :
-  cmap_(*this),
-  head_(*this),
-  maxp_(*this),
-  loca_(*this),
-  hhea_(*this),
-  hmtx_(*this),
-  name_(*this),
-  os_2_(*this),
-  glyf_(*this) {}
+bool TrueTypeFont::Checksum(ifstream &fin) const {
+  // Read the binary for checksumming.
+  fin.seekg(0, ios::end);
+  size_t length = static_cast<size_t>(fin.tellg());
+  char *data = new char[length];
+  fin.seekg(0, ios::beg);
+  fin.read(data, length);
 
-bool TrueTypeFont::Open(const TCHAR *path) {
-  ifstream fin(path, ios::in | ios::binary);
-  if (!fin.is_open()) {
-    cout << "Error reading file " << path << "!" << endl;
+  // Set the 3rd 32-bit unit (`checkSumAdjustment`) to 0 before calculating
+  // the checksum.
+  ULong head_offset = offset_table_.GetTableEntry("head")->offset();
+  reinterpret_cast<ULong*>(&data[head_offset])[2] = 0UL;
+
+  if (!(TableChecksum(data, "cmap")
+        && TableChecksum(data, "head")
+        && TableChecksum(data, "maxp")
+        && TableChecksum(data, "loca")
+        && TableChecksum(data, "hhea")
+        && TableChecksum(data, "hmtx")
+        && TableChecksum(data, "name")
+        && TableChecksum(data, "OS/2")
+        && TableChecksum(data, "glyf"))) {
+    // Invalid checksum. The file is corrupt.
     return false;
   }
 
+  delete[] data;
+  return true;
+}
+
+TrueTypeFont::TrueTypeFont()
+  : cmap_(*this),
+    head_(*this),
+    maxp_(*this),
+    loca_(*this),
+    hhea_(*this),
+    hmtx_(*this),
+    name_(*this),
+    os_2_(*this),
+    glyf_(*this),
+    is_open_(false) {}
+
+void TrueTypeFont::Open(const TCHAR *path) {
+  is_open_ = false;
+  ifstream fin(path, ios::in | ios::binary);
+  if (!fin.is_open()) {
+    // Failed to open file.
+    return;
+  }
+
   offset_table_.LoadTable(fin);
+  if (offset_table_.sfnt_version() != 0x00010000) {
+    // Unknown sfnt version.
+    return;
+  }
+
+  if (!Checksum(fin)) {
+    // Checksumming failed.
+    return;
+  }
+
   cmap_.Init(offset_table_.GetTableEntry("cmap"), fin);
   head_.Init(offset_table_.GetTableEntry("head"), fin);
   maxp_.Init(offset_table_.GetTableEntry("maxp"), fin);
@@ -52,7 +95,8 @@ bool TrueTypeFont::Open(const TCHAR *path) {
   glyf_.Init(offset_table_.GetTableEntry("glyf"), fin);
 
   fin.close();
-  return true;
+  is_open_ = true;
+  return;
 }
 
 void TrueTypeFont::Close() {
@@ -119,6 +163,23 @@ void TrueTypeFont::GlyphInfo(const Glyph &glyph, TCHAR *buf,
              hmtx_.GetLeftSideBearing(glyph.glyph_index()));
   SNTPRINTFS(buf, buf_len, len, _T("advanceWidth: %d\n"),
              hmtx_.GetAdvanceWidth(glyph.glyph_index()));
+}
+
+/****************************************************************************/
+static inline ULong SwapULong(ULong x) {
+  return ((ULong)((((x) & 0x000000FFU) << 24) |
+    (((x) & 0x0000FF00U) << 8)  |
+    (((x) & 0x00FF0000U) >> 8)  |
+    (((x) & 0xFF000000U) >> 24)));
+}
+
+static ULong CalculateChecksum(const ULong *begin, ULong num_byte) {
+  ULong sum = 0UL;
+  const ULong *end = begin +  ((num_byte + 3) & ~3) / sizeof(ULong);
+  while (begin < end) {
+    sum += SwapULong(*begin++);
+  }
+  return sum;
 }
 
 } // namespace ttf_dll

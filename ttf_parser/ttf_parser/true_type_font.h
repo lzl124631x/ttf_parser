@@ -21,11 +21,9 @@ class DLL_API TrueTypeFont {
   // Loads the TrueType font from the file specified by `path`. Memory
   // allocation will occur in this function. Hence, you must invoke
   // `TrueTypeFont::Close` to deallocate the memory.
-  bool Open(const TCHAR *path);
+  void Open(const TCHAR *path);
   // Deallocates memory allocated in `TrueTypeFont::Open`.
   void Close();
-  // bool ValidChecksum(const char *tag);
-  // void GetGlyphOutline(const UShort ch);
   // Dumps this TrueType font to an XML file specified by `path`.
   bool DumpTtf(const TCHAR *path) const;
   // Gets the pointer to glyph labeled by `glyph_index`.
@@ -45,8 +43,15 @@ class DLL_API TrueTypeFont {
   const Naming_Table &name() const { return name_; }
   const Os2AndWindowsMetrics &os_2() const { return os_2_; }
   const GlyphData &glyf() const { return glyf_; }
+  bool is_open() const { return is_open_; }
 
  private:
+  // Returns true if the procedure of checksumming succeeds.
+  bool Checksum(std::ifstream &fin) const;
+  // Returns true if the checksumming of the subtable labeled by `tag`
+  // succeeds.
+  bool TableChecksum(const char *data, const char *tag) const;
+
   OffsetTable offset_table_;
   CharacterToGlyphIndexMappingTable cmap_;
   FontHeader head_;
@@ -57,6 +62,8 @@ class DLL_API TrueTypeFont {
   Naming_Table name_;
   Os2AndWindowsMetrics os_2_;
   GlyphData glyf_;
+
+  bool is_open_;
 };
 
 } // namespace ttf_dll

@@ -4,10 +4,14 @@ using namespace std;
 
 namespace ttf_dll {
 
+TableRecordEntry::TableRecordEntry()
+  : tag_(0UL), checksum_(0UL), offset_(0UL), length_(0UL) {}
+
 void TableRecordEntry::LoadEntry(ifstream &fin) {
   // The type of `tag` is ULONG, but it's actually a 4-character string.
-  // So don't use FREAD(fin, &tag) because it will reverse the character sequence.
-  fin.read((char*)&tag_, sizeof(tag_));
+  // So don't use FREAD(fin, &tag) because it will reverse the character
+  //sequence.
+  fin.read(reinterpret_cast<char*>(&tag_), sizeof(tag_));
   FREAD(fin, &checksum_);
   FREAD(fin, &offset_);
   FREAD(fin, &length_);
@@ -26,8 +30,9 @@ void OffsetTable::LoadTable(ifstream &fin) {
   };
 }
 
-TableRecordEntry* OffsetTable::GetTableEntry(const char *tag_str) const {
-  ULong tag = *(ULong*)tag_str;
+const TableRecordEntry* OffsetTable::GetTableEntry(
+    const char *tag_str) const {
+  ULong tag = TableRecordTagToULong(tag_str);
   for(int i = 0; i < num_tables_; ++i) {
     TableRecordEntry *entry = &table_record_entries_[i];
     if(entry->tag() == tag) {

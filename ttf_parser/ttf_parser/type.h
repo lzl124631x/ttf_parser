@@ -48,6 +48,10 @@ inline float F2Dot14ToFloat(F2Dot14 val) {
   return mantissa + fraction;
 }
 
+inline ULong TableRecordTagToULong(const char *tag) {
+  return *reinterpret_cast<const ULong*>(tag);
+}
+
 } // namespace ttf_dll
 
 #endif

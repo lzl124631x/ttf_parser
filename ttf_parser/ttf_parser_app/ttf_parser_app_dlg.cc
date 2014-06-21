@@ -185,10 +185,15 @@ void CTtfParserAppDlg::OpenTtf(LPCTSTR path) {
   GetDlgItem(IDC_TEXT_FILE_NAME)->SetWindowText(path);
   ttf.Close();
   ttf.Open(path);
-  EnableControls(true);
-  cslider_glyph_index_.SetRange(0, ttf.maxp().num_glyphs() - 1);
-  // Must use `SetRange32` otherwise overflow might occur.
-  cspin_glyph_index_.SetRange32(0, ttf.maxp().num_glyphs() - 1);
+  if (ttf.is_open()) {
+    EnableControls(true);
+    cslider_glyph_index_.SetRange(0, ttf.maxp().num_glyphs() - 1);
+    // Must use `SetRange32` otherwise overflow might occur.
+    cspin_glyph_index_.SetRange32(0, ttf.maxp().num_glyphs() - 1);
+  } else {
+    EnableControls(false);
+    MessageBox(_T("Oops! The file is corrupt!"), _T("Error"), MB_ICONERROR | MB_OK);
+  }
 }
 
 void CTtfParserAppDlg::OnFileExit() {

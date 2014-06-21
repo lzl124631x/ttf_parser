@@ -95,14 +95,26 @@ class DLL_API GlyphData : public TtfSubtable {
   const Glyph &LoadGlyph(GlyphId glyph_index);
 
  private:
+  // Loads a subglyph to `glyph_` labeled by `glyph_index`.
+  // `mtx` specifies the matrix transformation of this subglph.
+  // `depth` specifies the level of this subglyph, starting from 0.
   void LoadSubglyph(GlyphId glyph_index,
                     const Gdiplus::Matrix &mtx = Gdiplus::Matrix(),
                     UShort depth = 0);
+  // Loads a simple subglyph to `glyph_`, with the help of `subglyph_`.
   void LoadSimpleGlyph(MemStream &msm);
+  // Loads a composite subglyph to `glyph_`, with the help of `subglyph_`.
+  // `mtx` specifies the matrix tranformation of this subglyph.
+  // `depth` specifies the level of this composite subglyph.
   void LoadCompositeGlyph(MemStream &msm, const Gdiplus::Matrix &mtx,
                           UShort depth);
-  void ReadFlags(MemStream &msm);
-  void ReadCoordinates(MemStream &msm, Gdiplus::PointF *ptr, bool read_x);
+  // Reads the flags from memory stream to the array pointed by `ptr`.
+  // The length of array is `num_points`.
+  void ReadFlags(MemStream &msm, size_t num_points, Byte *ptr);
+  // Reads the coordinates from memory stream to the array pointed by `ptr`.
+  // If `read_x` is true, only the x component is read; if false, only the y
+  // component is read.
+  void ReadCoordinates(MemStream &msm, bool read_x, Gdiplus::PointF *ptr);
   // The whole chunk of data in glyph data table.
   void      *data_;
   // The length of data in bytes.

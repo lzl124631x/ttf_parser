@@ -131,6 +131,7 @@ void GlyphData::LoadSubglyph(GlyphId glyph_index, const Matrix &mtx,
   MemStream msm((char*)data_ + offset, length);
 
   // Load glyph header.
+  subglyph_.glyph_index_ = glyph_index;
   MREAD(msm, &subglyph_.num_contours_);
   if (subglyph_.IsSimpleGlyph()
       && subglyph_.num_contours_ > ttf_.maxp().max_contours()
@@ -174,10 +175,9 @@ void GlyphData::LoadSubglyph(GlyphId glyph_index, const Matrix &mtx,
     // Update the fields in `glyph_`.
     glyph_.num_points_ += subglyph_.num_points_;
     glyph_.num_contours_ += subglyph_.num_contours_;
-  } else if (subglyph_.IsCompositeGlyph()
-             && depth + 1 <= ttf_.maxp().max_component_depth()) {
+  } else if (subglyph_.IsCompositeGlyph()) {
     // FIXME: what if depth exceeds?
-    LoadCompositeGlyph(msm, mtx, depth + 1);
+    LoadCompositeGlyph(msm, mtx, depth);
   }
 }
 
@@ -189,15 +189,21 @@ void GlyphData::LoadSimpleGlyph(MemStream &msm) {
     return;
   }
   //MREAD_N(msm, instructions, instruction_length);
-  msm.Seek(sizeof(Byte) * subglyph_.num_instructions_); // FIXME: skip instructions
-  subglyph_.num_points_ = subglyph_.end_contours_[subglyph_.num_contours_ - 1] + 1;
-  ReadFlags(msm);
-  ReadCoordinates(msm, subglyph_.coordinates_, true);
-  ReadCoordinates(msm, subglyph_.coordinates_, false);
+  msm.Seek(sizeof(Byte) * subglyph_.num_instructions_);
+  // FIXME: skip instructions
+  subglyph_.num_points_ = subglyph_.end_contours_[subglyph_.num_contours_ - 1]
+                          + 1;
+  ReadFlags(msm, subglyph_.num_points_, subglyph_.flags_);
+  ReadCoordinates(msm, true, subglyph_.coordinates_);
+  ReadCoordinates(msm, false, subglyph_.coordinates_);
 }
 
 void GlyphData::LoadCompositeGlyph(MemStream &msm, const Gdiplus::Matrix &mtx,
                                    UShort depth) {
+  // If the level of the subglyphs of this composite subglyph exceeds the
+  // bound, return directly.
+  if (depth + 1 > ttf_.maxp().max_component_depth()) return;
+  
   // component flag
   UShort      flags;
   // glyph index of component
@@ -257,7 +263,7 @@ void GlyphData::LoadCompositeGlyph(MemStream &msm, const Gdiplus::Matrix &mtx,
               F2Dot14ToFloat(yy),
               x, y);
     trans.Multiply(&mtx);
-    LoadSubglyph(glyph_index, trans, depth);
+    LoadSubglyph(glyph_index, trans, depth + 1);
   } while (flags & kMoreComponents);
   if (flags & kWeHaveInstructions) {
     MREAD(msm, &subglyph_.num_instructions_);
@@ -265,22 +271,22 @@ void GlyphData::LoadCompositeGlyph(MemStream &msm, const Gdiplus::Matrix &mtx,
   }
 }
 
-void GlyphData::ReadFlags(MemStream &msm) {
+void GlyphData::ReadFlags(MemStream &msm, size_t num_points, Byte *ptr) {
   Byte flag = 0;
-  for (int i = 0; i < subglyph_.num_points_;) {
+  for (size_t i = 0; i < num_points;) {
     MREAD(msm, &flag);
-    subglyph_.flags_[i++] = flag;
+    ptr[i++] = flag;
     if (flag & kRepeat) {
       Byte repeat_num = 0;
       MREAD(msm, &repeat_num);
       while (repeat_num-- > 0) {
-        subglyph_.flags_[i++] = flag;
+        ptr[i++] = flag;
       }
     }
   }
 }
 
-void GlyphData::ReadCoordinates(MemStream &msm, PointF *ptr, bool read_x) {
+void GlyphData::ReadCoordinates(MemStream &msm, bool read_x, PointF *ptr) {
   Byte flag = 0;
   Byte SHORT_VECTOR = kXShortVector << (read_x ? 0: 1);
   Byte IS_SAME = kThisXIsSame << (read_x ? 0: 1);
@@ -306,9 +312,9 @@ void GlyphData::ReadCoordinates(MemStream &msm, PointF *ptr, bool read_x) {
     last = val;
   }
 }
-/************************************************************************/
-/*                              Glyph                                   */
-/************************************************************************/
+/****************************************************************************/
+/*                              Glyph                                       */
+/****************************************************************************/
 void Glyph::Reset() {
   glyph_index_ = 0;
   num_contours_ = 0;
@@ -362,7 +368,8 @@ void Glyph::GlyphToPath(GraphicsPath &path) const {
     flag = flags_[i];
     cur_point = coordinates_[i];
 
-    if (new_contour) { // If this is the first point of jth contour.
+    if (new_contour) {
+      // If this is the first point of jth contour.
       path.StartFigure();
       new_contour = false;
       // Calculate the prev_point.
@@ -476,7 +483,8 @@ void Glyph::OutputPoints(PointF *all_pt, int *off_pt) const {
   int last = 0;
   PointF *pt = all_pt;
   for (int i = 0, j = 0; i < num_points_; ++i) {
-    // i stands for the index of cur_point, while j stands for the index of current contour.
+    // i stands for the index of cur_point, while j stands for the index of
+    // current contour.
     flag = flags_[i] & kOnCurve;
     cur_point = coordinates_[i];
 
@@ -488,7 +496,8 @@ void Glyph::OutputPoints(PointF *all_pt, int *off_pt) const {
     }
 
     if (!prev_flag && !flag) {
-      // If the previous and current point are both OFF-curve, add the implicit on-curve point.
+      // If the previous and current point are both OFF-curve, add the
+      // implicit on-curve point.
       *pt++ = PointF(
                 (prev_point.X + cur_point.X) / 2.0f,
                 (prev_point.Y + cur_point.Y) / 2.0f
